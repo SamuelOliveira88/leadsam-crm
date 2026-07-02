@@ -46,12 +46,12 @@ function LeadsPage() {
   const [editing, setEditing] = useState<LeadRow | null>(null);
 
   const criarMut = useMutation({
-    mutationFn: (d: Parameters<typeof criar>[0]["data"]) => criar({ data: d }),
+    mutationFn: (d: Record<string, unknown>) => criar({ data: d as never }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["leads"] }); toast.success("Lead criado"); setOpenForm(false); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
   });
   const atualizarMut = useMutation({
-    mutationFn: (d: { id: string; patch: Record<string, unknown> }) => atualizar({ data: d }),
+    mutationFn: (d: { id: string; patch: Record<string, unknown> }) => atualizar({ data: d as never }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["leads"] }); toast.success("Lead atualizado"); setOpenForm(false); setEditing(null); },
   });
   const excluirMut = useMutation({
