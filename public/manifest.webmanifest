@@ -1,0 +1,15 @@
+{
+  "name": "ImobLead — CRM com IA",
+  "short_name": "ImobLead",
+  "description": "CRM com Inteligência Artificial para corretores de imóveis brasileiros.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f9fb",
+  "theme_color": "#1d5966",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
