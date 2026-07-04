@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Plus, Pencil, Trash2, ShieldAlert } from "lucide-react";
-import { listarConsultores, criarConsultor, atualizarConsultor, excluirConsultor } from "@/lib/consultores.functions";
+import { listarConsultores, criarConsultor, criarConsultorComConta, atualizarConsultor, excluirConsultor } from "@/lib/consultores.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +39,7 @@ function ConsultoresPage() {
 function AdminView() {
   const listar = useServerFn(listarConsultores);
   const criar = useServerFn(criarConsultor);
+  const criarComConta = useServerFn(criarConsultorComConta);
   const atualizar = useServerFn(atualizarConsultor);
   const excluir = useServerFn(excluirConsultor);
   const qc = useQueryClient();
@@ -46,18 +47,19 @@ function AdminView() {
   const consultores = useQuery({ queryKey: ["consultores"], queryFn: () => listar() });
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Consultor | null>(null);
-  const [f, setF] = useState({ nome: "", numero_whatsapp: "", ativo: true, ordem_rodizio: 0 });
+  const [f, setF] = useState({ nome: "", numero_whatsapp: "", ativo: true, ordem_rodizio: 0, email: "", senha: "", criarLogin: true });
 
   const openForm = (c?: Consultor) => {
-    if (c) { setEditing(c); setF({ nome: c.nome, numero_whatsapp: c.numero_whatsapp, ativo: c.ativo, ordem_rodizio: c.ordem_rodizio }); }
-    else { setEditing(null); setF({ nome: "", numero_whatsapp: "", ativo: true, ordem_rodizio: (consultores.data?.length ?? 0) }); }
+    if (c) { setEditing(c); setF({ nome: c.nome, numero_whatsapp: c.numero_whatsapp, ativo: c.ativo, ordem_rodizio: c.ordem_rodizio, email: "", senha: "", criarLogin: false }); }
+    else { setEditing(null); setF({ nome: "", numero_whatsapp: "", ativo: true, ordem_rodizio: (consultores.data?.length ?? 0), email: "", senha: "", criarLogin: true }); }
     setOpen(true);
   };
 
   const salvarMut = useMutation({
     mutationFn: async () => {
-      if (editing) return atualizar({ data: { id: editing.id, patch: f } });
-      return criar({ data: f });
+      if (editing) return atualizar({ data: { id: editing.id, patch: { nome: f.nome, numero_whatsapp: f.numero_whatsapp, ativo: f.ativo, ordem_rodizio: f.ordem_rodizio } } });
+      if (f.criarLogin) return criarComConta({ data: { nome: f.nome, numero_whatsapp: f.numero_whatsapp, ativo: f.ativo, ordem_rodizio: f.ordem_rodizio, email: f.email, senha: f.senha } });
+      return criar({ data: { nome: f.nome, numero_whatsapp: f.numero_whatsapp, ativo: f.ativo, ordem_rodizio: f.ordem_rodizio } });
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["consultores"] }); qc.invalidateQueries({ queryKey: ["consultores-public"] }); toast.success("Salvo"); setOpen(false); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Erro"),
@@ -118,6 +120,18 @@ function AdminView() {
           <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); salvarMut.mutate(); }}>
             <div><Label>Nome</Label><Input required value={f.nome} onChange={(e) => setF({ ...f, nome: e.target.value })} /></div>
             <div><Label>WhatsApp (com DDD e país)</Label><Input required value={f.numero_whatsapp} onChange={(e) => setF({ ...f, numero_whatsapp: e.target.value })} placeholder="5511999998888" /></div>
+            {!editing && (
+              <div className="flex items-center gap-2 rounded-md border p-3">
+                <Switch checked={f.criarLogin} onCheckedChange={(v) => setF({ ...f, criarLogin: v })} />
+                <span className="text-sm">Criar login para o consultor acessar o app</span>
+              </div>
+            )}
+            {!editing && f.criarLogin && (
+              <>
+                <div><Label>E-mail de acesso</Label><Input type="email" required value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} placeholder="consultor@exemplo.com" /></div>
+                <div><Label>Senha provisória (mín. 6)</Label><Input type="text" required minLength={6} value={f.senha} onChange={(e) => setF({ ...f, senha: e.target.value })} placeholder="Compartilhe com o consultor" /></div>
+              </>
+            )}
             <div><Label>Ordem no rodízio</Label><Input type="number" min="0" value={f.ordem_rodizio} onChange={(e) => setF({ ...f, ordem_rodizio: Number(e.target.value) })} /></div>
             <div className="flex items-center gap-2"><Switch checked={f.ativo} onCheckedChange={(v) => setF({ ...f, ativo: v })} /><span className="text-sm">Ativo no rodízio</span></div>
             <DialogFooter>

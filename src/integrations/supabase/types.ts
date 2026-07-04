@@ -64,6 +64,7 @@ export type Database = {
           numero_whatsapp: string
           ordem_rodizio: number
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           ativo?: boolean
@@ -73,6 +74,7 @@ export type Database = {
           numero_whatsapp: string
           ordem_rodizio?: number
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           ativo?: boolean
@@ -82,6 +84,7 @@ export type Database = {
           numero_whatsapp?: string
           ordem_rodizio?: number
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -187,6 +190,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      current_consultor_id: { Args: never; Returns: string }
       escolher_proximo_consultor: {
         Args: never
         Returns: {
@@ -197,6 +201,7 @@ export type Database = {
           numero_whatsapp: string
           ordem_rodizio: number
           updated_at: string
+          user_id: string | null
         }
         SetofOptions: {
           from: "*"
