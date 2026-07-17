@@ -46,10 +46,10 @@ export const importarLeads = createServerFn({ method: "POST" })
     for (const lead of data.leads) {
       const rpc = data.modo === "rodizio"
         ? context.supabase.rpc("distribuir_lead_round_robin", {
-            p_nome: lead.nome, p_telefone: lead.telefone ?? null, p_email: lead.email ?? null, p_grupo_id: data.grupo_id,
+            p_nome: lead.nome, p_telefone: lead.telefone ?? "", p_email: lead.email ?? "", p_grupo_id: data.grupo_id,
           })
         : context.supabase.rpc("distribuir_lead_direcionado", {
-            p_nome: lead.nome, p_telefone: lead.telefone ?? null, p_email: lead.email ?? null,
+            p_nome: lead.nome, p_telefone: lead.telefone ?? "", p_email: lead.email ?? "",
             p_grupo_id: data.grupo_id, p_corretores_ids: data.corretores_ids ?? [],
           });
       const { error } = await rpc;

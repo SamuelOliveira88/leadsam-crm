@@ -12,16 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as AuthenticatedLeadsRouteImport } from './routes/_authenticated/leads'
-import { Route as AuthenticatedFunilRouteImport } from './routes/_authenticated/funil'
+import { Route as AuthenticatedImportarRouteImport } from './routes/_authenticated/importar'
+import { Route as AuthenticatedHorariosRouteImport } from './routes/_authenticated/horarios'
+import { Route as AuthenticatedGruposRouteImport } from './routes/_authenticated/grupos'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedConsultoresRouteImport } from './routes/_authenticated/consultores'
-import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
-import { Route as AuthenticatedAssistenteRouteImport } from './routes/_authenticated/assistente'
-import { Route as AuthenticatedAgendaRouteImport } from './routes/_authenticated/agenda'
-import { Route as ApiPublicN8nLeadRouteImport } from './routes/api/public/n8n-lead'
-import { Route as ApiPublicWebhookFacebookRouteImport } from './routes/api/public/webhook/facebook'
+import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
+import { Route as ApiPublicWebhookRouteImport } from './routes/api/public/webhook'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -37,19 +34,24 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiChatRoute = ApiChatRouteImport.update({
-  id: '/api/chat',
-  path: '/api/chat',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedLeadsRoute = AuthenticatedLeadsRouteImport.update({
   id: '/leads',
   path: '/leads',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedFunilRoute = AuthenticatedFunilRouteImport.update({
-  id: '/funil',
-  path: '/funil',
+const AuthenticatedImportarRoute = AuthenticatedImportarRouteImport.update({
+  id: '/importar',
+  path: '/importar',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHorariosRoute = AuthenticatedHorariosRouteImport.update({
+  id: '/horarios',
+  path: '/horarios',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGruposRoute = AuthenticatedGruposRouteImport.update({
+  id: '/grupos',
+  path: '/grupos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -57,137 +59,94 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedConsultoresRoute =
-  AuthenticatedConsultoresRouteImport.update({
-    id: '/consultores',
-    path: '/consultores',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedConfiguracoesRoute =
-  AuthenticatedConfiguracoesRouteImport.update({
-    id: '/configuracoes',
-    path: '/configuracoes',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedAssistenteRoute = AuthenticatedAssistenteRouteImport.update({
-  id: '/assistente',
-  path: '/assistente',
+const AuthenticatedCorretoresRoute = AuthenticatedCorretoresRouteImport.update({
+  id: '/corretores',
+  path: '/corretores',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedAgendaRoute = AuthenticatedAgendaRouteImport.update({
-  id: '/agenda',
-  path: '/agenda',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const ApiPublicN8nLeadRoute = ApiPublicN8nLeadRouteImport.update({
-  id: '/api/public/n8n-lead',
-  path: '/api/public/n8n-lead',
+const ApiPublicWebhookRoute = ApiPublicWebhookRouteImport.update({
+  id: '/api/public/webhook',
+  path: '/api/public/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicWebhookFacebookRoute =
-  ApiPublicWebhookFacebookRouteImport.update({
-    id: '/api/public/webhook/facebook',
-    path: '/api/public/webhook/facebook',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/agenda': typeof AuthenticatedAgendaRoute
-  '/assistente': typeof AuthenticatedAssistenteRoute
-  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
-  '/consultores': typeof AuthenticatedConsultoresRoute
+  '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/funil': typeof AuthenticatedFunilRoute
+  '/grupos': typeof AuthenticatedGruposRoute
+  '/horarios': typeof AuthenticatedHorariosRoute
+  '/importar': typeof AuthenticatedImportarRoute
   '/leads': typeof AuthenticatedLeadsRoute
-  '/api/chat': typeof ApiChatRoute
-  '/api/public/n8n-lead': typeof ApiPublicN8nLeadRoute
-  '/api/public/webhook/facebook': typeof ApiPublicWebhookFacebookRoute
+  '/api/public/webhook': typeof ApiPublicWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/agenda': typeof AuthenticatedAgendaRoute
-  '/assistente': typeof AuthenticatedAssistenteRoute
-  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
-  '/consultores': typeof AuthenticatedConsultoresRoute
+  '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/funil': typeof AuthenticatedFunilRoute
+  '/grupos': typeof AuthenticatedGruposRoute
+  '/horarios': typeof AuthenticatedHorariosRoute
+  '/importar': typeof AuthenticatedImportarRoute
   '/leads': typeof AuthenticatedLeadsRoute
-  '/api/chat': typeof ApiChatRoute
-  '/api/public/n8n-lead': typeof ApiPublicN8nLeadRoute
-  '/api/public/webhook/facebook': typeof ApiPublicWebhookFacebookRoute
+  '/api/public/webhook': typeof ApiPublicWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
-  '/_authenticated/assistente': typeof AuthenticatedAssistenteRoute
-  '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
-  '/_authenticated/consultores': typeof AuthenticatedConsultoresRoute
+  '/_authenticated/corretores': typeof AuthenticatedCorretoresRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/funil': typeof AuthenticatedFunilRoute
+  '/_authenticated/grupos': typeof AuthenticatedGruposRoute
+  '/_authenticated/horarios': typeof AuthenticatedHorariosRoute
+  '/_authenticated/importar': typeof AuthenticatedImportarRoute
   '/_authenticated/leads': typeof AuthenticatedLeadsRoute
-  '/api/chat': typeof ApiChatRoute
-  '/api/public/n8n-lead': typeof ApiPublicN8nLeadRoute
-  '/api/public/webhook/facebook': typeof ApiPublicWebhookFacebookRoute
+  '/api/public/webhook': typeof ApiPublicWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
-    | '/agenda'
-    | '/assistente'
-    | '/configuracoes'
-    | '/consultores'
+    | '/corretores'
     | '/dashboard'
-    | '/funil'
+    | '/grupos'
+    | '/horarios'
+    | '/importar'
     | '/leads'
-    | '/api/chat'
-    | '/api/public/n8n-lead'
-    | '/api/public/webhook/facebook'
+    | '/api/public/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/agenda'
-    | '/assistente'
-    | '/configuracoes'
-    | '/consultores'
+    | '/corretores'
     | '/dashboard'
-    | '/funil'
+    | '/grupos'
+    | '/horarios'
+    | '/importar'
     | '/leads'
-    | '/api/chat'
-    | '/api/public/n8n-lead'
-    | '/api/public/webhook/facebook'
+    | '/api/public/webhook'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
-    | '/_authenticated/agenda'
-    | '/_authenticated/assistente'
-    | '/_authenticated/configuracoes'
-    | '/_authenticated/consultores'
+    | '/_authenticated/corretores'
     | '/_authenticated/dashboard'
-    | '/_authenticated/funil'
+    | '/_authenticated/grupos'
+    | '/_authenticated/horarios'
+    | '/_authenticated/importar'
     | '/_authenticated/leads'
-    | '/api/chat'
-    | '/api/public/n8n-lead'
-    | '/api/public/webhook/facebook'
+    | '/api/public/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
-  ApiChatRoute: typeof ApiChatRoute
-  ApiPublicN8nLeadRoute: typeof ApiPublicN8nLeadRoute
-  ApiPublicWebhookFacebookRoute: typeof ApiPublicWebhookFacebookRoute
+  ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -213,13 +172,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/chat': {
-      id: '/api/chat'
-      path: '/api/chat'
-      fullPath: '/api/chat'
-      preLoaderRoute: typeof ApiChatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/leads': {
       id: '/_authenticated/leads'
       path: '/leads'
@@ -227,11 +179,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLeadsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/funil': {
-      id: '/_authenticated/funil'
-      path: '/funil'
-      fullPath: '/funil'
-      preLoaderRoute: typeof AuthenticatedFunilRouteImport
+    '/_authenticated/importar': {
+      id: '/_authenticated/importar'
+      path: '/importar'
+      fullPath: '/importar'
+      preLoaderRoute: typeof AuthenticatedImportarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/horarios': {
+      id: '/_authenticated/horarios'
+      path: '/horarios'
+      fullPath: '/horarios'
+      preLoaderRoute: typeof AuthenticatedHorariosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/grupos': {
+      id: '/_authenticated/grupos'
+      path: '/grupos'
+      fullPath: '/grupos'
+      preLoaderRoute: typeof AuthenticatedGruposRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -241,68 +207,38 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/consultores': {
-      id: '/_authenticated/consultores'
-      path: '/consultores'
-      fullPath: '/consultores'
-      preLoaderRoute: typeof AuthenticatedConsultoresRouteImport
+    '/_authenticated/corretores': {
+      id: '/_authenticated/corretores'
+      path: '/corretores'
+      fullPath: '/corretores'
+      preLoaderRoute: typeof AuthenticatedCorretoresRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/configuracoes': {
-      id: '/_authenticated/configuracoes'
-      path: '/configuracoes'
-      fullPath: '/configuracoes'
-      preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/assistente': {
-      id: '/_authenticated/assistente'
-      path: '/assistente'
-      fullPath: '/assistente'
-      preLoaderRoute: typeof AuthenticatedAssistenteRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/agenda': {
-      id: '/_authenticated/agenda'
-      path: '/agenda'
-      fullPath: '/agenda'
-      preLoaderRoute: typeof AuthenticatedAgendaRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/api/public/n8n-lead': {
-      id: '/api/public/n8n-lead'
-      path: '/api/public/n8n-lead'
-      fullPath: '/api/public/n8n-lead'
-      preLoaderRoute: typeof ApiPublicN8nLeadRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/webhook/facebook': {
-      id: '/api/public/webhook/facebook'
-      path: '/api/public/webhook/facebook'
-      fullPath: '/api/public/webhook/facebook'
-      preLoaderRoute: typeof ApiPublicWebhookFacebookRouteImport
+    '/api/public/webhook': {
+      id: '/api/public/webhook'
+      path: '/api/public/webhook'
+      fullPath: '/api/public/webhook'
+      preLoaderRoute: typeof ApiPublicWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAgendaRoute: typeof AuthenticatedAgendaRoute
-  AuthenticatedAssistenteRoute: typeof AuthenticatedAssistenteRoute
-  AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
-  AuthenticatedConsultoresRoute: typeof AuthenticatedConsultoresRoute
+  AuthenticatedCorretoresRoute: typeof AuthenticatedCorretoresRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedFunilRoute: typeof AuthenticatedFunilRoute
+  AuthenticatedGruposRoute: typeof AuthenticatedGruposRoute
+  AuthenticatedHorariosRoute: typeof AuthenticatedHorariosRoute
+  AuthenticatedImportarRoute: typeof AuthenticatedImportarRoute
   AuthenticatedLeadsRoute: typeof AuthenticatedLeadsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAgendaRoute: AuthenticatedAgendaRoute,
-  AuthenticatedAssistenteRoute: AuthenticatedAssistenteRoute,
-  AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
-  AuthenticatedConsultoresRoute: AuthenticatedConsultoresRoute,
+  AuthenticatedCorretoresRoute: AuthenticatedCorretoresRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedFunilRoute: AuthenticatedFunilRoute,
+  AuthenticatedGruposRoute: AuthenticatedGruposRoute,
+  AuthenticatedHorariosRoute: AuthenticatedHorariosRoute,
+  AuthenticatedImportarRoute: AuthenticatedImportarRoute,
   AuthenticatedLeadsRoute: AuthenticatedLeadsRoute,
 }
 
@@ -313,9 +249,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
-  ApiChatRoute: ApiChatRoute,
-  ApiPublicN8nLeadRoute: ApiPublicN8nLeadRoute,
-  ApiPublicWebhookFacebookRoute: ApiPublicWebhookFacebookRoute,
+  ApiPublicWebhookRoute: ApiPublicWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
