@@ -14,40 +14,127 @@ export type Database = {
   }
   public: {
     Tables: {
-      compromissos: {
+      campanhas_anuncios: {
         Row: {
-          concluido: boolean
+          ativo: boolean
           created_at: string
-          data_hora: string
+          empreendimento: string | null
+          grupo_id: string | null
           id: string
-          lead_id: string | null
-          notas: string | null
-          tipo: Database["public"]["Enums"]["compromisso_tipo"]
-          titulo: string
+          meta_campaign_id: string | null
+          nome_campanha: string
         }
         Insert: {
-          concluido?: boolean
+          ativo?: boolean
           created_at?: string
-          data_hora: string
+          empreendimento?: string | null
+          grupo_id?: string | null
           id?: string
-          lead_id?: string | null
-          notas?: string | null
-          tipo: Database["public"]["Enums"]["compromisso_tipo"]
-          titulo: string
+          meta_campaign_id?: string | null
+          nome_campanha: string
         }
         Update: {
-          concluido?: boolean
+          ativo?: boolean
           created_at?: string
-          data_hora?: string
+          empreendimento?: string | null
+          grupo_id?: string | null
           id?: string
-          lead_id?: string | null
-          notas?: string | null
-          tipo?: Database["public"]["Enums"]["compromisso_tipo"]
-          titulo?: string
+          meta_campaign_id?: string | null
+          nome_campanha?: string
         }
         Relationships: [
           {
-            foreignKeyName: "compromissos_lead_id_fkey"
+            foreignKeyName: "campanhas_anuncios_grupo_id_fkey"
+            columns: ["grupo_id"]
+            isOneToOne: false
+            referencedRelation: "grupos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      corretores: {
+        Row: {
+          ativo: boolean
+          canal_notificacao: string
+          created_at: string
+          grupo_id: string | null
+          id: string
+          nome: string
+          telefone: string | null
+        }
+        Insert: {
+          ativo?: boolean
+          canal_notificacao?: string
+          created_at?: string
+          grupo_id?: string | null
+          id?: string
+          nome: string
+          telefone?: string | null
+        }
+        Update: {
+          ativo?: boolean
+          canal_notificacao?: string
+          created_at?: string
+          grupo_id?: string | null
+          id?: string
+          nome?: string
+          telefone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "corretores_grupo_id_fkey"
+            columns: ["grupo_id"]
+            isOneToOne: false
+            referencedRelation: "grupos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fila_notificacoes: {
+        Row: {
+          corretor_id: string | null
+          created_at: string
+          enviado_em: string | null
+          id: string
+          lead_id: string | null
+          status: string
+          tipo: string | null
+        }
+        Insert: {
+          corretor_id?: string | null
+          created_at?: string
+          enviado_em?: string | null
+          id?: string
+          lead_id?: string | null
+          status?: string
+          tipo?: string | null
+        }
+        Update: {
+          corretor_id?: string | null
+          created_at?: string
+          enviado_em?: string | null
+          id?: string
+          lead_id?: string | null
+          status?: string
+          tipo?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fila_notificacoes_corretor_id_fkey"
+            columns: ["corretor_id"]
+            isOneToOne: false
+            referencedRelation: "corretores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fila_notificacoes_corretor_id_fkey"
+            columns: ["corretor_id"]
+            isOneToOne: false
+            referencedRelation: "dashboard_corretores"
+            referencedColumns: ["corretor_id"]
+          },
+          {
+            foreignKeyName: "fila_notificacoes_lead_id_fkey"
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "leads"
@@ -55,174 +142,209 @@ export type Database = {
           },
         ]
       }
-      consultores: {
+      grupos: {
         Row: {
-          ativo: boolean
           created_at: string
           id: string
           nome: string
-          numero_whatsapp: string
-          ordem_rodizio: number
-          updated_at: string
-          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      horarios_atendimento: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          dia_semana: number
+          grupo_id: string
+          hora_fim: string
+          hora_inicio: string
+          id: string
         }
         Insert: {
           ativo?: boolean
           created_at?: string
+          dia_semana: number
+          grupo_id: string
+          hora_fim?: string
+          hora_inicio?: string
           id?: string
-          nome: string
-          numero_whatsapp: string
-          ordem_rodizio?: number
-          updated_at?: string
-          user_id?: string | null
         }
         Update: {
           ativo?: boolean
           created_at?: string
+          dia_semana?: number
+          grupo_id?: string
+          hora_fim?: string
+          hora_inicio?: string
           id?: string
-          nome?: string
-          numero_whatsapp?: string
-          ordem_rodizio?: number
-          updated_at?: string
-          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "horarios_atendimento_grupo_id_fkey"
+            columns: ["grupo_id"]
+            isOneToOne: false
+            referencedRelation: "grupos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       leads: {
         Row: {
-          consultor_id: string | null
+          corretor_id: string | null
           created_at: string
-          estagio: Database["public"]["Enums"]["lead_estagio"]
+          email: string | null
+          grupo_id: string | null
           id: string
-          interesse: string | null
+          liberado_em: string | null
           nome: string
-          notas: string | null
-          origem: string
-          telefone: string
-          updated_at: string
-          valor_estimado: number | null
+          represado_em: string | null
+          status: string
+          telefone: string | null
         }
         Insert: {
-          consultor_id?: string | null
+          corretor_id?: string | null
           created_at?: string
-          estagio?: Database["public"]["Enums"]["lead_estagio"]
+          email?: string | null
+          grupo_id?: string | null
           id?: string
-          interesse?: string | null
+          liberado_em?: string | null
           nome: string
-          notas?: string | null
-          origem?: string
-          telefone: string
-          updated_at?: string
-          valor_estimado?: number | null
+          represado_em?: string | null
+          status?: string
+          telefone?: string | null
         }
         Update: {
-          consultor_id?: string | null
+          corretor_id?: string | null
           created_at?: string
-          estagio?: Database["public"]["Enums"]["lead_estagio"]
+          email?: string | null
+          grupo_id?: string | null
           id?: string
-          interesse?: string | null
+          liberado_em?: string | null
           nome?: string
-          notas?: string | null
-          origem?: string
-          telefone?: string
-          updated_at?: string
-          valor_estimado?: number | null
+          represado_em?: string | null
+          status?: string
+          telefone?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "leads_consultor_id_fkey"
-            columns: ["consultor_id"]
+            foreignKeyName: "leads_corretor_id_fkey"
+            columns: ["corretor_id"]
             isOneToOne: false
-            referencedRelation: "consultores"
+            referencedRelation: "corretores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_corretor_id_fkey"
+            columns: ["corretor_id"]
+            isOneToOne: false
+            referencedRelation: "dashboard_corretores"
+            referencedColumns: ["corretor_id"]
+          },
+          {
+            foreignKeyName: "leads_grupo_id_fkey"
+            columns: ["grupo_id"]
+            isOneToOne: false
+            referencedRelation: "grupos"
             referencedColumns: ["id"]
           },
         ]
       }
-      rodizio_estado: {
-        Row: {
-          id: number
-          ultimo_consultor_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          id?: number
-          ultimo_consultor_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          id?: number
-          ultimo_consultor_id?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "rodizio_estado_ultimo_consultor_id_fkey"
-            columns: ["ultimo_consultor_id"]
-            isOneToOne: false
-            referencedRelation: "consultores"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user_roles: {
+      perfis: {
         Row: {
           created_at: string
+          grupo_id: string | null
           id: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
+          nome: string | null
+          role: string
         }
         Insert: {
           created_at?: string
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
+          grupo_id?: string | null
+          id: string
+          nome?: string | null
+          role?: string
         }
         Update: {
           created_at?: string
+          grupo_id?: string | null
           id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
+          nome?: string | null
+          role?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "perfis_grupo_id_fkey"
+            columns: ["grupo_id"]
+            isOneToOne: false
+            referencedRelation: "grupos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
-      [_ in never]: never
+      dashboard_corretores: {
+        Row: {
+          corretor: string | null
+          corretor_id: string | null
+          grupo: string | null
+          grupo_id: string | null
+          total_leads: number | null
+          ultimo_lead_recebido: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "corretores_grupo_id_fkey"
+            columns: ["grupo_id"]
+            isOneToOne: false
+            referencedRelation: "grupos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
-      current_consultor_id: { Args: never; Returns: string }
-      escolher_proximo_consultor: {
+      dentro_do_horario: { Args: { p_grupo_id: string }; Returns: boolean }
+      distribuir_lead_direcionado: {
+        Args: {
+          p_corretores_ids: string[]
+          p_email: string
+          p_grupo_id: string
+          p_nome: string
+          p_telefone: string
+        }
+        Returns: string
+      }
+      distribuir_lead_round_robin: {
+        Args: {
+          p_email: string
+          p_grupo_id: string
+          p_nome: string
+          p_telefone: string
+        }
+        Returns: string
+      }
+      get_my_profile: {
         Args: never
         Returns: {
-          ativo: boolean
-          created_at: string
-          id: string
-          nome: string
-          numero_whatsapp: string
-          ordem_rodizio: number
-          updated_at: string
-          user_id: string | null
-        }
-        SetofOptions: {
-          from: "*"
-          to: "consultores"
-          isOneToOne: true
-          isSetofReturn: false
-        }
+          grupo_id: string
+          role: string
+        }[]
       }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
-      is_admin_email: { Args: never; Returns: boolean }
+      liberar_leads_represados: { Args: never; Returns: undefined }
     }
     Enums: {
-      app_role: "admin" | "user"
-      compromisso_tipo: "visita" | "ligacao" | "reuniao"
-      lead_estagio: "novo" | "em_contato" | "proposta" | "fechado" | "perdido"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -349,10 +471,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      app_role: ["admin", "user"],
-      compromisso_tipo: ["visita", "ligacao", "reuniao"],
-      lead_estagio: ["novo", "em_contato", "proposta", "fechado", "perdido"],
-    },
+    Enums: {},
   },
 } as const
