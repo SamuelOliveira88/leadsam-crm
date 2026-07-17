@@ -2,49 +2,60 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
-const LeadInput = z.object({
-  nome: z.string().min(1),
-  telefone: z.string().min(8),
-  origem: z.string().default("Manual"),
-  estagio: z.enum(["novo", "em_contato", "proposta", "fechado", "perdido"]).default("novo"),
-  interesse: z.string().nullable().optional(),
-  valor_estimado: z.number().nullable().optional(),
-  consultor_id: z.string().uuid().nullable().optional(),
-  notas: z.string().nullable().optional(),
-});
-
 export const listarLeads = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("leads")
-      .select("*, consultores(id, nome, numero_whatsapp)")
-      .order("created_at", { ascending: false });
+      .select("id, nome, telefone, email, status, grupo_id, corretor_id, created_at, corretores(nome), grupos(nome)")
+      .order("created_at", { ascending: false })
+      .limit(500);
     if (error) throw new Error(error.message);
     return data ?? [];
   });
 
-export const criarLead = createServerFn({ method: "POST" })
+export const dashboardStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => LeadInput.parse(d))
-  .handler(async ({ data, context }) => {
-    const { data: row, error } = await context.supabase.from("leads").insert(data).select().single();
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase.from("dashboard_corretores").select("*");
     if (error) throw new Error(error.message);
-    return row;
+    const { data: leads } = await context.supabase.from("leads").select("id, status, created_at");
+    const total = leads?.length ?? 0;
+    const represados = leads?.filter((l) => l.status === "represado").length ?? 0;
+    const hoje = leads?.filter((l) => new Date(l.created_at).toDateString() === new Date().toDateString()).length ?? 0;
+    return { corretores: data ?? [], total, represados, hoje };
   });
 
-export const atualizarLead = createServerFn({ method: "POST" })
+const LeadImportInput = z.object({
+  grupo_id: z.string().uuid(),
+  modo: z.enum(["rodizio", "direcionado"]),
+  corretores_ids: z.array(z.string().uuid()).optional(),
+  leads: z.array(z.object({
+    nome: z.string().min(1),
+    telefone: z.string().optional().nullable(),
+    email: z.string().optional().nullable(),
+  })).min(1),
+});
+
+export const importarLeads = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid(), patch: LeadInput.partial() }).parse(d))
+  .inputValidator((d: unknown) => LeadImportInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { data: row, error } = await context.supabase
-      .from("leads")
-      .update(data.patch)
-      .eq("id", data.id)
-      .select()
-      .single();
-    if (error) throw new Error(error.message);
-    return row;
+    let sucesso = 0;
+    let erros = 0;
+    for (const lead of data.leads) {
+      const rpc = data.modo === "rodizio"
+        ? context.supabase.rpc("distribuir_lead_round_robin", {
+            p_nome: lead.nome, p_telefone: lead.telefone ?? null, p_email: lead.email ?? null, p_grupo_id: data.grupo_id,
+          })
+        : context.supabase.rpc("distribuir_lead_direcionado", {
+            p_nome: lead.nome, p_telefone: lead.telefone ?? null, p_email: lead.email ?? null,
+            p_grupo_id: data.grupo_id, p_corretores_ids: data.corretores_ids ?? [],
+          });
+      const { error } = await rpc;
+      if (error) erros++; else sucesso++;
+    }
+    return { sucesso, erros };
   });
 
 export const excluirLead = createServerFn({ method: "POST" })
@@ -52,20 +63,6 @@ export const excluirLead = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from("leads").delete().eq("id", data.id);
-    if (error) throw new Error(error.message);
-    return { ok: true };
-  });
-
-export const moverEstagio = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
-    z.object({
-      id: z.string().uuid(),
-      estagio: z.enum(["novo", "em_contato", "proposta", "fechado", "perdido"]),
-    }).parse(d),
-  )
-  .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.from("leads").update({ estagio: data.estagio }).eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
   });
