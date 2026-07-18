@@ -1,9 +1,11 @@
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Building2, LayoutDashboard, Users, UserCog, Upload, Clock, Layers, LogOut } from "lucide-react";
+import { Building2, LayoutDashboard, Users, UserCog, Upload, Clock, Layers, LogOut, Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { meuPerfil } from "@/lib/perfis.functions";
+import { listarNotificacoes } from "@/lib/notificacoes.functions";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { User } from "@supabase/supabase-js";
@@ -16,19 +18,69 @@ const BASE_NAV = [
   { to: "/horarios", label: "Horários", icon: Clock },
 ] as const;
 
+function agoraDentroDoHorarioSP(): boolean {
+  // 08:00 a 09:30 no fuso America/Sao_Paulo
+  const parts = new Intl.DateTimeFormat("pt-BR", {
+    timeZone: "America/Sao_Paulo",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(new Date());
+  const h = Number(parts.find((p) => p.type === "hour")?.value ?? "0");
+  const m = Number(parts.find((p) => p.type === "minute")?.value ?? "0");
+  const minutos = h * 60 + m;
+  return minutos >= 8 * 60 && minutos <= 9 * 60 + 30;
+}
+
 export function AppShell({ user, children }: { user: User; children: React.ReactNode }) {
   const router = useRouter();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const fetchPerfil = useServerFn(meuPerfil);
+  const fetchNotif = useServerFn(listarNotificacoes);
   const { data: perfil } = useQuery({ queryKey: ["meuPerfil"], queryFn: () => fetchPerfil() });
+  const { data: notifs } = useQuery({
+    queryKey: ["notificacoes"],
+    queryFn: () => fetchNotif(),
+    refetchInterval: 30000,
+    enabled: !!perfil,
+  });
   const isMaster = perfil?.role === "master";
+  const naoLidas = (notifs ?? []).filter((n) => !n.lida).length;
+
+  // Bloqueio de horário: todos exceto master
+  const [dentroHorario, setDentroHorario] = useState<boolean>(true);
+  useEffect(() => {
+    const check = () => setDentroHorario(agoraDentroDoHorarioSP());
+    check();
+    const t = setInterval(check, 30000);
+    return () => clearInterval(t);
+  }, []);
 
   async function handleLogout() {
     await supabase.auth.signOut();
     router.navigate({ to: "/auth", replace: true });
   }
 
-  const nav = [...BASE_NAV];
+  if (perfil && !isMaster && !dentroHorario) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-background p-6">
+        <div className="max-w-md rounded-2xl border bg-card p-8 text-center shadow-soft">
+          <div className="mx-auto mb-4 grid size-12 place-items-center rounded-full bg-primary/10 text-primary">
+            <Clock className="size-6" />
+          </div>
+          <h1 className="mb-2 text-xl font-bold">Fora do horário de acesso</h1>
+          <p className="text-sm text-muted-foreground">
+            O acesso ao sistema para {perfil.role === "gerente" ? "gerentes" : "corretores"} está disponível
+            <br /><strong>somente das 08:00 às 09:30</strong> (horário de Brasília).
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground">Volte no horário para consultar seus leads.</p>
+          <Button className="mt-6 w-full" onClick={handleLogout}>Sair</Button>
+        </div>
+      </div>
+    );
+  }
+
+  const nav = [...BASE_NAV, { to: "/notificacoes" as const, label: "Alertas", icon: Bell }];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -46,12 +98,19 @@ export function AppShell({ user, children }: { user: User; children: React.React
           {nav.map((n) => {
             const Icon = n.icon;
             const active = pathname === n.to || pathname.startsWith(n.to + "/");
+            const showBadge = n.to === "/notificacoes" && naoLidas > 0;
             return (
               <Link key={n.to} to={n.to} className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 active ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
               )}>
-                <Icon className="size-4" /> {n.label}
+                <Icon className="size-4" />
+                <span className="flex-1">{n.label}</span>
+                {showBadge && (
+                  <span className="grid size-5 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                    {naoLidas > 9 ? "9+" : naoLidas}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -84,17 +143,23 @@ export function AppShell({ user, children }: { user: User; children: React.React
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 backdrop-blur md:hidden">
-        <div className="grid grid-cols-5">
+        <div className="grid grid-cols-6">
           {nav.map((n) => {
             const Icon = n.icon;
             const active = pathname === n.to || pathname.startsWith(n.to + "/");
+            const showBadge = n.to === "/notificacoes" && naoLidas > 0;
             return (
               <Link key={n.to} to={n.to} className={cn(
-                "flex flex-col items-center gap-1 py-2 text-[10px] font-medium",
+                "relative flex flex-col items-center gap-1 py-2 text-[10px] font-medium",
                 active ? "text-primary" : "text-muted-foreground",
               )}>
                 <Icon className="size-5" />
                 {n.label}
+                {showBadge && (
+                  <span className="absolute right-3 top-1 grid size-4 place-items-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
+                    {naoLidas > 9 ? "9+" : naoLidas}
+                  </span>
+                )}
               </Link>
             );
           })}
