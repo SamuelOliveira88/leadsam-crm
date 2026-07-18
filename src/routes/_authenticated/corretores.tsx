@@ -81,6 +81,16 @@ function Corretores() {
           <option value="nenhum">Nenhum</option>
         </select>
         <Button onClick={() => form.nome && createMut.mutate()}><Plus className="mr-2 size-4" /> Adicionar</Button>
+        <div className="flex items-center gap-4 md:col-span-5">
+          <label className="flex items-center gap-2 text-xs">
+            <input type="checkbox" checked={form.recebe_via_web} onChange={(e) => setForm({ ...form, recebe_via_web: e.target.checked })} />
+            Recebe via Web
+          </label>
+          <label className="flex items-center gap-2 text-xs">
+            <input type="checkbox" checked={form.recebe_via_whatsapp} onChange={(e) => setForm({ ...form, recebe_via_whatsapp: e.target.checked })} />
+            Recebe via WhatsApp
+          </label>
+        </div>
       </Card>
 
       <div className="grid gap-2">
@@ -90,6 +100,8 @@ function Corretores() {
               <div className="flex items-center gap-2 font-medium">
                 {c.nome}
                 <Badge variant={c.ativo ? "default" : "secondary"}>{c.ativo ? "ativo" : "inativo"}</Badge>
+                {c.recebe_via_web && <Badge variant="outline" className="text-[10px]">Web</Badge>}
+                {c.recebe_via_whatsapp && <Badge variant="outline" className="text-[10px]">WhatsApp</Badge>}
               </div>
               <div className="text-xs text-muted-foreground">
                 {c.telefone ?? "—"} · {c.grupos?.nome ?? "Sem grupo"} · {c.canal_notificacao}
