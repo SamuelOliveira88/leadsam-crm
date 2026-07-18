@@ -108,7 +108,7 @@ function Corretores() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={() => toggleMut.mutate(c)}>
+              <Button size="sm" variant="outline" onClick={() => flagMut.mutate({ id: c.id, patch: { ativo: !c.ativo } })}>
                 {c.ativo ? "Desativar" : "Ativar"}
               </Button>
               <Button size="icon" variant="ghost" onClick={() => delMut.mutate(c.id)}>
