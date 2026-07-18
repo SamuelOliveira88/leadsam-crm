@@ -2,9 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, Layers, X } from "lucide-react";
 import { listarCorretores, criarCorretor, atualizarCorretor, excluirCorretor } from "@/lib/corretores.functions";
-import { listarGrupos } from "@/lib/grupos.functions";
+import { listarGrupos, criarGrupo, excluirGrupo } from "@/lib/grupos.functions";
+import { meuPerfil } from "@/lib/perfis.functions";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,8 +23,12 @@ function Corretores() {
   const createFn = useServerFn(criarCorretor);
   const updateFn = useServerFn(atualizarCorretor);
   const delFn = useServerFn(excluirCorretor);
+  const perfilFn = useServerFn(meuPerfil);
   const { data } = useQuery({ queryKey: ["corretores"], queryFn: () => listFn() });
   const { data: grupos } = useQuery({ queryKey: ["grupos"], queryFn: () => gruposFn() });
+  const { data: perfil } = useQuery({ queryKey: ["meuPerfil"], queryFn: () => perfilFn() });
+  const isMaster = perfil?.role === "master";
+  const [showGrupos, setShowGrupos] = useState(false);
 
   const [form, setForm] = useState({ nome: "", telefone: "", grupo_id: "", canal_notificacao: "whatsapp" as const });
 
@@ -45,9 +50,16 @@ function Corretores() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Corretores</h1>
-        <p className="text-sm text-muted-foreground">Cadastre e gerencie os corretores da equipe</p>
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Corretores</h1>
+          <p className="text-sm text-muted-foreground">Cadastre e gerencie os corretores da equipe</p>
+        </div>
+        {isMaster && (
+          <Button variant="outline" size="sm" onClick={() => setShowGrupos(true)}>
+            <Layers className="mr-2 size-4" /> Gerenciar Grupos
+          </Button>
+        )}
       </div>
 
       <Card className="grid gap-2 p-4 md:grid-cols-5">
@@ -89,6 +101,64 @@ function Corretores() {
           </Card>
         ))}
       </div>
+
+      {showGrupos && isMaster && (
+        <GruposModal onClose={() => setShowGrupos(false)} />
+      )}
+    </div>
+  );
+}
+
+function GruposModal({ onClose }: { onClose: () => void }) {
+  const qc = useQueryClient();
+  const listFn = useServerFn(listarGrupos);
+  const createFn = useServerFn(criarGrupo);
+  const delFn = useServerFn(excluirGrupo);
+  const { data: grupos } = useQuery({ queryKey: ["grupos"], queryFn: () => listFn() });
+  const [nome, setNome] = useState("");
+
+  const createMut = useMutation({
+    mutationFn: () => createFn({ data: { nome } }),
+    onSuccess: () => { setNome(""); qc.invalidateQueries({ queryKey: ["grupos"] }); },
+  });
+  const delMut = useMutation({
+    mutationFn: (id: string) => delFn({ data: { id } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["grupos"] }),
+  });
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+      <Card className="w-full max-w-lg p-4" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-3 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">Gerenciar Grupos</h2>
+            <p className="text-xs text-muted-foreground">Organize corretores em equipes/imobiliárias</p>
+          </div>
+          <Button variant="ghost" size="icon" onClick={onClose}><X className="size-4" /></Button>
+        </div>
+
+        <div className="mb-3 flex gap-2">
+          <Input placeholder="Nome do novo grupo" value={nome} onChange={(e) => setNome(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && nome) createMut.mutate(); }} />
+          <Button onClick={() => nome && createMut.mutate()} disabled={createMut.isPending}>
+            <Plus className="mr-2 size-4" /> Novo Grupo
+          </Button>
+        </div>
+
+        <div className="max-h-80 space-y-2 overflow-y-auto">
+          {(grupos ?? []).length === 0 && (
+            <div className="py-6 text-center text-sm text-muted-foreground">Nenhum grupo cadastrado.</div>
+          )}
+          {(grupos ?? []).map((g) => (
+            <div key={g.id} className="flex items-center justify-between rounded-md border p-2">
+              <span className="text-sm font-medium">{g.nome}</span>
+              <Button size="icon" variant="ghost" onClick={() => delMut.mutate(g.id)}>
+                <Trash2 className="size-4 text-destructive" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      </Card>
     </div>
   );
 }
