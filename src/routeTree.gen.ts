@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedLeadsRouteImport } from './routes/_authenticated/leads'
 import { Route as AuthenticatedImportarRouteImport } from './routes/_authenticated/importar'
 import { Route as AuthenticatedHorariosRouteImport } from './routes/_authenticated/horarios'
@@ -34,6 +35,12 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedNotificacoesRoute =
+  AuthenticatedNotificacoesRouteImport.update({
+    id: '/notificacoes',
+    path: '/notificacoes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLeadsRoute = AuthenticatedLeadsRouteImport.update({
   id: '/leads',
   path: '/leads',
@@ -79,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/horarios': typeof AuthenticatedHorariosRoute
   '/importar': typeof AuthenticatedImportarRoute
   '/leads': typeof AuthenticatedLeadsRoute
+  '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -90,6 +98,7 @@ export interface FileRoutesByTo {
   '/horarios': typeof AuthenticatedHorariosRoute
   '/importar': typeof AuthenticatedImportarRoute
   '/leads': typeof AuthenticatedLeadsRoute
+  '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
 }
 export interface FileRoutesById {
@@ -103,6 +112,7 @@ export interface FileRoutesById {
   '/_authenticated/horarios': typeof AuthenticatedHorariosRoute
   '/_authenticated/importar': typeof AuthenticatedImportarRoute
   '/_authenticated/leads': typeof AuthenticatedLeadsRoute
+  '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
 }
 export interface FileRouteTypes {
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
     | '/horarios'
     | '/importar'
     | '/leads'
+    | '/notificacoes'
     | '/api/public/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '/horarios'
     | '/importar'
     | '/leads'
+    | '/notificacoes'
     | '/api/public/webhook'
   id:
     | '__root__'
@@ -139,6 +151,7 @@ export interface FileRouteTypes {
     | '/_authenticated/horarios'
     | '/_authenticated/importar'
     | '/_authenticated/leads'
+    | '/_authenticated/notificacoes'
     | '/api/public/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -171,6 +184,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/notificacoes': {
+      id: '/_authenticated/notificacoes'
+      path: '/notificacoes'
+      fullPath: '/notificacoes'
+      preLoaderRoute: typeof AuthenticatedNotificacoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/leads': {
       id: '/_authenticated/leads'
@@ -231,6 +251,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHorariosRoute: typeof AuthenticatedHorariosRoute
   AuthenticatedImportarRoute: typeof AuthenticatedImportarRoute
   AuthenticatedLeadsRoute: typeof AuthenticatedLeadsRoute
+  AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -240,6 +261,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHorariosRoute: AuthenticatedHorariosRoute,
   AuthenticatedImportarRoute: AuthenticatedImportarRoute,
   AuthenticatedLeadsRoute: AuthenticatedLeadsRoute,
+  AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -254,13 +276,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

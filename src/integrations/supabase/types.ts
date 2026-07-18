@@ -60,7 +60,10 @@ export type Database = {
           grupo_id: string | null
           id: string
           nome: string
+          recebe_via_web: boolean
+          recebe_via_whatsapp: boolean
           telefone: string | null
+          user_id: string | null
         }
         Insert: {
           ativo?: boolean
@@ -69,7 +72,10 @@ export type Database = {
           grupo_id?: string | null
           id?: string
           nome: string
+          recebe_via_web?: boolean
+          recebe_via_whatsapp?: boolean
           telefone?: string | null
+          user_id?: string | null
         }
         Update: {
           ativo?: boolean
@@ -78,7 +84,10 @@ export type Database = {
           grupo_id?: string | null
           id?: string
           nome?: string
+          recebe_via_web?: boolean
+          recebe_via_whatsapp?: boolean
           telefone?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -198,6 +207,38 @@ export type Database = {
           },
         ]
       }
+      lead_notas: {
+        Row: {
+          autor_id: string | null
+          created_at: string
+          id: string
+          lead_id: string
+          texto: string
+        }
+        Insert: {
+          autor_id?: string | null
+          created_at?: string
+          id?: string
+          lead_id: string
+          texto: string
+        }
+        Update: {
+          autor_id?: string | null
+          created_at?: string
+          id?: string
+          lead_id?: string
+          texto?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_notas_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           corretor_id: string | null
@@ -210,6 +251,8 @@ export type Database = {
           represado_em: string | null
           status: string
           telefone: string | null
+          ultima_atividade_em: string
+          visualizado_em: string | null
         }
         Insert: {
           corretor_id?: string | null
@@ -222,6 +265,8 @@ export type Database = {
           represado_em?: string | null
           status?: string
           telefone?: string | null
+          ultima_atividade_em?: string
+          visualizado_em?: string | null
         }
         Update: {
           corretor_id?: string | null
@@ -234,6 +279,8 @@ export type Database = {
           represado_em?: string | null
           status?: string
           telefone?: string | null
+          ultima_atividade_em?: string
+          visualizado_em?: string | null
         }
         Relationships: [
           {
@@ -255,6 +302,47 @@ export type Database = {
             columns: ["grupo_id"]
             isOneToOne: false
             referencedRelation: "grupos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notificacoes: {
+        Row: {
+          created_at: string
+          descricao: string | null
+          destinatario_id: string
+          id: string
+          lead_id: string | null
+          lida: boolean
+          tipo: string
+          titulo: string
+        }
+        Insert: {
+          created_at?: string
+          descricao?: string | null
+          destinatario_id: string
+          id?: string
+          lead_id?: string | null
+          lida?: boolean
+          tipo: string
+          titulo: string
+        }
+        Update: {
+          created_at?: string
+          descricao?: string | null
+          destinatario_id?: string
+          id?: string
+          lead_id?: string | null
+          lida?: boolean
+          tipo?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notificacoes_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
             referencedColumns: ["id"]
           },
         ]
@@ -341,7 +429,11 @@ export type Database = {
           role: string
         }[]
       }
+      liberar_leads_inativos_6d: { Args: never; Returns: undefined }
       liberar_leads_represados: { Args: never; Returns: undefined }
+      reatribuir_leads_sem_visualizacao: { Args: never; Returns: undefined }
+      registrar_login_corretor: { Args: never; Returns: undefined }
+      sou_corretor_do_lead: { Args: { p_lead_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

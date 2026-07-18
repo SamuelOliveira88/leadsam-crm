@@ -30,14 +30,19 @@ function Corretores() {
   const isMaster = perfil?.role === "master";
   const [showGrupos, setShowGrupos] = useState(false);
 
-  const [form, setForm] = useState({ nome: "", telefone: "", grupo_id: "", canal_notificacao: "whatsapp" as const });
+  const [form, setForm] = useState({ nome: "", telefone: "", grupo_id: "", canal_notificacao: "whatsapp" as const, recebe_via_web: true, recebe_via_whatsapp: true });
 
   const createMut = useMutation({
     mutationFn: () => createFn({ data: {
       nome: form.nome, telefone: form.telefone || null,
       grupo_id: form.grupo_id || null, ativo: true, canal_notificacao: form.canal_notificacao,
+      recebe_via_web: form.recebe_via_web, recebe_via_whatsapp: form.recebe_via_whatsapp,
     } }),
-    onSuccess: () => { setForm({ nome: "", telefone: "", grupo_id: "", canal_notificacao: "whatsapp" }); qc.invalidateQueries({ queryKey: ["corretores"] }); },
+    onSuccess: () => { setForm({ nome: "", telefone: "", grupo_id: "", canal_notificacao: "whatsapp", recebe_via_web: true, recebe_via_whatsapp: true }); qc.invalidateQueries({ queryKey: ["corretores"] }); },
+  });
+  const flagMut = useMutation({
+    mutationFn: (p: { id: string; patch: any }) => updateFn({ data: p }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["corretores"] }),
   });
   const toggleMut = useMutation({
     mutationFn: (c: any) => updateFn({ data: { id: c.id, patch: { ativo: !c.ativo } } }),
@@ -76,6 +81,16 @@ function Corretores() {
           <option value="nenhum">Nenhum</option>
         </select>
         <Button onClick={() => form.nome && createMut.mutate()}><Plus className="mr-2 size-4" /> Adicionar</Button>
+        <div className="flex items-center gap-4 md:col-span-5">
+          <label className="flex items-center gap-2 text-xs">
+            <input type="checkbox" checked={form.recebe_via_web} onChange={(e) => setForm({ ...form, recebe_via_web: e.target.checked })} />
+            Recebe via Web
+          </label>
+          <label className="flex items-center gap-2 text-xs">
+            <input type="checkbox" checked={form.recebe_via_whatsapp} onChange={(e) => setForm({ ...form, recebe_via_whatsapp: e.target.checked })} />
+            Recebe via WhatsApp
+          </label>
+        </div>
       </Card>
 
       <div className="grid gap-2">
@@ -85,13 +100,15 @@ function Corretores() {
               <div className="flex items-center gap-2 font-medium">
                 {c.nome}
                 <Badge variant={c.ativo ? "default" : "secondary"}>{c.ativo ? "ativo" : "inativo"}</Badge>
+                {c.recebe_via_web && <Badge variant="outline" className="text-[10px]">Web</Badge>}
+                {c.recebe_via_whatsapp && <Badge variant="outline" className="text-[10px]">WhatsApp</Badge>}
               </div>
               <div className="text-xs text-muted-foreground">
                 {c.telefone ?? "—"} · {c.grupos?.nome ?? "Sem grupo"} · {c.canal_notificacao}
               </div>
             </div>
             <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={() => toggleMut.mutate(c)}>
+              <Button size="sm" variant="outline" onClick={() => flagMut.mutate({ id: c.id, patch: { ativo: !c.ativo } })}>
                 {c.ativo ? "Desativar" : "Ativar"}
               </Button>
               <Button size="icon" variant="ghost" onClick={() => delMut.mutate(c.id)}>
