@@ -58,6 +58,8 @@ function AuthPage() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       }
+      // Registra login (se for corretor vinculado, notifica gerente). Silencioso.
+      registrarLoginCorretor().catch(() => {});
       navigate({ to: "/dashboard", replace: true });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Falha na autenticação");
