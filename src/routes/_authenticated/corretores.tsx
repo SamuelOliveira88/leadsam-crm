@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Trash2, Plus, Layers, X } from "lucide-react";
-import { listarCorretores, criarCorretor, atualizarCorretor, excluirCorretor } from "@/lib/corretores.functions";
+import { listarCorretores, criarCorretor, atualizarCorretor, excluirCorretor, convidarCorretor } from "@/lib/corretores.functions";
 import { listarGrupos, criarGrupo, excluirGrupo } from "@/lib/grupos.functions";
 import { meuPerfil } from "@/lib/perfis.functions";
 import { Card } from "@/components/ui/card";
