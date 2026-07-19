@@ -80,8 +80,9 @@ function Corretores() {
         )}
       </div>
 
-      <Card className="grid gap-2 p-4 md:grid-cols-5">
+      <Card className="grid gap-2 p-4 md:grid-cols-6">
         <Input placeholder="Nome" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
+        <Input placeholder="E-mail (para convite)" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
         <Input placeholder="WhatsApp (55...)" value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} />
         <select className="rounded-md border bg-background px-3 py-2 text-sm" value={form.grupo_id} onChange={(e) => setForm({ ...form, grupo_id: e.target.value })}>
           <option value="">Sem grupo</option>
@@ -93,8 +94,20 @@ function Corretores() {
           <option value="ambos">Ambos</option>
           <option value="nenhum">Nenhum</option>
         </select>
-        <Button onClick={() => form.nome && createMut.mutate()}><Plus className="mr-2 size-4" /> Adicionar</Button>
-        <div className="flex items-center gap-4 md:col-span-5">
+        {isMaster ? (
+          <Button
+            disabled={!form.nome || !form.email || inviteMut.isPending}
+            onClick={() => inviteMut.mutate(undefined, {
+              onSuccess: () => (window as any).sonner?.success?.("Convite enviado por e-mail!"),
+              onError: (e: any) => (window as any).sonner?.error?.(e?.message ?? "Falha ao enviar convite"),
+            })}
+          >
+            <Mail className="mr-2 size-4" /> {inviteMut.isPending ? "Enviando…" : "Enviar convite"}
+          </Button>
+        ) : (
+          <Button onClick={() => form.nome && createMut.mutate()}><Plus className="mr-2 size-4" /> Adicionar</Button>
+        )}
+        <div className="flex flex-wrap items-center gap-4 md:col-span-6">
           <label className="flex items-center gap-2 text-xs">
             <input type="checkbox" checked={form.recebe_via_web} onChange={(e) => setForm({ ...form, recebe_via_web: e.target.checked })} />
             Recebe via Web
@@ -103,8 +116,14 @@ function Corretores() {
             <input type="checkbox" checked={form.recebe_via_whatsapp} onChange={(e) => setForm({ ...form, recebe_via_whatsapp: e.target.checked })} />
             Recebe via WhatsApp
           </label>
+          {isMaster && (
+            <span className="text-xs text-muted-foreground">
+              O corretor receberá um e-mail com link para definir a senha e acessar o app.
+            </span>
+          )}
         </div>
       </Card>
+
 
       <div className="grid gap-2">
         {(data ?? []).map((c: any) => (
