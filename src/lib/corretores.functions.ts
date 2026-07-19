@@ -54,3 +54,57 @@ export const excluirCorretor = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+export const convidarCorretor = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    nome: z.string().min(1),
+    email: z.string().email(),
+    telefone: z.string().optional().nullable(),
+    grupo_id: z.string().uuid().nullable().optional(),
+    canal_notificacao: z.enum(["whatsapp", "email", "ambos", "nenhum"]).default("whatsapp"),
+    recebe_via_web: z.boolean().default(true),
+    recebe_via_whatsapp: z.boolean().default(true),
+    redirect_to: z.string().url(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    // Só o master pode convidar
+    const { data: perfil } = await context.supabase
+      .from("perfis").select("role").eq("id", context.userId).maybeSingle();
+    if (perfil?.role !== "master") throw new Error("Apenas o administrador pode convidar corretores.");
+
+    // 1) Cria o registro do corretor (sem user_id ainda)
+    const { data: corretor, error: cErr } = await context.supabase
+      .from("corretores")
+      .insert({
+        nome: data.nome,
+        telefone: data.telefone ?? null,
+        grupo_id: data.grupo_id ?? null,
+        ativo: true,
+        canal_notificacao: data.canal_notificacao,
+        recebe_via_web: data.recebe_via_web,
+        recebe_via_whatsapp: data.recebe_via_whatsapp,
+      })
+      .select()
+      .single();
+    if (cErr) throw new Error(cErr.message);
+
+    // 2) Envia convite por e-mail com metadados que ligam a conta ao corretor
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error: iErr } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, {
+      redirectTo: data.redirect_to,
+      data: {
+        nome: data.nome,
+        role: "corretor",
+        grupo_id: data.grupo_id ?? null,
+        corretor_id: corretor.id,
+      },
+    });
+    if (iErr) {
+      // Rollback do corretor para não deixar registro órfão
+      await context.supabase.from("corretores").delete().eq("id", corretor.id);
+      throw new Error(iErr.message);
+    }
+    return { ok: true, corretor };
+  });
+
