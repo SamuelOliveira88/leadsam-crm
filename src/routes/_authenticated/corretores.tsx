@@ -100,8 +100,8 @@ function Corretores() {
           <Button
             disabled={!form.nome || !form.email || inviteMut.isPending}
             onClick={() => inviteMut.mutate(undefined, {
-              onSuccess: () => (window as any).sonner?.success?.("Convite enviado por e-mail!"),
-              onError: (e: any) => (window as any).sonner?.error?.(e?.message ?? "Falha ao enviar convite"),
+              onSuccess: () => toast.success("Convite enviado por e-mail!"),
+              onError: (e: any) => toast.error(e?.message ?? "Falha ao enviar convite"),
             })}
           >
             <Mail className="mr-2 size-4" /> {inviteMut.isPending ? "Enviando…" : "Enviar convite"}
@@ -109,6 +109,7 @@ function Corretores() {
         ) : (
           <Button onClick={() => form.nome && createMut.mutate()}><Plus className="mr-2 size-4" /> Adicionar</Button>
         )}
+
         <div className="flex flex-wrap items-center gap-4 md:col-span-6">
           <label className="flex items-center gap-2 text-xs">
             <input type="checkbox" checked={form.recebe_via_web} onChange={(e) => setForm({ ...form, recebe_via_web: e.target.checked })} />
