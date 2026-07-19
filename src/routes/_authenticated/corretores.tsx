@@ -30,7 +30,10 @@ function Corretores() {
   const isMaster = perfil?.role === "master";
   const [showGrupos, setShowGrupos] = useState(false);
 
-  const [form, setForm] = useState({ nome: "", telefone: "", grupo_id: "", canal_notificacao: "whatsapp" as const, recebe_via_web: true, recebe_via_whatsapp: true });
+  const [form, setForm] = useState({ nome: "", email: "", telefone: "", grupo_id: "", canal_notificacao: "whatsapp" as const, recebe_via_web: true, recebe_via_whatsapp: true });
+  const inviteFn = useServerFn(convidarCorretor);
+
+  const resetForm = () => setForm({ nome: "", email: "", telefone: "", grupo_id: "", canal_notificacao: "whatsapp", recebe_via_web: true, recebe_via_whatsapp: true });
 
   const createMut = useMutation({
     mutationFn: () => createFn({ data: {
@@ -38,8 +41,18 @@ function Corretores() {
       grupo_id: form.grupo_id || null, ativo: true, canal_notificacao: form.canal_notificacao,
       recebe_via_web: form.recebe_via_web, recebe_via_whatsapp: form.recebe_via_whatsapp,
     } }),
-    onSuccess: () => { setForm({ nome: "", telefone: "", grupo_id: "", canal_notificacao: "whatsapp", recebe_via_web: true, recebe_via_whatsapp: true }); qc.invalidateQueries({ queryKey: ["corretores"] }); },
+    onSuccess: () => { resetForm(); qc.invalidateQueries({ queryKey: ["corretores"] }); },
   });
+  const inviteMut = useMutation({
+    mutationFn: () => inviteFn({ data: {
+      nome: form.nome, email: form.email, telefone: form.telefone || null,
+      grupo_id: form.grupo_id || null, canal_notificacao: form.canal_notificacao,
+      recebe_via_web: form.recebe_via_web, recebe_via_whatsapp: form.recebe_via_whatsapp,
+      redirect_to: `${window.location.origin}/set-password`,
+    } }),
+    onSuccess: () => { resetForm(); qc.invalidateQueries({ queryKey: ["corretores"] }); },
+  });
+
   const flagMut = useMutation({
     mutationFn: (p: { id: string; patch: any }) => updateFn({ data: p }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["corretores"] }),
