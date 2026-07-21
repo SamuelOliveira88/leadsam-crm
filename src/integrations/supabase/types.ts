@@ -99,6 +99,44 @@ export type Database = {
           },
         ]
       }
+      empreendimentos: {
+        Row: {
+          ativo: boolean
+          cidade: string | null
+          created_at: string
+          grupo_id: string | null
+          id: string
+          incorporadora: string | null
+          nome: string
+        }
+        Insert: {
+          ativo?: boolean
+          cidade?: string | null
+          created_at?: string
+          grupo_id?: string | null
+          id?: string
+          incorporadora?: string | null
+          nome: string
+        }
+        Update: {
+          ativo?: boolean
+          cidade?: string | null
+          created_at?: string
+          grupo_id?: string | null
+          id?: string
+          incorporadora?: string | null
+          nome?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "empreendimentos_grupo_id_fkey"
+            columns: ["grupo_id"]
+            isOneToOne: false
+            referencedRelation: "grupos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fila_notificacoes: {
         Row: {
           corretor_id: string | null
@@ -432,6 +470,89 @@ export type Database = {
           },
         ]
       }
+      unidades: {
+        Row: {
+          andar: number
+          area_m2: number | null
+          cliente_nome: string | null
+          corretor_id: string | null
+          created_at: string
+          empreendimento_id: string
+          id: string
+          lead_id: string | null
+          numero: string
+          observacoes: string | null
+          reservado_em: string | null
+          status: string
+          tipologia: string | null
+          torre: string
+          valor: number | null
+        }
+        Insert: {
+          andar?: number
+          area_m2?: number | null
+          cliente_nome?: string | null
+          corretor_id?: string | null
+          created_at?: string
+          empreendimento_id: string
+          id?: string
+          lead_id?: string | null
+          numero: string
+          observacoes?: string | null
+          reservado_em?: string | null
+          status?: string
+          tipologia?: string | null
+          torre?: string
+          valor?: number | null
+        }
+        Update: {
+          andar?: number
+          area_m2?: number | null
+          cliente_nome?: string | null
+          corretor_id?: string | null
+          created_at?: string
+          empreendimento_id?: string
+          id?: string
+          lead_id?: string | null
+          numero?: string
+          observacoes?: string | null
+          reservado_em?: string | null
+          status?: string
+          tipologia?: string | null
+          torre?: string
+          valor?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unidades_corretor_id_fkey"
+            columns: ["corretor_id"]
+            isOneToOne: false
+            referencedRelation: "corretores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unidades_corretor_id_fkey"
+            columns: ["corretor_id"]
+            isOneToOne: false
+            referencedRelation: "dashboard_corretores"
+            referencedColumns: ["corretor_id"]
+          },
+          {
+            foreignKeyName: "unidades_empreendimento_id_fkey"
+            columns: ["empreendimento_id"]
+            isOneToOne: false
+            referencedRelation: "empreendimentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unidades_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       dashboard_corretores: {
@@ -508,8 +629,17 @@ export type Database = {
       }
       liberar_leads_inativos_6d: { Args: never; Returns: undefined }
       liberar_leads_represados: { Args: never; Returns: undefined }
+      liberar_unidade: { Args: { p_unidade_id: string }; Returns: undefined }
       reatribuir_leads_sem_visualizacao: { Args: never; Returns: undefined }
       registrar_login_corretor: { Args: never; Returns: undefined }
+      reservar_unidade: {
+        Args: {
+          p_cliente_nome?: string
+          p_lead_id?: string
+          p_unidade_id: string
+        }
+        Returns: undefined
+      }
       sou_corretor_do_lead: { Args: { p_lead_id: string }; Returns: boolean }
     }
     Enums: {
