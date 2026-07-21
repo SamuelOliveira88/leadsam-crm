@@ -134,6 +134,14 @@ export function AppShell({ user, children }: { user: User; children: React.React
               </Link>
             );
           })}
+          {isGerenteOuMaster && (
+            <Link to="/acesso" className={cn(
+              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
+              pathname.startsWith("/acesso") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground hover:bg-sidebar-accent/60",
+            )}>
+              <ShieldCheck className="size-4" /> Acesso
+            </Link>
+          )}
           {isMaster && (
             <>
               <div className="mt-4 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Master</div>
