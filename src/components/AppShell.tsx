@@ -20,8 +20,7 @@ const BASE_NAV = [
   { to: "/horarios", label: "Horários", icon: Clock },
 ] as const;
 
-function agoraDentroDoHorarioSP(): boolean {
-  // 08:00 a 09:30 no fuso America/Sao_Paulo
+function minutosAgoraSP(): number {
   const parts = new Intl.DateTimeFormat("pt-BR", {
     timeZone: "America/Sao_Paulo",
     hour: "2-digit",
@@ -30,8 +29,12 @@ function agoraDentroDoHorarioSP(): boolean {
   }).formatToParts(new Date());
   const h = Number(parts.find((p) => p.type === "hour")?.value ?? "0");
   const m = Number(parts.find((p) => p.type === "minute")?.value ?? "0");
-  const minutos = h * 60 + m;
-  return minutos >= 8 * 60 && minutos <= 9 * 60 + 30;
+  return h * 60 + m;
+}
+
+function toMinutos(t: string): number {
+  const [h, m] = t.split(":").map(Number);
+  return (h ?? 0) * 60 + (m ?? 0);
 }
 
 export function AppShell({ user, children }: { user: User; children: React.ReactNode }) {
@@ -39,6 +42,7 @@ export function AppShell({ user, children }: { user: User; children: React.React
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const fetchPerfil = useServerFn(meuPerfil);
   const fetchNotif = useServerFn(listarNotificacoes);
+  const fetchConfig = useServerFn(getConfigAcesso);
   const { data: perfil } = useQuery({ queryKey: ["meuPerfil"], queryFn: () => fetchPerfil() });
   const { data: notifs } = useQuery({
     queryKey: ["notificacoes"],
@@ -46,24 +50,38 @@ export function AppShell({ user, children }: { user: User; children: React.React
     refetchInterval: 30000,
     enabled: !!perfil,
   });
+  const { data: config } = useQuery({
+    queryKey: ["config_acesso"],
+    queryFn: () => fetchConfig(),
+    refetchInterval: 60000,
+    enabled: !!perfil,
+  });
   const isMaster = perfil?.role === "master";
+  const isGerenteOuMaster = perfil?.role === "master" || perfil?.role === "gerente";
   const naoLidas = (notifs ?? []).filter((n) => !n.lida).length;
 
-  // Bloqueio de horário: todos exceto master
-  const [dentroHorario, setDentroHorario] = useState<boolean>(true);
-  useEffect(() => {
-    const check = () => setDentroHorario(agoraDentroDoHorarioSP());
-    check();
-    const t = setInterval(check, 30000);
-    return () => clearInterval(t);
-  }, []);
+  const [tick, setTick] = useState(0);
+  useEffect(() => { const t = setInterval(() => setTick((x) => x + 1), 30000); return () => clearInterval(t); }, []);
+
+  function permitido(): boolean {
+    if (!config) return true;
+    if (!config.restringir_horario) return true;
+    if (config.liberado_ate && new Date(config.liberado_ate).getTime() > Date.now()) return true;
+    const agora = minutosAgoraSP();
+    const ini = toMinutos(String(config.hora_inicio).slice(0, 5));
+    const fim = toMinutos(String(config.hora_fim).slice(0, 5));
+    return agora >= ini && agora <= fim;
+    void tick;
+  }
 
   async function handleLogout() {
     await supabase.auth.signOut();
     router.navigate({ to: "/auth", replace: true });
   }
 
-  if (perfil && !isMaster && !dentroHorario) {
+  if (perfil && !isMaster && !permitido()) {
+    const ini = String(config?.hora_inicio ?? "08:00:00").slice(0, 5);
+    const fim = String(config?.hora_fim ?? "09:30:00").slice(0, 5);
     return (
       <div className="grid min-h-screen place-items-center bg-background p-6">
         <div className="max-w-md rounded-2xl border bg-card p-8 text-center shadow-soft">
@@ -72,10 +90,10 @@ export function AppShell({ user, children }: { user: User; children: React.React
           </div>
           <h1 className="mb-2 text-xl font-bold">Fora do horário de acesso</h1>
           <p className="text-sm text-muted-foreground">
-            O acesso ao sistema para {perfil.role === "gerente" ? "gerentes" : "corretores"} está disponível
-            <br /><strong>somente das 08:00 às 09:30</strong> (horário de Brasília).
+            O acesso para {perfil.role === "gerente" ? "gerentes" : "corretores"} está disponível
+            <br /><strong>das {ini} às {fim}</strong> (horário de Brasília).
           </p>
-          <p className="mt-2 text-xs text-muted-foreground">Volte no horário para consultar seus leads.</p>
+          <p className="mt-2 text-xs text-muted-foreground">Peça ao master ou gerente para liberar acesso imediato, se necessário.</p>
           <Button className="mt-6 w-full" onClick={handleLogout}>Sair</Button>
         </div>
       </div>
