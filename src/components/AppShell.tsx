@@ -144,7 +144,7 @@ export function AppShell({ user, children }: { user: User; children: React.React
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 backdrop-blur md:hidden">
-        <div className="grid grid-cols-6">
+        <div className="grid grid-cols-7">
           {nav.map((n) => {
             const Icon = n.icon;
             const active = pathname === n.to || pathname.startsWith(n.to + "/");
