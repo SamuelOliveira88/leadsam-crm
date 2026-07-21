@@ -18,6 +18,7 @@ import { Route as AuthenticatedLeadsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedImportarRouteImport } from './routes/_authenticated/importar'
 import { Route as AuthenticatedHorariosRouteImport } from './routes/_authenticated/horarios'
 import { Route as AuthenticatedGruposRouteImport } from './routes/_authenticated/grupos'
+import { Route as AuthenticatedEspelhoRouteImport } from './routes/_authenticated/espelho'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
 import { Route as ApiPublicWebhookRouteImport } from './routes/api/public/webhook'
@@ -67,6 +68,11 @@ const AuthenticatedGruposRoute = AuthenticatedGruposRouteImport.update({
   path: '/grupos',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedEspelhoRoute = AuthenticatedEspelhoRouteImport.update({
+  id: '/espelho',
+  path: '/espelho',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -89,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/set-password': typeof SetPasswordRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/espelho': typeof AuthenticatedEspelhoRoute
   '/grupos': typeof AuthenticatedGruposRoute
   '/horarios': typeof AuthenticatedHorariosRoute
   '/importar': typeof AuthenticatedImportarRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/set-password': typeof SetPasswordRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/espelho': typeof AuthenticatedEspelhoRoute
   '/grupos': typeof AuthenticatedGruposRoute
   '/horarios': typeof AuthenticatedHorariosRoute
   '/importar': typeof AuthenticatedImportarRoute
@@ -117,6 +125,7 @@ export interface FileRoutesById {
   '/set-password': typeof SetPasswordRoute
   '/_authenticated/corretores': typeof AuthenticatedCorretoresRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/espelho': typeof AuthenticatedEspelhoRoute
   '/_authenticated/grupos': typeof AuthenticatedGruposRoute
   '/_authenticated/horarios': typeof AuthenticatedHorariosRoute
   '/_authenticated/importar': typeof AuthenticatedImportarRoute
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/set-password'
     | '/corretores'
     | '/dashboard'
+    | '/espelho'
     | '/grupos'
     | '/horarios'
     | '/importar'
@@ -145,6 +155,7 @@ export interface FileRouteTypes {
     | '/set-password'
     | '/corretores'
     | '/dashboard'
+    | '/espelho'
     | '/grupos'
     | '/horarios'
     | '/importar'
@@ -159,6 +170,7 @@ export interface FileRouteTypes {
     | '/set-password'
     | '/_authenticated/corretores'
     | '/_authenticated/dashboard'
+    | '/_authenticated/espelho'
     | '/_authenticated/grupos'
     | '/_authenticated/horarios'
     | '/_authenticated/importar'
@@ -240,6 +252,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGruposRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/espelho': {
+      id: '/_authenticated/espelho'
+      path: '/espelho'
+      fullPath: '/espelho'
+      preLoaderRoute: typeof AuthenticatedEspelhoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -267,6 +286,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedCorretoresRoute: typeof AuthenticatedCorretoresRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedEspelhoRoute: typeof AuthenticatedEspelhoRoute
   AuthenticatedGruposRoute: typeof AuthenticatedGruposRoute
   AuthenticatedHorariosRoute: typeof AuthenticatedHorariosRoute
   AuthenticatedImportarRoute: typeof AuthenticatedImportarRoute
@@ -277,6 +297,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCorretoresRoute: AuthenticatedCorretoresRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedEspelhoRoute: AuthenticatedEspelhoRoute,
   AuthenticatedGruposRoute: AuthenticatedGruposRoute,
   AuthenticatedHorariosRoute: AuthenticatedHorariosRoute,
   AuthenticatedImportarRoute: AuthenticatedImportarRoute,
