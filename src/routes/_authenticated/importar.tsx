@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 
 export const Route = createFileRoute("/_authenticated/importar")({
-  head: () => ({ meta: [{ title: "Importar leads — ImobLead" }] }),
+  head: () => ({ meta: [{ title: "Importar leads — Alexandria Leds" }] }),
   component: Importar,
 });
 

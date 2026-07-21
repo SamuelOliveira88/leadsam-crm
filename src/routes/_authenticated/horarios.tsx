@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 const DIAS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 export const Route = createFileRoute("/_authenticated/horarios")({
-  head: () => ({ meta: [{ title: "Horários — ImobLead" }] }),
+  head: () => ({ meta: [{ title: "Horários — Alexandria Leds" }] }),
   component: Horarios,
 });
 

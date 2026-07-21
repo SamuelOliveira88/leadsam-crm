@@ -14,7 +14,7 @@ import { toast } from "sonner";
 
 
 export const Route = createFileRoute("/_authenticated/corretores")({
-  head: () => ({ meta: [{ title: "Corretores — ImobLead" }] }),
+  head: () => ({ meta: [{ title: "Corretores — Alexandria Leds" }] }),
   component: Corretores,
 });
 

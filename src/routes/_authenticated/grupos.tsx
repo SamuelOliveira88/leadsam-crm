@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/grupos")({
-  head: () => ({ meta: [{ title: "Grupos — ImobLead" }] }),
+  head: () => ({ meta: [{ title: "Grupos — Alexandria Leds" }] }),
   component: Grupos,
 });
 
