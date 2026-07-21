@@ -137,8 +137,8 @@ export const reservarUnidade = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.rpc("reservar_unidade", {
       p_unidade_id: data.unidade_id,
-      p_lead_id: data.lead_id ?? null,
-      p_cliente_nome: data.cliente_nome ?? null,
+      p_lead_id: data.lead_id ?? undefined,
+      p_cliente_nome: data.cliente_nome ?? undefined,
     });
     if (error) throw new Error(error.message);
     return { ok: true };
