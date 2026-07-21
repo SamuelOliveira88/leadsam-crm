@@ -59,9 +59,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "Alexandria Leds — CRM com IA para corretores de imóveis" },
       { property: "og:description", content: "CRM com Inteligência Artificial para corretores brasileiros. Gerencie leads, funil, agenda e dispare mensagens no WhatsApp." },
       { property: "og:type", content: "website" },
+      { property: "og:image", content: "https://leadsam-crm.lovable.app/__l5e/assets-v1/18242716-08a5-43df-8a80-116ecec6f0e9/alexandria-cover.png" },
+      { property: "og:image:alt", content: "O Império Imobiliário de Alexandria Leds" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Alexandria Leds — CRM com IA para corretores de imóveis" },
       { name: "twitter:description", content: "CRM com Inteligência Artificial para corretores brasileiros. Gerencie leads, funil, agenda e dispare mensagens no WhatsApp." },
+      { name: "twitter:image", content: "https://leadsam-crm.lovable.app/__l5e/assets-v1/18242716-08a5-43df-8a80-116ecec6f0e9/alexandria-cover.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
