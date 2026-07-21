@@ -17,7 +17,7 @@ export const listarCorretores = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("corretores")
-      .select("id, nome, telefone, grupo_id, ativo, canal_notificacao, recebe_via_web, recebe_via_whatsapp, created_at, grupos(nome)")
+      .select("id, nome, telefone, grupo_id, ativo, canal_notificacao, recebe_via_web, recebe_via_whatsapp, liberado_ate, created_at, grupos(nome)")
       .order("nome");
     if (error) throw new Error(error.message);
     return data ?? [];
@@ -106,5 +106,33 @@ export const convidarCorretor = createServerFn({ method: "POST" })
       throw new Error(iErr.message);
     }
     return { ok: true, corretor };
+  });
+
+export const liberarCorretor = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    corretor_id: z.string().uuid(),
+    minutos: z.number().int().min(5).max(24 * 60),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const ate = new Date(Date.now() + data.minutos * 60_000).toISOString();
+    const { error } = await context.supabase
+      .from("corretores")
+      .update({ liberado_ate: ate })
+      .eq("id", data.corretor_id);
+    if (error) throw new Error(error.message);
+    return { liberado_ate: ate };
+  });
+
+export const revogarLiberacaoCorretor = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ corretor_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("corretores")
+      .update({ liberado_ate: null })
+      .eq("id", data.corretor_id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });
 

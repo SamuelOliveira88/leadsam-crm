@@ -86,6 +86,7 @@ export type Database = {
           created_at: string
           grupo_id: string | null
           id: string
+          liberado_ate: string | null
           nome: string
           recebe_via_web: boolean
           recebe_via_whatsapp: boolean
@@ -98,6 +99,7 @@ export type Database = {
           created_at?: string
           grupo_id?: string | null
           id?: string
+          liberado_ate?: string | null
           nome: string
           recebe_via_web?: boolean
           recebe_via_whatsapp?: boolean
@@ -110,6 +112,7 @@ export type Database = {
           created_at?: string
           grupo_id?: string | null
           id?: string
+          liberado_ate?: string | null
           nome?: string
           recebe_via_web?: boolean
           recebe_via_whatsapp?: boolean

@@ -65,6 +65,8 @@ export function AppShell({ user, children }: { user: User; children: React.React
 
   function permitido(): boolean {
     if (!config) return true;
+    const liberadoPessoal = (perfil as any)?.liberado_ate;
+    if (liberadoPessoal && new Date(liberadoPessoal).getTime() > Date.now()) return true;
     if (!config.restringir_horario) return true;
     if (config.liberado_ate && new Date(config.liberado_ate).getTime() > Date.now()) return true;
     const agora = minutosAgoraSP();

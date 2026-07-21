@@ -2,9 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { Clock, ShieldCheck, Unlock } from "lucide-react";
+import { Clock, ShieldCheck, Unlock, UserCheck } from "lucide-react";
 import { meuPerfil } from "@/lib/perfis.functions";
 import { getConfigAcesso, salvarConfigAcesso, liberarAgora, revogarLiberacao } from "@/lib/config-acesso.functions";
+import { listarCorretores, liberarCorretor, revogarLiberacaoCorretor } from "@/lib/corretores.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -22,14 +23,20 @@ function AcessoPage() {
   const salvarFn = useServerFn(salvarConfigAcesso);
   const liberarFn = useServerFn(liberarAgora);
   const revogarFn = useServerFn(revogarLiberacao);
+  const listCorretoresFn = useServerFn(listarCorretores);
+  const liberarCorretorFn = useServerFn(liberarCorretor);
+  const revogarCorretorFn = useServerFn(revogarLiberacaoCorretor);
 
   const { data: perfil } = useQuery({ queryKey: ["meuPerfil"], queryFn: () => perfilFn() });
   const { data: config } = useQuery({ queryKey: ["config_acesso"], queryFn: () => getFn() });
+  const { data: corretores } = useQuery({ queryKey: ["corretores"], queryFn: () => listCorretoresFn() });
 
   const [restringir, setRestringir] = useState(true);
   const [inicio, setInicio] = useState("08:00");
   const [fim, setFim] = useState("09:30");
   const [minutos, setMinutos] = useState(60);
+  const [corretorSel, setCorretorSel] = useState<string>("");
+  const [minutosCorretor, setMinutosCorretor] = useState(60);
 
   useEffect(() => {
     if (!config) return;
@@ -58,6 +65,17 @@ function AcessoPage() {
   const revogar = useMutation({
     mutationFn: () => revogarFn(),
     onSuccess: () => { toast.success("Liberação revogada"); qc.invalidateQueries({ queryKey: ["config_acesso"] }); },
+  });
+
+  const liberarUm = useMutation({
+    mutationFn: (p: { corretor_id: string; minutos: number }) => liberarCorretorFn({ data: p }),
+    onSuccess: () => { toast.success("Corretor liberado"); qc.invalidateQueries({ queryKey: ["corretores"] }); },
+    onError: (e: any) => toast.error(e?.message ?? "Erro"),
+  });
+
+  const revogarUm = useMutation({
+    mutationFn: (corretor_id: string) => revogarCorretorFn({ data: { corretor_id } }),
+    onSuccess: () => { toast.success("Liberação removida"); qc.invalidateQueries({ queryKey: ["corretores"] }); },
   });
 
   if (perfil && perfil.role !== "master" && perfil.role !== "gerente") {
@@ -105,6 +123,70 @@ function AcessoPage() {
           )}
         </div>
       </div>
+
+      {/* Liberação por corretor */}
+      <div className="rounded-2xl border bg-card p-6 shadow-soft">
+        <div className="mb-4 flex items-center gap-2">
+          <UserCheck className="size-5 text-primary" />
+          <h2 className="text-lg font-semibold">Liberar um corretor específico</h2>
+        </div>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Escolha um corretor e libere o acesso apenas para ele, mesmo fora do horário padrão.
+        </p>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="min-w-[220px] flex-1">
+            <Label className="text-xs">Corretor</Label>
+            <select
+              className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+              value={corretorSel}
+              onChange={(e) => setCorretorSel(e.target.value)}
+            >
+              <option value="">Selecione…</option>
+              {(corretores ?? []).map((c: any) => {
+                const ativo = c.liberado_ate && new Date(c.liberado_ate).getTime() > Date.now();
+                return (
+                  <option key={c.id} value={c.id}>
+                    {c.nome} {ativo ? "· ✅ liberado" : ""}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+          <div>
+            <Label className="text-xs">Duração (minutos)</Label>
+            <Input type="number" min={5} max={1440} value={minutosCorretor} onChange={(e) => setMinutosCorretor(Number(e.target.value))} className="w-32" />
+          </div>
+          <Button
+            disabled={!corretorSel || liberarUm.isPending}
+            onClick={() => liberarUm.mutate({ corretor_id: corretorSel, minutos: minutosCorretor })}
+          >
+            Liberar
+          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" disabled={!corretorSel} onClick={() => liberarUm.mutate({ corretor_id: corretorSel, minutos: 60 })}>1h</Button>
+            <Button variant="outline" disabled={!corretorSel} onClick={() => liberarUm.mutate({ corretor_id: corretorSel, minutos: 240 })}>4h</Button>
+            <Button variant="outline" disabled={!corretorSel} onClick={() => liberarUm.mutate({ corretor_id: corretorSel, minutos: 1440 })}>24h</Button>
+          </div>
+        </div>
+
+        {(corretores ?? []).some((c: any) => c.liberado_ate && new Date(c.liberado_ate).getTime() > Date.now()) && (
+          <div className="mt-4 space-y-2">
+            <div className="text-xs font-medium text-muted-foreground">Liberações ativas</div>
+            {(corretores ?? [])
+              .filter((c: any) => c.liberado_ate && new Date(c.liberado_ate).getTime() > Date.now())
+              .map((c: any) => (
+                <div key={c.id} className="flex items-center justify-between rounded-lg border p-3 text-sm">
+                  <div>
+                    <div className="font-medium">{c.nome}</div>
+                    <div className="text-xs text-muted-foreground">até {new Date(c.liberado_ate).toLocaleString("pt-BR")}</div>
+                  </div>
+                  <Button size="sm" variant="ghost" onClick={() => revogarUm.mutate(c.id)}>Revogar</Button>
+                </div>
+              ))}
+          </div>
+        )}
+      </div>
+
 
       {/* Regra padrão */}
       <div className="rounded-2xl border bg-card p-6 shadow-soft">
