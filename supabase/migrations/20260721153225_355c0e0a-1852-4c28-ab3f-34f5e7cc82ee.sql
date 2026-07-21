@@ -1,0 +1,1 @@
+ALTER TABLE public.corretores ADD COLUMN IF NOT EXISTS liberado_ate timestamptz;
