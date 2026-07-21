@@ -19,6 +19,7 @@ export type Database = {
           ativo: boolean
           created_at: string
           empreendimento: string | null
+          empresa_id: string | null
           grupo_id: string | null
           id: string
           meta_campaign_id: string | null
@@ -28,6 +29,7 @@ export type Database = {
           ativo?: boolean
           created_at?: string
           empreendimento?: string | null
+          empresa_id?: string | null
           grupo_id?: string | null
           id?: string
           meta_campaign_id?: string | null
@@ -37,12 +39,20 @@ export type Database = {
           ativo?: boolean
           created_at?: string
           empreendimento?: string | null
+          empresa_id?: string | null
           grupo_id?: string | null
           id?: string
           meta_campaign_id?: string | null
           nome_campanha?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "campanhas_anuncios_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "campanhas_anuncios_grupo_id_fkey"
             columns: ["grupo_id"]
@@ -54,6 +64,7 @@ export type Database = {
       }
       config_acesso: {
         Row: {
+          empresa_id: string | null
           hora_fim: string
           hora_inicio: string
           id: number
@@ -62,6 +73,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          empresa_id?: string | null
           hora_fim?: string
           hora_inicio?: string
           id?: number
@@ -70,6 +82,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          empresa_id?: string | null
           hora_fim?: string
           hora_inicio?: string
           id?: number
@@ -77,13 +90,22 @@ export type Database = {
           restringir_horario?: boolean
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "config_acesso_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       corretores: {
         Row: {
           ativo: boolean
           canal_notificacao: string
           created_at: string
+          empresa_id: string | null
           grupo_id: string | null
           id: string
           liberado_ate: string | null
@@ -97,6 +119,7 @@ export type Database = {
           ativo?: boolean
           canal_notificacao?: string
           created_at?: string
+          empresa_id?: string | null
           grupo_id?: string | null
           id?: string
           liberado_ate?: string | null
@@ -110,6 +133,7 @@ export type Database = {
           ativo?: boolean
           canal_notificacao?: string
           created_at?: string
+          empresa_id?: string | null
           grupo_id?: string | null
           id?: string
           liberado_ate?: string | null
@@ -120,6 +144,13 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "corretores_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "corretores_grupo_id_fkey"
             columns: ["grupo_id"]
@@ -134,6 +165,7 @@ export type Database = {
           ativo: boolean
           cidade: string | null
           created_at: string
+          empresa_id: string | null
           grupo_id: string | null
           id: string
           incorporadora: string | null
@@ -143,6 +175,7 @@ export type Database = {
           ativo?: boolean
           cidade?: string | null
           created_at?: string
+          empresa_id?: string | null
           grupo_id?: string | null
           id?: string
           incorporadora?: string | null
@@ -152,12 +185,20 @@ export type Database = {
           ativo?: boolean
           cidade?: string | null
           created_at?: string
+          empresa_id?: string | null
           grupo_id?: string | null
           id?: string
           incorporadora?: string | null
           nome?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "empreendimentos_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "empreendimentos_grupo_id_fkey"
             columns: ["grupo_id"]
@@ -167,10 +208,44 @@ export type Database = {
           },
         ]
       }
+      empresas: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          id: string
+          limite_corretores: number | null
+          limite_leads_mes: number | null
+          nome: string
+          plano: string
+          slug: string | null
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          limite_corretores?: number | null
+          limite_leads_mes?: number | null
+          nome: string
+          plano?: string
+          slug?: string | null
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          limite_corretores?: number | null
+          limite_leads_mes?: number | null
+          nome?: string
+          plano?: string
+          slug?: string | null
+        }
+        Relationships: []
+      }
       fila_notificacoes: {
         Row: {
           corretor_id: string | null
           created_at: string
+          empresa_id: string | null
           enviado_em: string | null
           id: string
           lead_id: string | null
@@ -180,6 +255,7 @@ export type Database = {
         Insert: {
           corretor_id?: string | null
           created_at?: string
+          empresa_id?: string | null
           enviado_em?: string | null
           id?: string
           lead_id?: string | null
@@ -189,6 +265,7 @@ export type Database = {
         Update: {
           corretor_id?: string | null
           created_at?: string
+          empresa_id?: string | null
           enviado_em?: string | null
           id?: string
           lead_id?: string | null
@@ -211,6 +288,13 @@ export type Database = {
             referencedColumns: ["corretor_id"]
           },
           {
+            foreignKeyName: "fila_notificacoes_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fila_notificacoes_lead_id_fkey"
             columns: ["lead_id"]
             isOneToOne: false
@@ -222,26 +306,38 @@ export type Database = {
       grupos: {
         Row: {
           created_at: string
+          empresa_id: string | null
           id: string
           nome: string
         }
         Insert: {
           created_at?: string
+          empresa_id?: string | null
           id?: string
           nome: string
         }
         Update: {
           created_at?: string
+          empresa_id?: string | null
           id?: string
           nome?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "grupos_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       horarios_atendimento: {
         Row: {
           ativo: boolean
           created_at: string
           dia_semana: number
+          empresa_id: string | null
           grupo_id: string
           hora_fim: string
           hora_inicio: string
@@ -251,6 +347,7 @@ export type Database = {
           ativo?: boolean
           created_at?: string
           dia_semana: number
+          empresa_id?: string | null
           grupo_id: string
           hora_fim?: string
           hora_inicio?: string
@@ -260,12 +357,20 @@ export type Database = {
           ativo?: boolean
           created_at?: string
           dia_semana?: number
+          empresa_id?: string | null
           grupo_id?: string
           hora_fim?: string
           hora_inicio?: string
           id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "horarios_atendimento_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "horarios_atendimento_grupo_id_fkey"
             columns: ["grupo_id"]
@@ -279,6 +384,7 @@ export type Database = {
         Row: {
           autor_id: string | null
           created_at: string
+          empresa_id: string | null
           id: string
           lead_id: string
           texto: string
@@ -286,6 +392,7 @@ export type Database = {
         Insert: {
           autor_id?: string | null
           created_at?: string
+          empresa_id?: string | null
           id?: string
           lead_id: string
           texto: string
@@ -293,11 +400,19 @@ export type Database = {
         Update: {
           autor_id?: string | null
           created_at?: string
+          empresa_id?: string | null
           id?: string
           lead_id?: string
           texto?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "lead_notas_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "lead_notas_lead_id_fkey"
             columns: ["lead_id"]
@@ -318,6 +433,7 @@ export type Database = {
           created_at: string
           data_atividade: string | null
           email: string | null
+          empresa_id: string | null
           etapa_funil: string | null
           fonte: string | null
           grupo_id: string | null
@@ -344,6 +460,7 @@ export type Database = {
           created_at?: string
           data_atividade?: string | null
           email?: string | null
+          empresa_id?: string | null
           etapa_funil?: string | null
           fonte?: string | null
           grupo_id?: string | null
@@ -370,6 +487,7 @@ export type Database = {
           created_at?: string
           data_atividade?: string | null
           email?: string | null
+          empresa_id?: string | null
           etapa_funil?: string | null
           fonte?: string | null
           grupo_id?: string | null
@@ -400,6 +518,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "dashboard_corretores"
             referencedColumns: ["corretor_id"]
+          },
+          {
+            foreignKeyName: "leads_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "leads_grupo_id_fkey"
@@ -455,6 +580,7 @@ export type Database = {
         Row: {
           corretor_id: string | null
           created_at: string
+          empresa_id: string | null
           grupo_id: string | null
           id: string
           nome: string | null
@@ -463,6 +589,7 @@ export type Database = {
         Insert: {
           corretor_id?: string | null
           created_at?: string
+          empresa_id?: string | null
           grupo_id?: string | null
           id: string
           nome?: string | null
@@ -471,6 +598,7 @@ export type Database = {
         Update: {
           corretor_id?: string | null
           created_at?: string
+          empresa_id?: string | null
           grupo_id?: string | null
           id?: string
           nome?: string | null
@@ -492,6 +620,13 @@ export type Database = {
             referencedColumns: ["corretor_id"]
           },
           {
+            foreignKeyName: "perfis_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "perfis_grupo_id_fkey"
             columns: ["grupo_id"]
             isOneToOne: false
@@ -508,6 +643,7 @@ export type Database = {
           corretor_id: string | null
           created_at: string
           empreendimento_id: string
+          empresa_id: string | null
           id: string
           lead_id: string | null
           numero: string
@@ -525,6 +661,7 @@ export type Database = {
           corretor_id?: string | null
           created_at?: string
           empreendimento_id: string
+          empresa_id?: string | null
           id?: string
           lead_id?: string | null
           numero: string
@@ -542,6 +679,7 @@ export type Database = {
           corretor_id?: string | null
           created_at?: string
           empreendimento_id?: string
+          empresa_id?: string | null
           id?: string
           lead_id?: string | null
           numero?: string
@@ -572,6 +710,13 @@ export type Database = {
             columns: ["empreendimento_id"]
             isOneToOne: false
             referencedRelation: "empreendimentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unidades_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
             referencedColumns: ["id"]
           },
           {
