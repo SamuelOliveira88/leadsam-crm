@@ -53,14 +53,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1" },
-      { title: "ImobLead — CRM com IA para corretores de imóveis" },
+      { title: "Alexandria Leds — CRM com IA para corretores de imóveis" },
       { name: "description", content: "CRM com Inteligência Artificial para corretores brasileiros. Gerencie leads, funil, agenda e dispare mensagens no WhatsApp." },
       { name: "theme-color", content: "#1d5966" },
-      { property: "og:title", content: "ImobLead — CRM com IA para corretores de imóveis" },
+      { property: "og:title", content: "Alexandria Leds — CRM com IA para corretores de imóveis" },
       { property: "og:description", content: "CRM com Inteligência Artificial para corretores brasileiros. Gerencie leads, funil, agenda e dispare mensagens no WhatsApp." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "ImobLead — CRM com IA para corretores de imóveis" },
+      { name: "twitter:title", content: "Alexandria Leds — CRM com IA para corretores de imóveis" },
       { name: "twitter:description", content: "CRM com Inteligência Artificial para corretores brasileiros. Gerencie leads, funil, agenda e dispare mensagens no WhatsApp." },
     ],
     links: [

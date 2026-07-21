@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/_authenticated/notificacoes")({
-  head: () => ({ meta: [{ title: "Notificações — ImobLead" }] }),
+  head: () => ({ meta: [{ title: "Notificações — Alexandria Leds" }] }),
   component: Notificacoes,
 });
 

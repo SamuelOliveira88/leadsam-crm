@@ -6,7 +6,7 @@ import { dashboardStats } from "@/lib/leads.functions";
 import { Card } from "@/components/ui/card";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — ImobLead" }] }),
+  head: () => ({ meta: [{ title: "Dashboard — Alexandria Leds" }] }),
   component: Dashboard,
 });
 

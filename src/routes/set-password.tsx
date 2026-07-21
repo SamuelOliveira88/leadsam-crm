@@ -12,8 +12,8 @@ export const Route = createFileRoute("/set-password")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Definir senha — ImobLead" },
-      { name: "description", content: "Ative sua conta ImobLead definindo uma nova senha." },
+      { title: "Definir senha — Alexandria Leds" },
+      { name: "description", content: "Ative sua conta Alexandria Leds definindo uma nova senha." },
     ],
   }),
   component: SetPasswordPage,
@@ -77,7 +77,7 @@ function SetPasswordPage() {
           <div className="grid size-9 place-items-center rounded-lg bg-primary text-primary-foreground">
             <Building2 className="size-4" />
           </div>
-          <span className="text-lg font-bold">ImobLead</span>
+          <span className="text-lg font-bold">Alexandria Leds</span>
         </div>
 
         {status === "validando" && (

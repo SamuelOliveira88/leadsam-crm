@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/leads")({
-  head: () => ({ meta: [{ title: "Leads — ImobLead" }] }),
+  head: () => ({ meta: [{ title: "Leads — Alexandria Leds" }] }),
   component: Leads,
 });
 
