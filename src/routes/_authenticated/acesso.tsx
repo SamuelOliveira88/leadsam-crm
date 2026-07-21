@@ -67,6 +67,17 @@ function AcessoPage() {
     onSuccess: () => { toast.success("Liberação revogada"); qc.invalidateQueries({ queryKey: ["config_acesso"] }); },
   });
 
+  const liberarUm = useMutation({
+    mutationFn: (p: { corretor_id: string; minutos: number }) => liberarCorretorFn({ data: p }),
+    onSuccess: () => { toast.success("Corretor liberado"); qc.invalidateQueries({ queryKey: ["corretores"] }); },
+    onError: (e: any) => toast.error(e?.message ?? "Erro"),
+  });
+
+  const revogarUm = useMutation({
+    mutationFn: (corretor_id: string) => revogarCorretorFn({ data: { corretor_id } }),
+    onSuccess: () => { toast.success("Liberação removida"); qc.invalidateQueries({ queryKey: ["corretores"] }); },
+  });
+
   if (perfil && perfil.role !== "master" && perfil.role !== "gerente") {
     return <div className="rounded-xl border bg-card p-6">Acesso negado.</div>;
   }
