@@ -124,6 +124,70 @@ function AcessoPage() {
         </div>
       </div>
 
+      {/* Liberação por corretor */}
+      <div className="rounded-2xl border bg-card p-6 shadow-soft">
+        <div className="mb-4 flex items-center gap-2">
+          <UserCheck className="size-5 text-primary" />
+          <h2 className="text-lg font-semibold">Liberar um corretor específico</h2>
+        </div>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Escolha um corretor e libere o acesso apenas para ele, mesmo fora do horário padrão.
+        </p>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="min-w-[220px] flex-1">
+            <Label className="text-xs">Corretor</Label>
+            <select
+              className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+              value={corretorSel}
+              onChange={(e) => setCorretorSel(e.target.value)}
+            >
+              <option value="">Selecione…</option>
+              {(corretores ?? []).map((c: any) => {
+                const ativo = c.liberado_ate && new Date(c.liberado_ate).getTime() > Date.now();
+                return (
+                  <option key={c.id} value={c.id}>
+                    {c.nome} {ativo ? "· ✅ liberado" : ""}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+          <div>
+            <Label className="text-xs">Duração (minutos)</Label>
+            <Input type="number" min={5} max={1440} value={minutosCorretor} onChange={(e) => setMinutosCorretor(Number(e.target.value))} className="w-32" />
+          </div>
+          <Button
+            disabled={!corretorSel || liberarUm.isPending}
+            onClick={() => liberarUm.mutate({ corretor_id: corretorSel, minutos: minutosCorretor })}
+          >
+            Liberar
+          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" disabled={!corretorSel} onClick={() => liberarUm.mutate({ corretor_id: corretorSel, minutos: 60 })}>1h</Button>
+            <Button variant="outline" disabled={!corretorSel} onClick={() => liberarUm.mutate({ corretor_id: corretorSel, minutos: 240 })}>4h</Button>
+            <Button variant="outline" disabled={!corretorSel} onClick={() => liberarUm.mutate({ corretor_id: corretorSel, minutos: 1440 })}>24h</Button>
+          </div>
+        </div>
+
+        {(corretores ?? []).some((c: any) => c.liberado_ate && new Date(c.liberado_ate).getTime() > Date.now()) && (
+          <div className="mt-4 space-y-2">
+            <div className="text-xs font-medium text-muted-foreground">Liberações ativas</div>
+            {(corretores ?? [])
+              .filter((c: any) => c.liberado_ate && new Date(c.liberado_ate).getTime() > Date.now())
+              .map((c: any) => (
+                <div key={c.id} className="flex items-center justify-between rounded-lg border p-3 text-sm">
+                  <div>
+                    <div className="font-medium">{c.nome}</div>
+                    <div className="text-xs text-muted-foreground">até {new Date(c.liberado_ate).toLocaleString("pt-BR")}</div>
+                  </div>
+                  <Button size="sm" variant="ghost" onClick={() => revogarUm.mutate(c.id)}>Revogar</Button>
+                </div>
+              ))}
+          </div>
+        )}
+      </div>
+
+
       {/* Regra padrão */}
       <div className="rounded-2xl border bg-card p-6 shadow-soft">
         <div className="mb-4 flex items-center gap-2">
