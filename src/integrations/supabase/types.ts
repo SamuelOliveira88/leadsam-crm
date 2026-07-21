@@ -241,45 +241,81 @@ export type Database = {
       }
       leads: {
         Row: {
+          campanha: string | null
+          canal: string | null
+          cidade: string | null
+          codigo_imovel: string | null
           corretor_id: string | null
+          corretor_origem_nome: string | null
           created_at: string
+          data_atividade: string | null
           email: string | null
+          etapa_funil: string | null
+          fonte: string | null
           grupo_id: string | null
           id: string
           liberado_em: string | null
+          motivo_perda: string | null
           nome: string
+          observacoes: string | null
           represado_em: string | null
           status: string
           telefone: string | null
+          ultima_atividade: string | null
           ultima_atividade_em: string
+          valor_negociacao: number | null
           visualizado_em: string | null
         }
         Insert: {
+          campanha?: string | null
+          canal?: string | null
+          cidade?: string | null
+          codigo_imovel?: string | null
           corretor_id?: string | null
+          corretor_origem_nome?: string | null
           created_at?: string
+          data_atividade?: string | null
           email?: string | null
+          etapa_funil?: string | null
+          fonte?: string | null
           grupo_id?: string | null
           id?: string
           liberado_em?: string | null
+          motivo_perda?: string | null
           nome: string
+          observacoes?: string | null
           represado_em?: string | null
           status?: string
           telefone?: string | null
+          ultima_atividade?: string | null
           ultima_atividade_em?: string
+          valor_negociacao?: number | null
           visualizado_em?: string | null
         }
         Update: {
+          campanha?: string | null
+          canal?: string | null
+          cidade?: string | null
+          codigo_imovel?: string | null
           corretor_id?: string | null
+          corretor_origem_nome?: string | null
           created_at?: string
+          data_atividade?: string | null
           email?: string | null
+          etapa_funil?: string | null
+          fonte?: string | null
           grupo_id?: string | null
           id?: string
           liberado_em?: string | null
+          motivo_perda?: string | null
           nome?: string
+          observacoes?: string | null
           represado_em?: string | null
           status?: string
           telefone?: string | null
+          ultima_atividade?: string | null
           ultima_atividade_em?: string
+          valor_negociacao?: number | null
           visualizado_em?: string | null
         }
         Relationships: [
@@ -349,6 +385,7 @@ export type Database = {
       }
       perfis: {
         Row: {
+          corretor_id: string | null
           created_at: string
           grupo_id: string | null
           id: string
@@ -356,6 +393,7 @@ export type Database = {
           role: string
         }
         Insert: {
+          corretor_id?: string | null
           created_at?: string
           grupo_id?: string | null
           id: string
@@ -363,6 +401,7 @@ export type Database = {
           role?: string
         }
         Update: {
+          corretor_id?: string | null
           created_at?: string
           grupo_id?: string | null
           id?: string
@@ -370,6 +409,20 @@ export type Database = {
           role?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "perfis_corretor_id_fkey"
+            columns: ["corretor_id"]
+            isOneToOne: false
+            referencedRelation: "corretores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "perfis_corretor_id_fkey"
+            columns: ["corretor_id"]
+            isOneToOne: false
+            referencedRelation: "dashboard_corretores"
+            referencedColumns: ["corretor_id"]
+          },
           {
             foreignKeyName: "perfis_grupo_id_fkey"
             columns: ["grupo_id"]
@@ -403,25 +456,49 @@ export type Database = {
     }
     Functions: {
       dentro_do_horario: { Args: { p_grupo_id: string }; Returns: boolean }
-      distribuir_lead_direcionado: {
-        Args: {
-          p_corretores_ids: string[]
-          p_email: string
-          p_grupo_id: string
-          p_nome: string
-          p_telefone: string
-        }
-        Returns: string
-      }
-      distribuir_lead_round_robin: {
-        Args: {
-          p_email: string
-          p_grupo_id: string
-          p_nome: string
-          p_telefone: string
-        }
-        Returns: string
-      }
+      distribuir_lead_direcionado:
+        | {
+            Args: {
+              p_corretores_ids: string[]
+              p_email: string
+              p_grupo_id: string
+              p_nome: string
+              p_telefone: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_corretores_ids: string[]
+              p_email: string
+              p_extra?: Json
+              p_grupo_id: string
+              p_nome: string
+              p_telefone: string
+            }
+            Returns: string
+          }
+      distribuir_lead_round_robin:
+        | {
+            Args: {
+              p_email: string
+              p_grupo_id: string
+              p_nome: string
+              p_telefone: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_email: string
+              p_extra?: Json
+              p_grupo_id: string
+              p_nome: string
+              p_telefone: string
+            }
+            Returns: string
+          }
+      get_meu_corretor_id: { Args: never; Returns: string }
       get_my_profile: {
         Args: never
         Returns: {

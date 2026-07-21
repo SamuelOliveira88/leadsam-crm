@@ -2,8 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Trash2, X, Sparkles, MessageCircle, Eye } from "lucide-react";
-import { listarLeads, excluirLead } from "@/lib/leads.functions";
+import { Trash2, X, Sparkles, MessageCircle, Eye, Download } from "lucide-react";
+import * as XLSX from "xlsx";
+import { listarLeads, excluirLead, exportarLeads } from "@/lib/leads.functions";
 import { listarNotas, criarNota, marcarLeadVisualizado, gerarMensagemAbertura } from "@/lib/notas.functions";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/leads")({
-  head: () => ({ meta: [{ title: "Leads — Alexandria Leds" }] }),
+  head: () => ({ meta: [{ title: "Leads — ImobLead" }] }),
   component: Leads,
 });
 
@@ -20,18 +21,63 @@ function Leads() {
   const qc = useQueryClient();
   const fetchLeads = useServerFn(listarLeads);
   const del = useServerFn(excluirLead);
+  const exportFn = useServerFn(exportarLeads);
   const { data, isLoading } = useQuery({ queryKey: ["leads"], queryFn: () => fetchLeads() });
   const delMut = useMutation({
     mutationFn: (id: string) => del({ data: { id } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["leads"] }),
   });
   const [openLead, setOpenLead] = useState<any | null>(null);
+  const [exportando, setExportando] = useState(false);
+
+  async function handleExportar() {
+    setExportando(true);
+    try {
+      const leads = await exportFn();
+      const linhas = (leads as any[]).map((l) => ({
+        Nome: l.nome,
+        Telefone: l.telefone,
+        Email: l.email,
+        Status: l.status,
+        "Etapa do funil": l.etapa_funil,
+        Fonte: l.fonte,
+        Canal: l.canal,
+        Cidade: l.cidade,
+        "Motivo de perda": l.motivo_perda,
+        Observações: l.observacoes,
+        "Última atividade": l.ultima_atividade,
+        "Data atividade": l.data_atividade,
+        "Valor negociação": l.valor_negociacao,
+        "Código imóvel": l.codigo_imovel,
+        Campanha: l.campanha,
+        "Corretor original (planilha)": l.corretor_origem_nome,
+        Corretor: l.corretores?.nome ?? "",
+        Grupo: l.grupos?.nome ?? "",
+        "Criado em": l.created_at,
+      }));
+      const ws = XLSX.utils.json_to_sheet(linhas);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Leads");
+      const data = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, `leads-imobLead-${data}.xlsx`);
+      toast.success(`${linhas.length} lead(s) exportado(s).`);
+    } catch (e: any) {
+      toast.error(e.message ?? "Erro ao exportar leads");
+    } finally {
+      setExportando(false);
+    }
+  }
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Leads</h1>
-        <p className="text-sm text-muted-foreground">Toque em um lead para abrir o histórico e gerar mensagem</p>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Leads</h1>
+          <p className="text-sm text-muted-foreground">Toque em um lead para abrir o histórico e gerar mensagem</p>
+        </div>
+        <Button size="sm" variant="outline" onClick={handleExportar} disabled={exportando}>
+          <Download className="mr-2 size-4" /> {exportando ? "Exportando…" : "Exportar planilha"}
+        </Button>
       </div>
 
       {isLoading && <div className="text-sm text-muted-foreground">Carregando…</div>}
@@ -47,12 +93,15 @@ function Leads() {
               <div className="flex items-center gap-2">
                 <div className="truncate font-semibold">{l.nome}</div>
                 <Badge variant={l.status === "represado" ? "secondary" : "default"}>{l.status}</Badge>
+                {l.etapa_funil && <Badge variant="outline">{l.etapa_funil}</Badge>}
                 {!l.visualizado_em && l.corretor_id && (
                   <Badge variant="outline" className="border-orange-400 text-orange-600">novo</Badge>
                 )}
               </div>
               <div className="mt-1 truncate text-xs text-muted-foreground">
                 {l.telefone ?? "—"} · {l.grupos?.nome ?? "Sem grupo"} · {l.corretores?.nome ?? "não atribuído"}
+                {l.fonte ? ` · ${l.fonte}` : ""}
+                {l.cidade ? ` · ${l.cidade}` : ""}
               </div>
             </div>
             <Button
