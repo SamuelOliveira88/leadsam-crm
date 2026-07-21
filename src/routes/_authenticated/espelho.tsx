@@ -95,9 +95,9 @@ function Espelho() {
 
   const resumo = useMemo(() => {
     const total = unidades?.length ?? 0;
-    const contagem = { disponivel: 0, reservada: 0, vendida: 0, bloqueada: 0 } as Record<string, number>;
+    const contagem: Record<string, number> = { disponivel: 0, reservada: 0, vendida: 0, bloqueada: 0 };
     for (const u of unidades ?? []) contagem[u.status] = (contagem[u.status] ?? 0) + 1;
-    return { total, ...contagem };
+    return { total, disponivel: contagem.disponivel, reservada: contagem.reservada, vendida: contagem.vendida, bloqueada: contagem.bloqueada };
   }, [unidades]);
 
   return (
