@@ -14,8 +14,8 @@ export const Route = createFileRoute("/auth")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Entrar — ImobLead" },
-      { name: "description", content: "Acesse sua conta ImobLead para gerenciar leads e vendas." },
+      { title: "Entrar — Alexandria Leds" },
+      { name: "description", content: "Acesse sua conta Alexandria Leds para gerenciar leads e vendas." },
     ],
   }),
   component: AuthPage,
@@ -71,20 +71,20 @@ function AuthPage() {
       <div className="relative hidden bg-gradient-to-br from-primary via-primary/90 to-primary/70 p-10 text-primary-foreground md:flex md:flex-col md:justify-between">
         <div className="flex items-center gap-2">
           <div className="grid size-10 place-items-center rounded-xl bg-white/15 backdrop-blur"><Building2 className="size-5" /></div>
-          <span className="text-lg font-bold tracking-tight">ImobLead</span>
+          <span className="text-lg font-bold tracking-tight">Alexandria Leds</span>
         </div>
         <div className="space-y-4">
           <h1 className="text-4xl font-bold leading-tight">Feche mais vendas com um CRM que pensa por você.</h1>
           <p className="max-w-md text-primary-foreground/80">Distribuição automática de leads, mensagens de WhatsApp geradas por IA, funil visual e agenda inteligente — tudo em um só lugar.</p>
         </div>
-        <div className="text-xs text-primary-foreground/70">© {new Date().getFullYear()} ImobLead</div>
+        <div className="text-xs text-primary-foreground/70">© {new Date().getFullYear()} Alexandria Leds</div>
       </div>
 
       <div className="flex items-center justify-center p-6 md:p-12">
         <Card className="w-full max-w-md p-8 shadow-soft">
           <div className="mb-6 flex items-center gap-2 md:hidden">
             <div className="grid size-9 place-items-center rounded-lg bg-primary text-primary-foreground"><Building2 className="size-4" /></div>
-            <span className="text-lg font-bold">ImobLead</span>
+            <span className="text-lg font-bold">Alexandria Leds</span>
           </div>
           <h2 className="text-2xl font-bold">{mode === "login" ? "Entrar" : "Criar conta"}</h2>
           <p className="mt-1 text-sm text-muted-foreground">{mode === "login" ? "Bem-vindo de volta." : "Comece em menos de 1 minuto."}</p>

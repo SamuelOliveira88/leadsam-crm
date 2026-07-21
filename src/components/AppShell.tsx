@@ -90,7 +90,7 @@ export function AppShell({ user, children }: { user: User; children: React.React
             <Building2 className="size-5" />
           </div>
           <div>
-            <div className="text-base font-bold tracking-tight">ImobLead</div>
+            <div className="text-base font-bold tracking-tight">Alexandria Leds</div>
             <div className="text-[11px] text-muted-foreground">Gestão de Corretores</div>
           </div>
         </div>
