@@ -17,7 +17,7 @@ export const listarCorretores = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("corretores")
-      .select("id, nome, telefone, grupo_id, ativo, canal_notificacao, recebe_via_web, recebe_via_whatsapp, created_at, grupos(nome)")
+      .select("id, nome, telefone, grupo_id, ativo, canal_notificacao, recebe_via_web, recebe_via_whatsapp, liberado_ate, created_at, grupos(nome)")
       .order("nome");
     if (error) throw new Error(error.message);
     return data ?? [];
