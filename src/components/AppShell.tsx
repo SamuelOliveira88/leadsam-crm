@@ -2,7 +2,7 @@ import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Building2, LayoutDashboard, Users, UserCog, Upload, Clock, Layers, LogOut, Bell } from "lucide-react";
+import { Building2, LayoutDashboard, Users, UserCog, Upload, Clock, Layers, LogOut, Bell, Grid3x3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { meuPerfil } from "@/lib/perfis.functions";
 import { listarNotificacoes } from "@/lib/notificacoes.functions";
@@ -15,6 +15,7 @@ const BASE_NAV = [
   { to: "/leads", label: "Leads", icon: Users },
   { to: "/importar", label: "Importar", icon: Upload },
   { to: "/corretores", label: "Corretores", icon: UserCog },
+  { to: "/espelho", label: "Espelho", icon: Grid3x3 },
   { to: "/horarios", label: "Horários", icon: Clock },
 ] as const;
 
