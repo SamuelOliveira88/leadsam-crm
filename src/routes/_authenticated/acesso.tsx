@@ -23,14 +23,20 @@ function AcessoPage() {
   const salvarFn = useServerFn(salvarConfigAcesso);
   const liberarFn = useServerFn(liberarAgora);
   const revogarFn = useServerFn(revogarLiberacao);
+  const listCorretoresFn = useServerFn(listarCorretores);
+  const liberarCorretorFn = useServerFn(liberarCorretor);
+  const revogarCorretorFn = useServerFn(revogarLiberacaoCorretor);
 
   const { data: perfil } = useQuery({ queryKey: ["meuPerfil"], queryFn: () => perfilFn() });
   const { data: config } = useQuery({ queryKey: ["config_acesso"], queryFn: () => getFn() });
+  const { data: corretores } = useQuery({ queryKey: ["corretores"], queryFn: () => listCorretoresFn() });
 
   const [restringir, setRestringir] = useState(true);
   const [inicio, setInicio] = useState("08:00");
   const [fim, setFim] = useState("09:30");
   const [minutos, setMinutos] = useState(60);
+  const [corretorSel, setCorretorSel] = useState<string>("");
+  const [minutosCorretor, setMinutosCorretor] = useState(60);
 
   useEffect(() => {
     if (!config) return;
