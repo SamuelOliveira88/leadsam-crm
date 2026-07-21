@@ -52,6 +52,33 @@ export type Database = {
           },
         ]
       }
+      config_acesso: {
+        Row: {
+          hora_fim: string
+          hora_inicio: string
+          id: number
+          liberado_ate: string | null
+          restringir_horario: boolean
+          updated_at: string
+        }
+        Insert: {
+          hora_fim?: string
+          hora_inicio?: string
+          id?: number
+          liberado_ate?: string | null
+          restringir_horario?: boolean
+          updated_at?: string
+        }
+        Update: {
+          hora_fim?: string
+          hora_inicio?: string
+          id?: number
+          liberado_ate?: string | null
+          restringir_horario?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       corretores: {
         Row: {
           ativo: boolean
