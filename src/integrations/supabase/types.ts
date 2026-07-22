@@ -157,6 +157,57 @@ export type Database = {
           },
         ]
       }
+      documentos_propostas: {
+        Row: {
+          created_at: string
+          empresa_id: string | null
+          enviado_por: string | null
+          id: string
+          nome_arquivo: string
+          pessoa: string
+          proposta_id: string
+          storage_path: string
+          tipo_documento: string
+        }
+        Insert: {
+          created_at?: string
+          empresa_id?: string | null
+          enviado_por?: string | null
+          id?: string
+          nome_arquivo: string
+          pessoa?: string
+          proposta_id: string
+          storage_path: string
+          tipo_documento: string
+        }
+        Update: {
+          created_at?: string
+          empresa_id?: string | null
+          enviado_por?: string | null
+          id?: string
+          nome_arquivo?: string
+          pessoa?: string
+          proposta_id?: string
+          storage_path?: string
+          tipo_documento?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documentos_propostas_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documentos_propostas_proposta_id_fkey"
+            columns: ["proposta_id"]
+            isOneToOne: false
+            referencedRelation: "propostas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       empreendimentos: {
         Row: {
           ativo: boolean
@@ -647,6 +698,9 @@ export type Database = {
           condicoes: string | null
           corretor_id: string | null
           created_at: string
+          credito_analisado_em: string | null
+          credito_analisado_por: string | null
+          credito_observacoes: string | null
           empresa_id: string | null
           id: string
           lead_id: string
@@ -654,6 +708,7 @@ export type Database = {
           observacoes: string | null
           parcelas: number | null
           status: string
+          status_credito: string
           unidade_id: string | null
           valor_entrada: number | null
           valor_proposto: number
@@ -663,6 +718,9 @@ export type Database = {
           condicoes?: string | null
           corretor_id?: string | null
           created_at?: string
+          credito_analisado_em?: string | null
+          credito_analisado_por?: string | null
+          credito_observacoes?: string | null
           empresa_id?: string | null
           id?: string
           lead_id: string
@@ -670,6 +728,7 @@ export type Database = {
           observacoes?: string | null
           parcelas?: number | null
           status?: string
+          status_credito?: string
           unidade_id?: string | null
           valor_entrada?: number | null
           valor_proposto: number
@@ -679,6 +738,9 @@ export type Database = {
           condicoes?: string | null
           corretor_id?: string | null
           created_at?: string
+          credito_analisado_em?: string | null
+          credito_analisado_por?: string | null
+          credito_observacoes?: string | null
           empresa_id?: string | null
           id?: string
           lead_id?: string
@@ -686,6 +748,7 @@ export type Database = {
           observacoes?: string | null
           parcelas?: number | null
           status?: string
+          status_credito?: string
           unidade_id?: string | null
           valor_entrada?: number | null
           valor_proposto?: number
@@ -889,6 +952,11 @@ export type Database = {
       liberar_leads_inativos_6d: { Args: never; Returns: undefined }
       liberar_leads_represados: { Args: never; Returns: undefined }
       liberar_unidade: { Args: { p_unidade_id: string }; Returns: undefined }
+      pode_dar_suporte: { Args: never; Returns: boolean }
+      posso_acessar_proposta: {
+        Args: { p_proposta_id: string }
+        Returns: boolean
+      }
       reatribuir_leads_sem_visualizacao: { Args: never; Returns: undefined }
       registrar_login_corretor: { Args: never; Returns: undefined }
       reservar_unidade: {
