@@ -306,18 +306,24 @@ export type Database = {
           empresa_id: string | null
           id: string
           nome: string
+          whatsapp_distribuicao: string | null
+          whatsapp_importacao: string | null
         }
         Insert: {
           created_at?: string
           empresa_id?: string | null
           id?: string
           nome: string
+          whatsapp_distribuicao?: string | null
+          whatsapp_importacao?: string | null
         }
         Update: {
           created_at?: string
           empresa_id?: string | null
           id?: string
           nome?: string
+          whatsapp_distribuicao?: string | null
+          whatsapp_importacao?: string | null
         }
         Relationships: [
           {
