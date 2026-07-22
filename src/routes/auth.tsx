@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -123,6 +123,9 @@ function AuthPage() {
             ) : (
               <>Já tem conta? <button className="font-medium text-primary" onClick={() => setMode("login")}>Entrar</button></>
             )}
+          </div>
+          <div className="mt-2 text-center text-xs text-muted-foreground">
+            É de outra imobiliária? <Link to="/cadastro-empresa" className="font-medium text-primary">Cadastre sua empresa aqui</Link>
           </div>
         </Card>
       </div>
