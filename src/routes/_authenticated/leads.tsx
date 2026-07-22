@@ -214,15 +214,14 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
             variant="secondary"
             onClick={async () => {
               try {
-                await (await import("@tanstack/react-start")).useServerFn; // noop, keep tree
-                const fn = notificarCorretorDoLead;
-                await fn({ data: { lead_id: lead.id } });
+                await notificarFn({ data: { lead_id: lead.id } });
                 toast.success("Corretor notificado via WhatsApp (Evolution).");
               } catch (e: any) { toast.error(e?.message ?? "Falha ao notificar"); }
             }}
           >
             <MessageCircle className="mr-2 size-4" /> Notificar corretor (Evolution)
           </Button>
+
 
         </div>
 
