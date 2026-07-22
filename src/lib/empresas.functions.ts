@@ -72,12 +72,11 @@ export const atualizarEmpresa = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-// ============ AUTO-CADASTRO DE NOVA IMOBILIÁRIA (público, sem login) ============
+// ============ CRIAÇÃO DE EMPRESA + MASTER (apenas super-admin) ============
 const CadastroEmpresaInput = z.object({
   nome_empresa: z.string().min(2),
   nome_usuario: z.string().min(2),
   email: z.string().email(),
-  senha: z.string().min(8),
 });
 
 function gerarSlug(nome: string): string {
@@ -88,8 +87,13 @@ function gerarSlug(nome: string): string {
 }
 
 export const cadastrarEmpresa = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => CadastroEmpresaInput.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    const { data: perfil } = await context.supabase
+      .from("perfis").select("super_admin").eq("id", context.userId).maybeSingle();
+    if (!perfil?.super_admin) throw new Error("Apenas o super-admin pode cadastrar novas imobiliárias.");
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const slug = gerarSlug(data.nome_empresa);
@@ -100,17 +104,18 @@ export const cadastrarEmpresa = createServerFn({ method: "POST" })
       .single();
     if (eErr) throw new Error(eErr.message);
 
-    const { error: uErr } = await supabaseAdmin.auth.admin.createUser({
-      email: data.email,
-      password: data.senha,
-      email_confirm: true,
-      user_metadata: { role: "master", empresa_id: empresa.id, nome: data.nome_usuario },
+    // Envia convite por e-mail — o usuário define a própria senha em /set-password
+    const redirectTo = `${process.env.SITE_URL ?? "https://alexandria-leds.lovable.app"}/set-password`;
+    const { error: iErr } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, {
+      redirectTo,
+      data: { role: "master", empresa_id: empresa.id, nome: data.nome_usuario },
     });
-    if (uErr) {
-      // desfaz a empresa criada se o usuário não pôde ser criado (ex: e-mail já existe)
+    if (iErr) {
+      // desfaz a empresa se o convite falhar (ex: e-mail já existe)
       await supabaseAdmin.from("empresas").delete().eq("id", empresa.id);
-      throw new Error(uErr.message);
+      throw new Error(iErr.message);
     }
 
-    return { ok: true };
+    return { ok: true, empresa };
   });
+
