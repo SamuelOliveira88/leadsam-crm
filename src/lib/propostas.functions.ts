@@ -10,6 +10,7 @@ export const listarPropostas = createServerFn({ method: "GET" })
       .select(`
         id, lead_id, unidade_id, corretor_id, valor_proposto, valor_entrada, parcelas,
         condicoes, status, motivo_recusa, observacoes, created_at, atualizado_em,
+        status_credito, credito_observacoes, credito_analisado_em,
         leads(nome, telefone), unidades(numero, torre), corretores(nome)
       `)
       .order("created_at", { ascending: false })
