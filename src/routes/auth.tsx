@@ -23,10 +23,8 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [nome, setNome] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -47,18 +45,8 @@ function AuthPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email, password,
-          options: { emailRedirectTo: `${window.location.origin}/dashboard`, data: { full_name: nome } },
-        });
-        if (error) throw error;
-        toast.success("Conta criada! Entrando…");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-      }
-      // Registra login (se for corretor vinculado, notifica gerente). Silencioso.
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
       registrarLoginCorretor().catch(() => {});
       navigate({ to: "/dashboard", replace: true });
     } catch (err) {
