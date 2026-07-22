@@ -6,6 +6,7 @@ import { Trash2, X, Sparkles, MessageCircle, Eye, Download } from "lucide-react"
 import * as XLSX from "xlsx";
 import { listarLeads, excluirLead, exportarLeads } from "@/lib/leads.functions";
 import { listarNotas, criarNota, marcarLeadVisualizado, gerarMensagemAbertura } from "@/lib/notas.functions";
+import { notificarCorretorDoLead } from "@/lib/evolution.functions";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -129,6 +130,7 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
   const criarNotaFn = useServerFn(criarNota);
   const marcarVistoFn = useServerFn(marcarLeadVisualizado);
   const gerarFn = useServerFn(gerarMensagemAbertura);
+  const notificarFn = useServerFn(notificarCorretorDoLead);
   const [texto, setTexto] = useState("");
   const [gerando, setGerando] = useState(false);
 
@@ -207,6 +209,20 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
               <MessageCircle className="mr-2 size-4" /> Abrir WhatsApp
             </Button>
           )}
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={async () => {
+              try {
+                await notificarFn({ data: { lead_id: lead.id } });
+                toast.success("Corretor notificado via WhatsApp (Evolution).");
+              } catch (e: any) { toast.error(e?.message ?? "Falha ao notificar"); }
+            }}
+          >
+            <MessageCircle className="mr-2 size-4" /> Notificar corretor (Evolution)
+          </Button>
+
+
         </div>
 
         <div className="mb-4">

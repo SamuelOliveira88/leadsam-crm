@@ -42,9 +42,24 @@ export const Route = createFileRoute("/api/public/webhook")({
             p_nome: nome, p_telefone: telefone ?? null, p_email: email ?? null, p_grupo_id: grupo_id,
           });
           if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+
+          // Notifica o corretor via Evolution (best-effort)
+          try {
+            const corretorId = data as string | null;
+            if (corretorId) {
+              const { data: corretor } = await supabaseAdmin
+                .from("corretores").select("nome, telefone").eq("id", corretorId).maybeSingle();
+              if (corretor?.telefone) {
+                const { sendWhatsAppText, mensagemNovoLead } = await import("@/lib/evolution.server");
+                await sendWhatsAppText(corretor.telefone, mensagemNovoLead({ nome, telefone, email }));
+              }
+            }
+          } catch (e) { console.error("[webhook] falha notificando corretor", e); }
+
           return new Response(JSON.stringify({ ok: true, corretor_id: data }), {
             headers: { "content-type": "application/json" },
           });
+
         } catch (e: any) {
           return new Response(JSON.stringify({ error: e.message }), { status: 500 });
         }
