@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.distribuir_lead_round_robin(p_nome text, p_telefone text, p_email text, p_grupo_id uuid);

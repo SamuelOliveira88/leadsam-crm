@@ -867,26 +867,16 @@ export type Database = {
             }
             Returns: string
           }
-      distribuir_lead_round_robin:
-        | {
-            Args: {
-              p_email: string
-              p_grupo_id: string
-              p_nome: string
-              p_telefone: string
-            }
-            Returns: string
-          }
-        | {
-            Args: {
-              p_email: string
-              p_extra?: Json
-              p_grupo_id: string
-              p_nome: string
-              p_telefone: string
-            }
-            Returns: string
-          }
+      distribuir_lead_round_robin: {
+        Args: {
+          p_email: string
+          p_extra?: Json
+          p_grupo_id: string
+          p_nome: string
+          p_telefone: string
+        }
+        Returns: string
+      }
       get_meu_corretor_id: { Args: never; Returns: string }
       get_minha_empresa_id: { Args: never; Returns: string }
       get_my_profile: {
