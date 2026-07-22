@@ -99,8 +99,12 @@ export async function processarNotificacoesWhatsAppPendentes(
 
   let enviados = 0;
   const falhas: Array<{ id: string; motivo: string }> = [];
+  const leadsProcessados = new Set<string>();
 
   for (const item of pendentes ?? []) {
+    if (leadsProcessados.has(item.lead_id)) continue;
+    leadsProcessados.add(item.lead_id);
+
     const result = await notificarCorretorPorLead(supabaseClient, item.lead_id);
     if (result.ok) {
       enviados++;
