@@ -130,6 +130,7 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
   const criarNotaFn = useServerFn(criarNota);
   const marcarVistoFn = useServerFn(marcarLeadVisualizado);
   const gerarFn = useServerFn(gerarMensagemAbertura);
+  const notificarFn = useServerFn(notificarCorretorDoLead);
   const [texto, setTexto] = useState("");
   const [gerando, setGerando] = useState(false);
 
