@@ -70,7 +70,7 @@ export const convidarCorretor = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     // Só o master pode convidar
     const { data: perfil } = await context.supabase
-      .from("perfis").select("role").eq("id", context.userId).maybeSingle();
+      .from("perfis").select("role, empresa_id").eq("id", context.userId).maybeSingle();
     if (perfil?.role !== "master") throw new Error("Apenas o administrador pode convidar corretores.");
 
     // 1) Cria o registro do corretor (sem user_id ainda)
@@ -98,6 +98,7 @@ export const convidarCorretor = createServerFn({ method: "POST" })
         role: "corretor",
         grupo_id: data.grupo_id ?? null,
         corretor_id: corretor.id,
+        empresa_id: perfil?.empresa_id ?? null,
       },
     });
     if (iErr) {

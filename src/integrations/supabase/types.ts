@@ -64,28 +64,25 @@ export type Database = {
       }
       config_acesso: {
         Row: {
-          empresa_id: string | null
+          empresa_id: string
           hora_fim: string
           hora_inicio: string
-          id: number
           liberado_ate: string | null
           restringir_horario: boolean
           updated_at: string
         }
         Insert: {
-          empresa_id?: string | null
+          empresa_id: string
           hora_fim?: string
           hora_inicio?: string
-          id?: number
           liberado_ate?: string | null
           restringir_horario?: boolean
           updated_at?: string
         }
         Update: {
-          empresa_id?: string | null
+          empresa_id?: string
           hora_fim?: string
           hora_inicio?: string
-          id?: number
           liberado_ate?: string | null
           restringir_horario?: boolean
           updated_at?: string
@@ -94,7 +91,7 @@ export type Database = {
           {
             foreignKeyName: "config_acesso_empresa_id_fkey"
             columns: ["empresa_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "empresas"
             referencedColumns: ["id"]
           },
@@ -585,6 +582,7 @@ export type Database = {
           id: string
           nome: string | null
           role: string
+          super_admin: boolean
         }
         Insert: {
           corretor_id?: string | null
@@ -594,6 +592,7 @@ export type Database = {
           id: string
           nome?: string | null
           role?: string
+          super_admin?: boolean
         }
         Update: {
           corretor_id?: string | null
@@ -603,6 +602,7 @@ export type Database = {
           id?: string
           nome?: string | null
           role?: string
+          super_admin?: boolean
         }
         Relationships: [
           {
@@ -631,6 +631,93 @@ export type Database = {
             columns: ["grupo_id"]
             isOneToOne: false
             referencedRelation: "grupos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      propostas: {
+        Row: {
+          atualizado_em: string
+          condicoes: string | null
+          corretor_id: string | null
+          created_at: string
+          empresa_id: string | null
+          id: string
+          lead_id: string
+          motivo_recusa: string | null
+          observacoes: string | null
+          parcelas: number | null
+          status: string
+          unidade_id: string | null
+          valor_entrada: number | null
+          valor_proposto: number
+        }
+        Insert: {
+          atualizado_em?: string
+          condicoes?: string | null
+          corretor_id?: string | null
+          created_at?: string
+          empresa_id?: string | null
+          id?: string
+          lead_id: string
+          motivo_recusa?: string | null
+          observacoes?: string | null
+          parcelas?: number | null
+          status?: string
+          unidade_id?: string | null
+          valor_entrada?: number | null
+          valor_proposto: number
+        }
+        Update: {
+          atualizado_em?: string
+          condicoes?: string | null
+          corretor_id?: string | null
+          created_at?: string
+          empresa_id?: string | null
+          id?: string
+          lead_id?: string
+          motivo_recusa?: string | null
+          observacoes?: string | null
+          parcelas?: number | null
+          status?: string
+          unidade_id?: string | null
+          valor_entrada?: number | null
+          valor_proposto?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "propostas_corretor_id_fkey"
+            columns: ["corretor_id"]
+            isOneToOne: false
+            referencedRelation: "corretores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "propostas_corretor_id_fkey"
+            columns: ["corretor_id"]
+            isOneToOne: false
+            referencedRelation: "dashboard_corretores"
+            referencedColumns: ["corretor_id"]
+          },
+          {
+            foreignKeyName: "propostas_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "propostas_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "propostas_unidade_id_fkey"
+            columns: ["unidade_id"]
+            isOneToOne: false
+            referencedRelation: "unidades"
             referencedColumns: ["id"]
           },
         ]
@@ -795,6 +882,7 @@ export type Database = {
             Returns: string
           }
       get_meu_corretor_id: { Args: never; Returns: string }
+      get_minha_empresa_id: { Args: never; Returns: string }
       get_my_profile: {
         Args: never
         Returns: {
@@ -816,6 +904,7 @@ export type Database = {
         Returns: undefined
       }
       sou_corretor_do_lead: { Args: { p_lead_id: string }; Returns: boolean }
+      sou_super_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

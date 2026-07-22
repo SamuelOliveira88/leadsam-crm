@@ -2,7 +2,7 @@ import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Building2, LayoutDashboard, Users, UserCog, Upload, Clock, Layers, LogOut, Bell, Grid3x3, ShieldCheck } from "lucide-react";
+import { Building2, LayoutDashboard, Users, UserCog, Upload, Clock, Layers, LogOut, Bell, Grid3x3, ShieldCheck, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { meuPerfil } from "@/lib/perfis.functions";
 import { listarNotificacoes } from "@/lib/notificacoes.functions";
@@ -14,9 +14,10 @@ import type { User } from "@supabase/supabase-js";
 const BASE_NAV = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/leads", label: "Leads", icon: Users },
+  { to: "/espelho", label: "Espelho", icon: Grid3x3 },
+  { to: "/propostas", label: "Propostas", icon: FileText },
   { to: "/importar", label: "Importar", icon: Upload },
   { to: "/corretores", label: "Corretores", icon: UserCog },
-  { to: "/espelho", label: "Espelho", icon: Grid3x3 },
   { to: "/horarios", label: "Horários", icon: Clock },
 ] as const;
 
@@ -58,6 +59,7 @@ export function AppShell({ user, children }: { user: User; children: React.React
   });
   const isMaster = perfil?.role === "master";
   const isGerenteOuMaster = perfil?.role === "master" || perfil?.role === "gerente";
+  const isSuperAdmin = !!(perfil as any)?.super_admin;
   const naoLidas = (notifs ?? []).filter((n) => !n.lida).length;
 
   const [tick, setTick] = useState(0);
@@ -144,6 +146,17 @@ export function AppShell({ user, children }: { user: User; children: React.React
               <ShieldCheck className="size-4" /> Acesso
             </Link>
           )}
+          {isSuperAdmin && (
+            <>
+              <div className="mt-4 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Super-admin</div>
+              <Link to="/empresas" className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
+                pathname.startsWith("/empresas") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground hover:bg-sidebar-accent/60",
+              )}>
+                <Building2 className="size-4" /> Empresas
+              </Link>
+            </>
+          )}
           {isMaster && (
             <>
               <div className="mt-4 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Master</div>
@@ -173,7 +186,7 @@ export function AppShell({ user, children }: { user: User; children: React.React
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 backdrop-blur md:hidden">
-        <div className="grid grid-cols-7">
+        <div className="grid grid-cols-8">
           {nav.map((n) => {
             const Icon = n.icon;
             const active = pathname === n.to || pathname.startsWith(n.to + "/");
