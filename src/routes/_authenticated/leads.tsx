@@ -6,6 +6,7 @@ import { Trash2, X, Sparkles, MessageCircle, Eye, Download } from "lucide-react"
 import * as XLSX from "xlsx";
 import { listarLeads, excluirLead, exportarLeads } from "@/lib/leads.functions";
 import { listarNotas, criarNota, marcarLeadVisualizado, gerarMensagemAbertura } from "@/lib/notas.functions";
+import { notificarCorretorDoLead } from "@/lib/evolution.functions";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
