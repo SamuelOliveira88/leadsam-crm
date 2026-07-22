@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Building2, Plus, Loader2 } from "lucide-react";
-import { listarEmpresas, criarEmpresa, atualizarEmpresa } from "@/lib/empresas.functions";
+import { listarEmpresas, cadastrarEmpresa, atualizarEmpresa } from "@/lib/empresas.functions";
 import { meuPerfil } from "@/lib/perfis.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
