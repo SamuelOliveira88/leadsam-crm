@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Building2, Plus, Loader2 } from "lucide-react";
-import { listarEmpresas, criarEmpresa, atualizarEmpresa } from "@/lib/empresas.functions";
+import { listarEmpresas, cadastrarEmpresa, atualizarEmpresa } from "@/lib/empresas.functions";
 import { meuPerfil } from "@/lib/perfis.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,7 @@ function Empresas() {
   const qc = useQueryClient();
   const fetchPerfil = useServerFn(meuPerfil);
   const fetchEmpresas = useServerFn(listarEmpresas);
-  const criarFn = useServerFn(criarEmpresa);
+  const criarFn = useServerFn(cadastrarEmpresa);
   const atualizarFn = useServerFn(atualizarEmpresa);
 
   const { data: perfil, isLoading: carregandoPerfil } = useQuery({ queryKey: ["meuPerfil"], queryFn: () => fetchPerfil() });
@@ -102,12 +102,12 @@ function Empresas() {
 
       <Dialog open={novaOpen} onOpenChange={setNovaOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Nova empresa cliente</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Nova imobiliária cliente</DialogTitle></DialogHeader>
           <NovaEmpresaForm
             onSubmit={async (dados) => {
               try {
                 await criarFn({ data: dados });
-                toast.success("Empresa criada.");
+                toast.success("Empresa criada! Convite enviado por e-mail para o administrador.");
                 setNovaOpen(false);
                 qc.invalidateQueries({ queryKey: ["empresas"] });
               } catch (e: any) {
@@ -121,37 +121,33 @@ function Empresas() {
   );
 }
 
-function NovaEmpresaForm({ onSubmit }: { onSubmit: (d: any) => Promise<void> }) {
-  const [nome, setNome] = useState("");
-  const [slug, setSlug] = useState("");
-  const [plano, setPlano] = useState("starter");
+function NovaEmpresaForm({ onSubmit }: { onSubmit: (d: { nome_empresa: string; nome_usuario: string; email: string }) => Promise<void> }) {
+  const [nomeEmpresa, setNomeEmpresa] = useState("");
+  const [nomeUsuario, setNomeUsuario] = useState("");
+  const [email, setEmail] = useState("");
   const [enviando, setEnviando] = useState(false);
 
   return (
     <div className="space-y-3">
-      <div><Label>Nome da imobiliária</Label><Input value={nome} onChange={(e) => setNome(e.target.value)} /></div>
-      <div><Label>Slug (identificador único, ex: minha-imobiliaria)</Label><Input value={slug} onChange={(e) => setSlug(e.target.value)} /></div>
+      <div><Label>Nome da imobiliária</Label><Input value={nomeEmpresa} onChange={(e) => setNomeEmpresa(e.target.value)} placeholder="Ex: Imobiliária Alpha" /></div>
+      <div><Label>Nome do administrador (master)</Label><Input value={nomeUsuario} onChange={(e) => setNomeUsuario(e.target.value)} placeholder="Nome completo" /></div>
       <div>
-        <Label>Plano</Label>
-        <Select value={plano} onValueChange={setPlano}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="starter">Starter</SelectItem>
-            <SelectItem value="pro">Pro</SelectItem>
-            <SelectItem value="enterprise">Enterprise</SelectItem>
-          </SelectContent>
-        </Select>
+        <Label>E-mail do administrador</Label>
+        <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@imobiliaria.com" />
+        <p className="mt-1 text-xs text-muted-foreground">Um convite será enviado por e-mail. O usuário define a própria senha ao entrar pela primeira vez.</p>
       </div>
       <DialogFooter>
-        <Button disabled={!nome || !slug || enviando} onClick={async () => {
+        <Button disabled={!nomeEmpresa || !nomeUsuario || !email || enviando} onClick={async () => {
           setEnviando(true);
-          await onSubmit({ nome, slug, plano });
-          setEnviando(false);
+          try {
+            await onSubmit({ nome_empresa: nomeEmpresa, nome_usuario: nomeUsuario, email });
+          } finally { setEnviando(false); }
         }}>
           {enviando ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Plus className="mr-2 size-4" />}
-          Criar
+          Criar e enviar convite
         </Button>
       </DialogFooter>
     </div>
   );
 }
+
