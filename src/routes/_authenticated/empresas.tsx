@@ -27,7 +27,7 @@ function Empresas() {
   const qc = useQueryClient();
   const fetchPerfil = useServerFn(meuPerfil);
   const fetchEmpresas = useServerFn(listarEmpresas);
-  const criarFn = useServerFn(criarEmpresa);
+  const criarFn = useServerFn(cadastrarEmpresa);
   const atualizarFn = useServerFn(atualizarEmpresa);
 
   const { data: perfil, isLoading: carregandoPerfil } = useQuery({ queryKey: ["meuPerfil"], queryFn: () => fetchPerfil() });
