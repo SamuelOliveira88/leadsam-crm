@@ -8,8 +8,14 @@ export const Route = createFileRoute("/api/public/webhook")({
       POST: async ({ request }) => {
         try {
           const url = new URL(request.url);
+          const token = url.searchParams.get("token") || request.headers.get("x-webhook-token");
+          const expected = process.env.WEBHOOK_LEAD_TOKEN;
+          if (!expected || token !== expected) {
+            return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401 });
+          }
           const grupoFromQs = url.searchParams.get("grupo_id");
           const body = await request.json().catch(() => ({}));
+
 
           let nome = body.nome || body.name || body.full_name;
           let telefone = body.telefone || body.phone_number || body.phone;
