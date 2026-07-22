@@ -52,8 +52,31 @@ export const importarLeads = createServerFn({ method: "POST" })
             p_nome: lead.nome, p_telefone: lead.telefone ?? "", p_email: lead.email ?? "",
             p_grupo_id: data.grupo_id, p_corretores_ids: data.corretores_ids ?? [],
           });
-      const { error } = await rpc;
-      if (error) erros++; else sucesso++;
+      const { data: corretorId, error } = await rpc;
+      if (error) {
+        erros++;
+      } else {
+        sucesso++;
+        if (corretorId) {
+          try {
+            const { data: novoLead } = await context.supabase
+              .from("leads")
+              .select("id")
+              .eq("grupo_id", data.grupo_id)
+              .eq("corretor_id", corretorId)
+              .eq("nome", lead.nome)
+              .order("created_at", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            if (novoLead?.id) {
+              const { notificarCorretorPorLead } = await import("./evolution.server");
+              await notificarCorretorPorLead(context.supabase, novoLead.id);
+            }
+          } catch (e) {
+            console.error("[importarLeads] falha notificando corretor", e);
+          }
+        }
+      }
     }
     return { sucesso, erros };
   });
@@ -129,8 +152,20 @@ export const importarLeadsPlanilha = createServerFn({ method: "POST" })
       };
     });
 
-    const { error } = await context.supabase.from("leads").insert(linhas);
+    const { data: inseridos, error } = await context.supabase.from("leads").insert(linhas).select("id, corretor_id");
     if (error) { erros = linhas.length; } else { sucesso = linhas.length; }
+
+    if (!error) {
+      const { notificarCorretorPorLead } = await import("./evolution.server");
+      for (const item of inseridos ?? []) {
+        if (!item.corretor_id) continue;
+        try {
+          await notificarCorretorPorLead(context.supabase, item.id);
+        } catch (e) {
+          console.error("[importarLeadsPlanilha] falha notificando corretor", e);
+        }
+      }
+    }
 
     return { sucesso, erros, semCorretor };
   });
