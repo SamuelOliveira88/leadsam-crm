@@ -173,6 +173,21 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
     onError: (e: any) => toast.error(e?.message ?? "Nenhum corretor online agora"),
   });
 
+  const descartarMut = useMutation({
+    mutationFn: (motivo?: string) => descartarFn({ data: { lead_id: lead.id, motivo } }),
+    onSuccess: (r: any) => {
+      if (r?.represado) {
+        toast.success("Lead descartado. Ninguém elegível — voltou para represados.");
+      } else {
+        toast.success(`Lead descartado e redistribuído para ${r.corretor_nome}.`);
+      }
+      qc.invalidateQueries({ queryKey: ["leads"] });
+      qc.invalidateQueries({ queryKey: ["notas", lead.id] });
+      onClose();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Falha ao descartar"),
+  });
+
   const { data: notas } = useQuery({
     queryKey: ["notas", lead.id],
     queryFn: () => listNotasFn({ data: { lead_id: lead.id } }),
