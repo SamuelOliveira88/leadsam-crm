@@ -238,3 +238,46 @@ export const transferirLead = createServerFn({ method: "POST" })
     }
     return { ok: true, corretor_nome: corretor.nome };
   });
+
+export const transferirLeadParaOnline = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ lead_id: z.string().uuid(), notificar: z.boolean().optional().default(true) }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: lead, error: lErr } = await context.supabase
+      .from("leads").select("id, grupo_id").eq("id", data.lead_id).maybeSingle();
+    if (lErr) throw new Error(lErr.message);
+    if (!lead?.grupo_id) throw new Error("Lead sem grupo definido");
+
+    const { data: corretorId, error: rErr } = await context.supabase
+      .rpc("escolher_corretor_online", { p_grupo_id: lead.grupo_id });
+    if (rErr) throw new Error(rErr.message);
+    if (!corretorId) throw new Error("Nenhum corretor online agora neste grupo.");
+
+    const { data: corretor } = await context.supabase
+      .from("corretores").select("nome, grupo_id").eq("id", corretorId).maybeSingle();
+
+    const { error } = await context.supabase
+      .from("leads")
+      .update({
+        corretor_id: corretorId,
+        grupo_id: corretor?.grupo_id ?? lead.grupo_id,
+        status: "distribuido",
+        represado_em: null,
+        visualizado_em: null,
+        ultima_atividade_em: new Date().toISOString(),
+      })
+      .eq("id", data.lead_id);
+    if (error) throw new Error(error.message);
+
+    if (data.notificar) {
+      try {
+        const { notificarCorretorPorLead } = await import("./evolution.server");
+        await notificarCorretorPorLead(context.supabase, data.lead_id);
+      } catch (e) {
+        console.error("[transferirLeadParaOnline] falha notificando", e);
+      }
+    }
+    return { ok: true, corretor_nome: corretor?.nome ?? "Corretor" };
+  });
