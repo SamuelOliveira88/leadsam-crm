@@ -110,6 +110,7 @@ export type Database = {
           recebe_via_web: boolean
           recebe_via_whatsapp: boolean
           telefone: string | null
+          ultimo_ping: string | null
           user_id: string | null
         }
         Insert: {
@@ -124,6 +125,7 @@ export type Database = {
           recebe_via_web?: boolean
           recebe_via_whatsapp?: boolean
           telefone?: string | null
+          ultimo_ping?: string | null
           user_id?: string | null
         }
         Update: {
@@ -138,6 +140,7 @@ export type Database = {
           recebe_via_web?: boolean
           recebe_via_whatsapp?: boolean
           telefone?: string | null
+          ultimo_ping?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -907,6 +910,7 @@ export type Database = {
       }
     }
     Functions: {
+      corretor_heartbeat: { Args: never; Returns: undefined }
       dentro_do_horario: { Args: { p_grupo_id: string }; Returns: boolean }
       distribuir_lead_direcionado:
         | {
@@ -938,6 +942,10 @@ export type Database = {
           p_nome: string
           p_telefone: string
         }
+        Returns: string
+      }
+      escolher_corretor_online: {
+        Args: { p_grupo_id: string }
         Returns: string
       }
       get_meu_corretor_id: { Args: never; Returns: string }
