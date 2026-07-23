@@ -5,9 +5,11 @@ import { renderErrorPage } from "./lib/error-page";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
+  console.error("[errorMiddleware] running");
   try {
     return await next();
   } catch (error) {
+    console.error("[errorMiddleware] caught error", error);
     if (error != null && typeof error === "object" && "statusCode" in error) {
       throw error;
     }
