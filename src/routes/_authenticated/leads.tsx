@@ -134,6 +134,7 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
   const notificarFn = useServerFn(notificarCorretorDoLead);
   const transferirFn = useServerFn(transferirLead);
   const transferirOnlineFn = useServerFn(transferirLeadParaOnline);
+  const descartarFn = useServerFn(descartarLead);
   const listCorretoresFn = useServerFn(listarCorretores);
   const [texto, setTexto] = useState("");
   const [gerando, setGerando] = useState(false);
