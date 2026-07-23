@@ -1,4 +1,5 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 
 import { renderErrorPage } from "./lib/error-page";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
@@ -11,6 +12,21 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
       throw error;
     }
     console.error(error);
+
+    // Server functions and JSON API routes expect JSON errors.
+    // Returning HTML here breaks client-side error handling (e.g. empty {} toast).
+    const request = getRequest();
+    const headers = request?.headers;
+    const accept = headers?.get("accept") ?? "";
+    const contentType = headers?.get("content-type") ?? "";
+    const isJsonRequest =
+      accept.includes("application/json") ||
+      contentType.includes("application/json");
+
+    if (isJsonRequest) {
+      throw error;
+    }
+
     return new Response(renderErrorPage(), {
       status: 500,
       headers: { "content-type": "text/html; charset=utf-8" },
