@@ -446,6 +446,7 @@ export type Database = {
           created_at: string
           empresa_id: string | null
           id: string
+          is_principal: boolean
           nome: string
           whatsapp_distribuicao: string | null
           whatsapp_importacao: string | null
@@ -454,6 +455,7 @@ export type Database = {
           created_at?: string
           empresa_id?: string | null
           id?: string
+          is_principal?: boolean
           nome: string
           whatsapp_distribuicao?: string | null
           whatsapp_importacao?: string | null
@@ -462,6 +464,7 @@ export type Database = {
           created_at?: string
           empresa_id?: string | null
           id?: string
+          is_principal?: boolean
           nome?: string
           whatsapp_distribuicao?: string | null
           whatsapp_importacao?: string | null
