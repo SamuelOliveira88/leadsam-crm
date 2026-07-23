@@ -292,6 +292,21 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
             <Zap className="mr-2 size-4" />
             {transferirOnlineMut.isPending ? "Enviando…" : "Enviar p/ online"}
           </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            disabled={descartarMut.isPending}
+            onClick={() => {
+              const motivo = window.prompt("Motivo do descarte (opcional):") ?? undefined;
+              if (motivo === undefined) return; // cancelado
+              if (!window.confirm("Descartar este lead e devolvê-lo ao rodízio (excluindo você)?")) return;
+              descartarMut.mutate(motivo || undefined);
+            }}
+            title="Devolve o lead ao rodízio, sem você como candidato"
+          >
+            <RotateCcw className="mr-2 size-4" />
+            {descartarMut.isPending ? "Descartando…" : "Descartar lead"}
+          </Button>
         </div>
 
         {mostrarTransfer && (
