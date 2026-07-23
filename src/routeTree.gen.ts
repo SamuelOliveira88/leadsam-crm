@@ -9,7 +9,6 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TestErrorPageRouteImport } from './routes/test-error-page'
 import { Route as SetPasswordRouteImport } from './routes/set-password'
 import { Route as CadastroEmpresaRouteImport } from './routes/cadastro-empresa'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -27,13 +26,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
 import { Route as AuthenticatedAcessoRouteImport } from './routes/_authenticated/acesso'
 import { Route as ApiPublicWebhookRouteImport } from './routes/api/public/webhook'
-import { Route as ApiPublicTestErrorRouteImport } from './routes/api/public/test-error'
 
-const TestErrorPageRoute = TestErrorPageRouteImport.update({
-  id: '/test-error-page',
-  path: '/test-error-page',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const SetPasswordRoute = SetPasswordRouteImport.update({
   id: '/set-password',
   path: '/set-password',
@@ -119,18 +112,12 @@ const ApiPublicWebhookRoute = ApiPublicWebhookRouteImport.update({
   path: '/api/public/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicTestErrorRoute = ApiPublicTestErrorRouteImport.update({
-  id: '/api/public/test-error',
-  path: '/api/public/test-error',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/cadastro-empresa': typeof CadastroEmpresaRoute
   '/set-password': typeof SetPasswordRoute
-  '/test-error-page': typeof TestErrorPageRoute
   '/acesso': typeof AuthenticatedAcessoRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -142,7 +129,6 @@ export interface FileRoutesByFullPath {
   '/leads': typeof AuthenticatedLeadsRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/propostas': typeof AuthenticatedPropostasRoute
-  '/api/public/test-error': typeof ApiPublicTestErrorRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -150,7 +136,6 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/cadastro-empresa': typeof CadastroEmpresaRoute
   '/set-password': typeof SetPasswordRoute
-  '/test-error-page': typeof TestErrorPageRoute
   '/acesso': typeof AuthenticatedAcessoRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -162,7 +147,6 @@ export interface FileRoutesByTo {
   '/leads': typeof AuthenticatedLeadsRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/propostas': typeof AuthenticatedPropostasRoute
-  '/api/public/test-error': typeof ApiPublicTestErrorRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
 }
 export interface FileRoutesById {
@@ -172,7 +156,6 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/cadastro-empresa': typeof CadastroEmpresaRoute
   '/set-password': typeof SetPasswordRoute
-  '/test-error-page': typeof TestErrorPageRoute
   '/_authenticated/acesso': typeof AuthenticatedAcessoRoute
   '/_authenticated/corretores': typeof AuthenticatedCorretoresRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -184,7 +167,6 @@ export interface FileRoutesById {
   '/_authenticated/leads': typeof AuthenticatedLeadsRoute
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/propostas': typeof AuthenticatedPropostasRoute
-  '/api/public/test-error': typeof ApiPublicTestErrorRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
 }
 export interface FileRouteTypes {
@@ -194,7 +176,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cadastro-empresa'
     | '/set-password'
-    | '/test-error-page'
     | '/acesso'
     | '/corretores'
     | '/dashboard'
@@ -206,7 +187,6 @@ export interface FileRouteTypes {
     | '/leads'
     | '/notificacoes'
     | '/propostas'
-    | '/api/public/test-error'
     | '/api/public/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -214,7 +194,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cadastro-empresa'
     | '/set-password'
-    | '/test-error-page'
     | '/acesso'
     | '/corretores'
     | '/dashboard'
@@ -226,7 +205,6 @@ export interface FileRouteTypes {
     | '/leads'
     | '/notificacoes'
     | '/propostas'
-    | '/api/public/test-error'
     | '/api/public/webhook'
   id:
     | '__root__'
@@ -235,7 +213,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cadastro-empresa'
     | '/set-password'
-    | '/test-error-page'
     | '/_authenticated/acesso'
     | '/_authenticated/corretores'
     | '/_authenticated/dashboard'
@@ -247,7 +224,6 @@ export interface FileRouteTypes {
     | '/_authenticated/leads'
     | '/_authenticated/notificacoes'
     | '/_authenticated/propostas'
-    | '/api/public/test-error'
     | '/api/public/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -257,20 +233,11 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CadastroEmpresaRoute: typeof CadastroEmpresaRoute
   SetPasswordRoute: typeof SetPasswordRoute
-  TestErrorPageRoute: typeof TestErrorPageRoute
-  ApiPublicTestErrorRoute: typeof ApiPublicTestErrorRoute
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/test-error-page': {
-      id: '/test-error-page'
-      path: '/test-error-page'
-      fullPath: '/test-error-page'
-      preLoaderRoute: typeof TestErrorPageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/set-password': {
       id: '/set-password'
       path: '/set-password'
@@ -390,13 +357,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/test-error': {
-      id: '/api/public/test-error'
-      path: '/api/public/test-error'
-      fullPath: '/api/public/test-error'
-      preLoaderRoute: typeof ApiPublicTestErrorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -437,8 +397,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CadastroEmpresaRoute: CadastroEmpresaRoute,
   SetPasswordRoute: SetPasswordRoute,
-  TestErrorPageRoute: TestErrorPageRoute,
-  ApiPublicTestErrorRoute: ApiPublicTestErrorRoute,
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
 }
 export const routeTree = rootRouteImport
