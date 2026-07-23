@@ -12,6 +12,7 @@ const ConviteSchema = z.object({
   recebe_via_web: z.boolean().default(true),
   recebe_via_whatsapp: z.boolean().default(true),
   redirect_to: z.string().url(),
+  role: z.enum(["corretor", "gerente"]).default("corretor"),
 });
 
 function json(body: unknown, status = 200) {
