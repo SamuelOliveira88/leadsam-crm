@@ -27,6 +27,7 @@ import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAcessoRouteImport } from './routes/_authenticated/acesso'
 import { Route as ApiPublicWebhookRouteImport } from './routes/api/public/webhook'
 import { Route as ApiCorretoresConvidarRouteImport } from './routes/api/corretores/convidar'
+import { Route as ApiPublicHooksProcessarFilaRouteImport } from './routes/api/public/hooks/processar-fila'
 
 const SetPasswordRoute = SetPasswordRouteImport.update({
   id: '/set-password',
@@ -118,6 +119,12 @@ const ApiCorretoresConvidarRoute = ApiCorretoresConvidarRouteImport.update({
   path: '/api/corretores/convidar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksProcessarFilaRoute =
+  ApiPublicHooksProcessarFilaRouteImport.update({
+    id: '/api/public/hooks/processar-fila',
+    path: '/api/public/hooks/processar-fila',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/propostas': typeof AuthenticatedPropostasRoute
   '/api/corretores/convidar': typeof ApiCorretoresConvidarRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
+  '/api/public/hooks/processar-fila': typeof ApiPublicHooksProcessarFilaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -156,6 +164,7 @@ export interface FileRoutesByTo {
   '/propostas': typeof AuthenticatedPropostasRoute
   '/api/corretores/convidar': typeof ApiCorretoresConvidarRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
+  '/api/public/hooks/processar-fila': typeof ApiPublicHooksProcessarFilaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -177,6 +186,7 @@ export interface FileRoutesById {
   '/_authenticated/propostas': typeof AuthenticatedPropostasRoute
   '/api/corretores/convidar': typeof ApiCorretoresConvidarRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
+  '/api/public/hooks/processar-fila': typeof ApiPublicHooksProcessarFilaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -198,6 +208,7 @@ export interface FileRouteTypes {
     | '/propostas'
     | '/api/corretores/convidar'
     | '/api/public/webhook'
+    | '/api/public/hooks/processar-fila'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -217,6 +228,7 @@ export interface FileRouteTypes {
     | '/propostas'
     | '/api/corretores/convidar'
     | '/api/public/webhook'
+    | '/api/public/hooks/processar-fila'
   id:
     | '__root__'
     | '/'
@@ -237,6 +249,7 @@ export interface FileRouteTypes {
     | '/_authenticated/propostas'
     | '/api/corretores/convidar'
     | '/api/public/webhook'
+    | '/api/public/hooks/processar-fila'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -247,6 +260,7 @@ export interface RootRouteChildren {
   SetPasswordRoute: typeof SetPasswordRoute
   ApiCorretoresConvidarRoute: typeof ApiCorretoresConvidarRoute
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
+  ApiPublicHooksProcessarFilaRoute: typeof ApiPublicHooksProcessarFilaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -377,6 +391,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCorretoresConvidarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/processar-fila': {
+      id: '/api/public/hooks/processar-fila'
+      path: '/api/public/hooks/processar-fila'
+      fullPath: '/api/public/hooks/processar-fila'
+      preLoaderRoute: typeof ApiPublicHooksProcessarFilaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -419,17 +440,8 @@ const rootRouteChildren: RootRouteChildren = {
   SetPasswordRoute: SetPasswordRoute,
   ApiCorretoresConvidarRoute: ApiCorretoresConvidarRoute,
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
+  ApiPublicHooksProcessarFilaRoute: ApiPublicHooksProcessarFilaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
