@@ -110,14 +110,34 @@ function Corretores() {
       </div>
 
       <Card className="grid gap-2 p-4 md:grid-cols-6">
+        {isMaster && (
+          <div className="flex flex-wrap gap-2 md:col-span-6">
+            <Button
+              type="button"
+              size="sm"
+              variant={form.role === "corretor" ? "default" : "outline"}
+              onClick={() => setForm({ ...form, role: "corretor" })}
+            >
+              <Mail className="mr-2 size-4" /> Convidar Corretor
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={form.role === "gerente" ? "default" : "outline"}
+              onClick={() => setForm({ ...form, role: "gerente" })}
+            >
+              <UserCog className="mr-2 size-4" /> Convidar Gerente
+            </Button>
+          </div>
+        )}
         <Input placeholder="Nome" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
         <Input placeholder="E-mail (para convite)" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-        <Input placeholder="WhatsApp (55...)" value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} />
+        <Input placeholder="WhatsApp (55...)" value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} disabled={isMaster && form.role === "gerente"} />
         <select className="rounded-md border bg-background px-3 py-2 text-sm" value={form.grupo_id} onChange={(e) => setForm({ ...form, grupo_id: e.target.value })}>
-          <option value="">Sem grupo</option>
+          <option value="">{form.role === "gerente" ? "Selecione o grupo…" : "Sem grupo"}</option>
           {(grupos ?? []).map((g) => <option key={g.id} value={g.id}>{g.nome}</option>)}
         </select>
-        <select className="rounded-md border bg-background px-3 py-2 text-sm" value={form.canal_notificacao} onChange={(e) => setForm({ ...form, canal_notificacao: e.target.value as any })}>
+        <select className="rounded-md border bg-background px-3 py-2 text-sm" value={form.canal_notificacao} onChange={(e) => setForm({ ...form, canal_notificacao: e.target.value as any })} disabled={isMaster && form.role === "gerente"}>
           <option value="whatsapp">WhatsApp</option>
           <option value="email">E-mail</option>
           <option value="ambos">Ambos</option>
@@ -125,9 +145,9 @@ function Corretores() {
         </select>
         {isMaster ? (
           <Button
-            disabled={!form.nome || !form.email || inviteMut.isPending}
+            disabled={!form.nome || !form.email || (form.role === "gerente" && !form.grupo_id) || inviteMut.isPending}
             onClick={() => inviteMut.mutate(undefined, {
-              onSuccess: () => toast.success("Convite enviado por e-mail!"),
+              onSuccess: () => toast.success(form.role === "gerente" ? "Convite de gerente enviado!" : "Convite enviado por e-mail!"),
               onError: (e: any) => {
                 console.error("Erro ao enviar convite:", e);
                 const msg =
@@ -140,28 +160,35 @@ function Corretores() {
               },
             })}
           >
-            <Mail className="mr-2 size-4" /> {inviteMut.isPending ? "Enviando…" : "Enviar convite"}
+            <Mail className="mr-2 size-4" /> {inviteMut.isPending ? "Enviando…" : `Enviar convite de ${form.role === "gerente" ? "gerente" : "corretor"}`}
           </Button>
         ) : (
           <Button onClick={() => form.nome && createMut.mutate()}><Plus className="mr-2 size-4" /> Adicionar</Button>
         )}
 
         <div className="flex flex-wrap items-center gap-4 md:col-span-6">
-          <label className="flex items-center gap-2 text-xs">
-            <input type="checkbox" checked={form.recebe_via_web} onChange={(e) => setForm({ ...form, recebe_via_web: e.target.checked })} />
-            Recebe via Web
-          </label>
-          <label className="flex items-center gap-2 text-xs">
-            <input type="checkbox" checked={form.recebe_via_whatsapp} onChange={(e) => setForm({ ...form, recebe_via_whatsapp: e.target.checked })} />
-            Recebe via WhatsApp
-          </label>
+          {form.role === "corretor" && (
+            <>
+              <label className="flex items-center gap-2 text-xs">
+                <input type="checkbox" checked={form.recebe_via_web} onChange={(e) => setForm({ ...form, recebe_via_web: e.target.checked })} />
+                Recebe via Web
+              </label>
+              <label className="flex items-center gap-2 text-xs">
+                <input type="checkbox" checked={form.recebe_via_whatsapp} onChange={(e) => setForm({ ...form, recebe_via_whatsapp: e.target.checked })} />
+                Recebe via WhatsApp
+              </label>
+            </>
+          )}
           {isMaster && (
             <span className="text-xs text-muted-foreground">
-              O corretor receberá um e-mail com link para definir a senha e acessar o app.
+              {form.role === "gerente"
+                ? "O gerente receberá um e-mail com link para definir a senha e verá todos os leads e corretores do grupo selecionado."
+                : "O corretor receberá um e-mail com link para definir a senha e acessar o app."}
             </span>
           )}
         </div>
       </Card>
+
 
 
       <div className="grid gap-2">
