@@ -18,7 +18,7 @@ function TestErrorPage() {
       <Button
         onClick={async () => {
           try {
-            await fn({ data: {} });
+            await fn();
             setResult("Sucesso (inesperado)");
           } catch (e: any) {
             console.error("Erro capturado:", e);

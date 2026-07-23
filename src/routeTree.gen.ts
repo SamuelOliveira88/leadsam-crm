@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TestErrorPageRouteImport } from './routes/test-error-page'
 import { Route as SetPasswordRouteImport } from './routes/set-password'
 import { Route as CadastroEmpresaRouteImport } from './routes/cadastro-empresa'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -28,6 +29,11 @@ import { Route as AuthenticatedAcessoRouteImport } from './routes/_authenticated
 import { Route as ApiPublicWebhookRouteImport } from './routes/api/public/webhook'
 import { Route as ApiPublicTestErrorRouteImport } from './routes/api/public/test-error'
 
+const TestErrorPageRoute = TestErrorPageRouteImport.update({
+  id: '/test-error-page',
+  path: '/test-error-page',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SetPasswordRoute = SetPasswordRouteImport.update({
   id: '/set-password',
   path: '/set-password',
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/cadastro-empresa': typeof CadastroEmpresaRoute
   '/set-password': typeof SetPasswordRoute
+  '/test-error-page': typeof TestErrorPageRoute
   '/acesso': typeof AuthenticatedAcessoRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -143,6 +150,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/cadastro-empresa': typeof CadastroEmpresaRoute
   '/set-password': typeof SetPasswordRoute
+  '/test-error-page': typeof TestErrorPageRoute
   '/acesso': typeof AuthenticatedAcessoRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -164,6 +172,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/cadastro-empresa': typeof CadastroEmpresaRoute
   '/set-password': typeof SetPasswordRoute
+  '/test-error-page': typeof TestErrorPageRoute
   '/_authenticated/acesso': typeof AuthenticatedAcessoRoute
   '/_authenticated/corretores': typeof AuthenticatedCorretoresRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -185,6 +194,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cadastro-empresa'
     | '/set-password'
+    | '/test-error-page'
     | '/acesso'
     | '/corretores'
     | '/dashboard'
@@ -204,6 +214,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cadastro-empresa'
     | '/set-password'
+    | '/test-error-page'
     | '/acesso'
     | '/corretores'
     | '/dashboard'
@@ -224,6 +235,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cadastro-empresa'
     | '/set-password'
+    | '/test-error-page'
     | '/_authenticated/acesso'
     | '/_authenticated/corretores'
     | '/_authenticated/dashboard'
@@ -245,12 +257,20 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CadastroEmpresaRoute: typeof CadastroEmpresaRoute
   SetPasswordRoute: typeof SetPasswordRoute
+  TestErrorPageRoute: typeof TestErrorPageRoute
   ApiPublicTestErrorRoute: typeof ApiPublicTestErrorRoute
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/test-error-page': {
+      id: '/test-error-page'
+      path: '/test-error-page'
+      fullPath: '/test-error-page'
+      preLoaderRoute: typeof TestErrorPageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/set-password': {
       id: '/set-password'
       path: '/set-password'
@@ -417,6 +437,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CadastroEmpresaRoute: CadastroEmpresaRoute,
   SetPasswordRoute: SetPasswordRoute,
+  TestErrorPageRoute: TestErrorPageRoute,
   ApiPublicTestErrorRoute: ApiPublicTestErrorRoute,
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
 }
