@@ -19,11 +19,13 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
     const headers = request?.headers;
     const accept = headers?.get("accept") ?? "";
     const contentType = headers?.get("content-type") ?? "";
+    console.error("[errorMiddleware] accept:", accept, "content-type:", contentType, "url:", request?.url);
     const isJsonRequest =
       accept.includes("application/json") ||
       contentType.includes("application/json");
 
     if (isJsonRequest) {
+      console.error("[errorMiddleware] re-throwing for JSON request");
       throw error;
     }
 
