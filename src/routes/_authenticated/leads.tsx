@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Trash2, X, Sparkles, MessageCircle, Eye, Download, ArrowRightLeft } from "lucide-react";
+import { Trash2, X, Sparkles, MessageCircle, Eye, Download, ArrowRightLeft, Zap } from "lucide-react";
 import * as XLSX from "xlsx";
-import { listarLeads, excluirLead, exportarLeads, transferirLead } from "@/lib/leads.functions";
+import { listarLeads, excluirLead, exportarLeads, transferirLead, transferirLeadParaOnline } from "@/lib/leads.functions";
 import { listarCorretores } from "@/lib/corretores.functions";
 import { listarNotas, criarNota, marcarLeadVisualizado, gerarMensagemAbertura } from "@/lib/notas.functions";
 import { notificarCorretorDoLead } from "@/lib/evolution.functions";
@@ -133,6 +133,7 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
   const gerarFn = useServerFn(gerarMensagemAbertura);
   const notificarFn = useServerFn(notificarCorretorDoLead);
   const transferirFn = useServerFn(transferirLead);
+  const transferirOnlineFn = useServerFn(transferirLeadParaOnline);
   const listCorretoresFn = useServerFn(listarCorretores);
   const [texto, setTexto] = useState("");
   const [gerando, setGerando] = useState(false);
@@ -143,7 +144,11 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
     queryKey: ["corretores-transfer"],
     queryFn: () => listCorretoresFn(),
     enabled: mostrarTransfer,
+    refetchInterval: 30_000,
   });
+
+  const isOnline = (c: any) =>
+    c?.ultimo_ping && Date.now() - new Date(c.ultimo_ping).getTime() < 3 * 60_000;
 
   const transferirMut = useMutation({
     mutationFn: () => transferirFn({ data: { lead_id: lead.id, corretor_id: novoCorretor } }),
@@ -155,6 +160,16 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
       onClose();
     },
     onError: (e: any) => toast.error(e?.message ?? "Falha ao transferir"),
+  });
+
+  const transferirOnlineMut = useMutation({
+    mutationFn: () => transferirOnlineFn({ data: { lead_id: lead.id } }),
+    onSuccess: (r: any) => {
+      toast.success(`Lead enviado para ${r.corretor_nome} (online).`);
+      qc.invalidateQueries({ queryKey: ["leads"] });
+      onClose();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Nenhum corretor online agora"),
   });
 
   const { data: notas } = useQuery({
@@ -251,6 +266,16 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
           >
             <ArrowRightLeft className="mr-2 size-4" /> Transferir corretor
           </Button>
+          <Button
+            size="sm"
+            variant="default"
+            disabled={transferirOnlineMut.isPending}
+            onClick={() => transferirOnlineMut.mutate()}
+            title="Envia para um corretor online agora, seguindo o rodízio do grupo"
+          >
+            <Zap className="mr-2 size-4" />
+            {transferirOnlineMut.isPending ? "Enviando…" : "Enviar p/ online"}
+          </Button>
         </div>
 
         {mostrarTransfer && (
@@ -258,17 +283,25 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
             <label className="text-xs font-semibold uppercase text-muted-foreground">
               Escolha o novo corretor
             </label>
+            <div className="mt-1 text-[11px] text-muted-foreground">
+              🟢 indica corretor online agora (visto há menos de 3 minutos)
+            </div>
             <select
               className="mt-2 w-full rounded-md border bg-background p-2 text-sm"
               value={novoCorretor}
               onChange={(e) => setNovoCorretor(e.target.value)}
             >
               <option value="">— Selecione —</option>
-              {(corretores ?? []).map((c: any) => (
-                <option key={c.id} value={c.id} disabled={!c.ativo}>
-                  {c.nome} {c.grupos?.nome ? `· ${c.grupos.nome}` : ""} {c.ativo ? "" : "(inativo)"}
-                </option>
-              ))}
+              {(corretores ?? [])
+                .slice()
+                .sort((a: any, b: any) => Number(isOnline(b)) - Number(isOnline(a)))
+                .map((c: any) => (
+                  <option key={c.id} value={c.id} disabled={!c.ativo}>
+                    {isOnline(c) ? "🟢 " : "⚪ "}{c.nome}
+                    {c.grupos?.nome ? ` · ${c.grupos.nome}` : ""}
+                    {c.ativo ? "" : " (inativo)"}
+                  </option>
+                ))}
             </select>
             <div className="mt-2 flex justify-end gap-2">
               <Button size="sm" variant="ghost" onClick={() => setMostrarTransfer(false)}>Cancelar</Button>
