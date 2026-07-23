@@ -360,6 +360,7 @@ export const descartarLead = createServerFn({ method: "POST" })
       .from("leads")
       .update({
         corretor_id: novoId,
+        grupo_id: novoGrupoId ?? lead.grupo_id,
         status: novoId ? "distribuido" : "represado",
         represado_em: novoId ? null : agora,
         visualizado_em: null,
