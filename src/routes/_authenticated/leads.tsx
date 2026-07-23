@@ -266,6 +266,16 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
           >
             <ArrowRightLeft className="mr-2 size-4" /> Transferir corretor
           </Button>
+          <Button
+            size="sm"
+            variant="default"
+            disabled={transferirOnlineMut.isPending}
+            onClick={() => transferirOnlineMut.mutate()}
+            title="Envia para um corretor online agora, seguindo o rodízio do grupo"
+          >
+            <Zap className="mr-2 size-4" />
+            {transferirOnlineMut.isPending ? "Enviando…" : "Enviar p/ online"}
+          </Button>
         </div>
 
         {mostrarTransfer && (
@@ -273,17 +283,25 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
             <label className="text-xs font-semibold uppercase text-muted-foreground">
               Escolha o novo corretor
             </label>
+            <div className="mt-1 text-[11px] text-muted-foreground">
+              🟢 indica corretor online agora (visto há menos de 3 minutos)
+            </div>
             <select
               className="mt-2 w-full rounded-md border bg-background p-2 text-sm"
               value={novoCorretor}
               onChange={(e) => setNovoCorretor(e.target.value)}
             >
               <option value="">— Selecione —</option>
-              {(corretores ?? []).map((c: any) => (
-                <option key={c.id} value={c.id} disabled={!c.ativo}>
-                  {c.nome} {c.grupos?.nome ? `· ${c.grupos.nome}` : ""} {c.ativo ? "" : "(inativo)"}
-                </option>
-              ))}
+              {(corretores ?? [])
+                .slice()
+                .sort((a: any, b: any) => Number(isOnline(b)) - Number(isOnline(a)))
+                .map((c: any) => (
+                  <option key={c.id} value={c.id} disabled={!c.ativo}>
+                    {isOnline(c) ? "🟢 " : "⚪ "}{c.nome}
+                    {c.grupos?.nome ? ` · ${c.grupos.nome}` : ""}
+                    {c.ativo ? "" : " (inativo)"}
+                  </option>
+                ))}
             </select>
             <div className="mt-2 flex justify-end gap-2">
               <Button size="sm" variant="ghost" onClick={() => setMostrarTransfer(false)}>Cancelar</Button>
