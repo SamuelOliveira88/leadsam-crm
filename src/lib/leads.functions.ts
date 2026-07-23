@@ -57,24 +57,26 @@ export const importarLeads = createServerFn({ method: "POST" })
         erros++;
       } else {
         sucesso++;
-        if (corretorId) {
-          try {
-            const { data: novoLead } = await context.supabase
-              .from("leads")
-              .select("id")
-              .eq("grupo_id", data.grupo_id)
-              .eq("corretor_id", corretorId)
-              .eq("nome", lead.nome)
-              .order("created_at", { ascending: false })
-              .limit(1)
-              .maybeSingle();
-            if (novoLead?.id) {
-              const { notificarCorretorPorLead } = await import("./evolution.server");
-              await notificarCorretorPorLead(context.supabase, novoLead.id);
-            }
-          } catch (e) {
-            console.error("[importarLeads] falha notificando corretor", e);
+        try {
+          const { data: novoLead } = await context.supabase
+            .from("leads")
+            .select("id, corretores(nome), grupos(nome)")
+            .eq("grupo_id", data.grupo_id)
+            .eq("nome", lead.nome)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          const { notificarMonitor } = await import("./evolution.server");
+          const grupoNome = (novoLead as any)?.grupos?.nome ?? null;
+          const corretorNome = (novoLead as any)?.corretores?.nome ?? null;
+          await notificarMonitor("entrada", { nome: lead.nome, telefone: lead.telefone, email: lead.email, grupo: grupoNome, fonte: "importacao" });
+          if (corretorId && novoLead?.id) {
+            const { notificarCorretorPorLead } = await import("./evolution.server");
+            await notificarCorretorPorLead(context.supabase, novoLead.id);
           }
+          await notificarMonitor("entrega", { nome: lead.nome, telefone: lead.telefone, email: lead.email, grupo: grupoNome, fonte: "importacao" }, corretorNome);
+        } catch (e) {
+          console.error("[importarLeads] falha notificando", e);
         }
       }
     }
