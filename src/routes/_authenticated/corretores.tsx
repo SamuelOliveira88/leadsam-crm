@@ -101,7 +101,16 @@ function Corretores() {
             disabled={!form.nome || !form.email || inviteMut.isPending}
             onClick={() => inviteMut.mutate(undefined, {
               onSuccess: () => toast.success("Convite enviado por e-mail!"),
-              onError: (e: any) => toast.error(e?.message ?? "Falha ao enviar convite"),
+              onError: (e: any) => {
+                console.error("Erro ao enviar convite:", e);
+                const msg =
+                  e?.message ||
+                  e?.data?.message ||
+                  e?.error?.message ||
+                  e?.error ||
+                  "Falha ao enviar convite";
+                toast.error(typeof msg === "string" ? msg : "Falha ao enviar convite");
+              },
             })}
           >
             <Mail className="mr-2 size-4" /> {inviteMut.isPending ? "Enviando…" : "Enviar convite"}
