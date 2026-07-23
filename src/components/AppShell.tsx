@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Building2, LayoutDashboard, Users, UserCog, Upload, Clock, Layers, LogOut, Bell, Grid3x3, ShieldCheck, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { meuPerfil } from "@/lib/perfis.functions";
+import { heartbeatCorretor } from "@/lib/corretores.functions";
 import { listarNotificacoes } from "@/lib/notificacoes.functions";
 import { getConfigAcesso } from "@/lib/config-acesso.functions";
 import { cn } from "@/lib/utils";
@@ -64,6 +65,15 @@ export function AppShell({ user, children }: { user: User; children: React.React
 
   const [tick, setTick] = useState(0);
   useEffect(() => { const t = setInterval(() => setTick((x) => x + 1), 30000); return () => clearInterval(t); }, []);
+
+  const hb = useServerFn(heartbeatCorretor);
+  useEffect(() => {
+    if (perfil?.role !== "corretor") return;
+    const ping = () => { hb().catch(() => {}); };
+    ping();
+    const id = setInterval(ping, 60_000);
+    return () => clearInterval(id);
+  }, [perfil?.role]);
 
   function permitido(): boolean {
     if (!config) return true;
