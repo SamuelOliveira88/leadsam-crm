@@ -33,8 +33,8 @@ function Corretores() {
   const isMaster = perfil?.role === "master";
   const [showGrupos, setShowGrupos] = useState(false);
 
-  const [form, setForm] = useState({ nome: "", email: "", telefone: "", grupo_id: "", canal_notificacao: "whatsapp" as const, recebe_via_web: true, recebe_via_whatsapp: true });
-  const resetForm = () => setForm({ nome: "", email: "", telefone: "", grupo_id: "", canal_notificacao: "whatsapp", recebe_via_web: true, recebe_via_whatsapp: true });
+  const [form, setForm] = useState({ nome: "", email: "", telefone: "", grupo_id: "", canal_notificacao: "whatsapp" as const, recebe_via_web: true, recebe_via_whatsapp: true, role: "corretor" as "corretor" | "gerente" });
+  const resetForm = () => setForm({ nome: "", email: "", telefone: "", grupo_id: "", canal_notificacao: "whatsapp", recebe_via_web: true, recebe_via_whatsapp: true, role: "corretor" });
 
   const createMut = useMutation({
     mutationFn: () => createFn({ data: {
@@ -64,6 +64,7 @@ function Corretores() {
           canal_notificacao: form.canal_notificacao,
           recebe_via_web: form.recebe_via_web,
           recebe_via_whatsapp: form.recebe_via_whatsapp,
+          role: form.role,
           redirect_to: `${window.location.origin}/set-password`,
         }),
       });
