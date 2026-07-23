@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Trash2, X, Sparkles, MessageCircle, Eye, Download, ArrowRightLeft, Zap } from "lucide-react";
 import * as XLSX from "xlsx";
-import { listarLeads, excluirLead, exportarLeads, transferirLead, transferirLeadParaOnline } from "@/lib/leads.functions";
+import { listarLeads, excluirLead, exportarLeads, transferirLead, transferirLeadParaOnline, descartarLead } from "@/lib/leads.functions";
 import { listarCorretores } from "@/lib/corretores.functions";
 import { listarNotas, criarNota, marcarLeadVisualizado, gerarMensagemAbertura } from "@/lib/notas.functions";
 import { notificarCorretorDoLead } from "@/lib/evolution.functions";
