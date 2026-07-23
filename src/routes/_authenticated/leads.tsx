@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Trash2, X, Sparkles, MessageCircle, Eye, Download, ArrowRightLeft, Zap } from "lucide-react";
+import { Trash2, X, Sparkles, MessageCircle, Eye, Download, ArrowRightLeft, Zap, RotateCcw } from "lucide-react";
 import * as XLSX from "xlsx";
-import { listarLeads, excluirLead, exportarLeads, transferirLead, transferirLeadParaOnline } from "@/lib/leads.functions";
+import { listarLeads, excluirLead, exportarLeads, transferirLead, transferirLeadParaOnline, descartarLead } from "@/lib/leads.functions";
 import { listarCorretores } from "@/lib/corretores.functions";
 import { listarNotas, criarNota, marcarLeadVisualizado, gerarMensagemAbertura } from "@/lib/notas.functions";
 import { notificarCorretorDoLead } from "@/lib/evolution.functions";
@@ -134,6 +134,7 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
   const notificarFn = useServerFn(notificarCorretorDoLead);
   const transferirFn = useServerFn(transferirLead);
   const transferirOnlineFn = useServerFn(transferirLeadParaOnline);
+  const descartarFn = useServerFn(descartarLead);
   const listCorretoresFn = useServerFn(listarCorretores);
   const [texto, setTexto] = useState("");
   const [gerando, setGerando] = useState(false);
@@ -170,6 +171,21 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
       onClose();
     },
     onError: (e: any) => toast.error(e?.message ?? "Nenhum corretor online agora"),
+  });
+
+  const descartarMut = useMutation({
+    mutationFn: (motivo?: string) => descartarFn({ data: { lead_id: lead.id, motivo } }),
+    onSuccess: (r: any) => {
+      if (r?.represado) {
+        toast.success("Lead descartado. Ninguém elegível — voltou para represados.");
+      } else {
+        toast.success(`Lead descartado e redistribuído para ${r.corretor_nome}.`);
+      }
+      qc.invalidateQueries({ queryKey: ["leads"] });
+      qc.invalidateQueries({ queryKey: ["notas", lead.id] });
+      onClose();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Falha ao descartar"),
   });
 
   const { data: notas } = useQuery({
@@ -275,6 +291,21 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
           >
             <Zap className="mr-2 size-4" />
             {transferirOnlineMut.isPending ? "Enviando…" : "Enviar p/ online"}
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            disabled={descartarMut.isPending}
+            onClick={() => {
+              const motivo = window.prompt("Motivo do descarte (opcional):") ?? undefined;
+              if (motivo === undefined) return; // cancelado
+              if (!window.confirm("Descartar este lead e devolvê-lo ao rodízio (excluindo você)?")) return;
+              descartarMut.mutate(motivo || undefined);
+            }}
+            title="Devolve o lead ao rodízio, sem você como candidato"
+          >
+            <RotateCcw className="mr-2 size-4" />
+            {descartarMut.isPending ? "Descartando…" : "Descartar lead"}
           </Button>
         </div>
 
