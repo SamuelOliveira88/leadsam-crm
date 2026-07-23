@@ -196,3 +196,45 @@ export const excluirLead = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+export const transferirLead = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({
+      lead_id: z.string().uuid(),
+      corretor_id: z.string().uuid(),
+      notificar: z.boolean().optional().default(true),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: corretor, error: cErr } = await context.supabase
+      .from("corretores")
+      .select("id, nome, grupo_id, ativo")
+      .eq("id", data.corretor_id)
+      .maybeSingle();
+    if (cErr) throw new Error(cErr.message);
+    if (!corretor) throw new Error("Corretor não encontrado");
+
+    const { error } = await context.supabase
+      .from("leads")
+      .update({
+        corretor_id: data.corretor_id,
+        grupo_id: corretor.grupo_id,
+        status: "distribuido",
+        represado_em: null,
+        visualizado_em: null,
+        ultima_atividade_em: new Date().toISOString(),
+      })
+      .eq("id", data.lead_id);
+    if (error) throw new Error(error.message);
+
+    if (data.notificar) {
+      try {
+        const { notificarCorretorPorLead } = await import("./evolution.server");
+        await notificarCorretorPorLead(context.supabase, data.lead_id);
+      } catch (e) {
+        console.error("[transferirLead] falha notificando", e);
+      }
+    }
+    return { ok: true, corretor_nome: corretor.nome };
+  });
