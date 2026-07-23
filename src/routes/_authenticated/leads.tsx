@@ -2,9 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Trash2, X, Sparkles, MessageCircle, Eye, Download } from "lucide-react";
+import { Trash2, X, Sparkles, MessageCircle, Eye, Download, ArrowRightLeft } from "lucide-react";
 import * as XLSX from "xlsx";
-import { listarLeads, excluirLead, exportarLeads } from "@/lib/leads.functions";
+import { listarLeads, excluirLead, exportarLeads, transferirLead } from "@/lib/leads.functions";
+import { listarCorretores } from "@/lib/corretores.functions";
 import { listarNotas, criarNota, marcarLeadVisualizado, gerarMensagemAbertura } from "@/lib/notas.functions";
 import { notificarCorretorDoLead } from "@/lib/evolution.functions";
 import { Card } from "@/components/ui/card";
@@ -131,8 +132,30 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
   const marcarVistoFn = useServerFn(marcarLeadVisualizado);
   const gerarFn = useServerFn(gerarMensagemAbertura);
   const notificarFn = useServerFn(notificarCorretorDoLead);
+  const transferirFn = useServerFn(transferirLead);
+  const listCorretoresFn = useServerFn(listarCorretores);
   const [texto, setTexto] = useState("");
   const [gerando, setGerando] = useState(false);
+  const [mostrarTransfer, setMostrarTransfer] = useState(false);
+  const [novoCorretor, setNovoCorretor] = useState("");
+
+  const { data: corretores } = useQuery({
+    queryKey: ["corretores-transfer"],
+    queryFn: () => listCorretoresFn(),
+    enabled: mostrarTransfer,
+  });
+
+  const transferirMut = useMutation({
+    mutationFn: () => transferirFn({ data: { lead_id: lead.id, corretor_id: novoCorretor } }),
+    onSuccess: (r: any) => {
+      toast.success(`Lead transferido para ${r.corretor_nome}.`);
+      setMostrarTransfer(false);
+      setNovoCorretor("");
+      qc.invalidateQueries({ queryKey: ["leads"] });
+      onClose();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Falha ao transferir"),
+  });
 
   const { data: notas } = useQuery({
     queryKey: ["notas", lead.id],
@@ -221,9 +244,44 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
           >
             <MessageCircle className="mr-2 size-4" /> Notificar corretor (Evolution)
           </Button>
-
-
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setMostrarTransfer((v) => !v)}
+          >
+            <ArrowRightLeft className="mr-2 size-4" /> Transferir corretor
+          </Button>
         </div>
+
+        {mostrarTransfer && (
+          <div className="mb-4 rounded-md border bg-muted/40 p-3">
+            <label className="text-xs font-semibold uppercase text-muted-foreground">
+              Escolha o novo corretor
+            </label>
+            <select
+              className="mt-2 w-full rounded-md border bg-background p-2 text-sm"
+              value={novoCorretor}
+              onChange={(e) => setNovoCorretor(e.target.value)}
+            >
+              <option value="">— Selecione —</option>
+              {(corretores ?? []).map((c: any) => (
+                <option key={c.id} value={c.id} disabled={!c.ativo}>
+                  {c.nome} {c.grupos?.nome ? `· ${c.grupos.nome}` : ""} {c.ativo ? "" : "(inativo)"}
+                </option>
+              ))}
+            </select>
+            <div className="mt-2 flex justify-end gap-2">
+              <Button size="sm" variant="ghost" onClick={() => setMostrarTransfer(false)}>Cancelar</Button>
+              <Button
+                size="sm"
+                disabled={!novoCorretor || transferirMut.isPending}
+                onClick={() => transferirMut.mutate()}
+              >
+                {transferirMut.isPending ? "Transferindo…" : "Confirmar transferência"}
+              </Button>
+            </div>
+          </div>
+        )}
 
         <div className="mb-4">
           <label className="text-xs font-semibold uppercase text-muted-foreground">Nova nota / histórico</label>
