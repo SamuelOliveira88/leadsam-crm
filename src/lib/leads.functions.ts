@@ -297,26 +297,43 @@ export const descartarLead = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { data: lead, error: lErr } = await context.supabase
-      .from("leads").select("id, grupo_id, corretor_id, nome").eq("id", data.lead_id).maybeSingle();
+      .from("leads").select("id, grupo_id, corretor_id, nome, empresa_id").eq("id", data.lead_id).maybeSingle();
     if (lErr) throw new Error(lErr.message);
     if (!lead) throw new Error("Lead não encontrado");
     if (!lead.grupo_id) throw new Error("Lead sem grupo definido");
 
     const descartadoPor = lead.corretor_id;
 
-    // Escolhe próximo corretor no grupo, excluindo quem descartou, por rodízio
-    // (menor último lead recebido primeiro).
-    const { data: candidatos, error: cErr } = await context.supabase
-      .from("corretores")
-      .select("id, nome, grupo_id, ativo")
-      .eq("grupo_id", lead.grupo_id)
-      .eq("ativo", true);
-    if (cErr) throw new Error(cErr.message);
+    // Descobre se o grupo atual é o principal — se sim, redistribui aos
+    // grupos secundários da mesma empresa; senão, mantém no próprio grupo.
+    const { data: grupoAtual } = await context.supabase
+      .from("grupos").select("id, is_principal, empresa_id").eq("id", lead.grupo_id).maybeSingle();
 
-    const elegiveis = (candidatos ?? []).filter((c: any) => c.id !== descartadoPor);
+    let gruposAlvo: string[] = [lead.grupo_id];
+    if (grupoAtual?.is_principal) {
+      const { data: secundarios } = await context.supabase
+        .from("grupos")
+        .select("id")
+        .eq("empresa_id", grupoAtual.empresa_id ?? lead.empresa_id)
+        .eq("is_principal", false);
+      const ids = (secundarios ?? []).map((g: any) => g.id);
+      gruposAlvo = ids.length > 0 ? ids : [];
+    }
+
+    let elegiveis: any[] = [];
+    if (gruposAlvo.length > 0) {
+      const { data: candidatos, error: cErr } = await context.supabase
+        .from("corretores")
+        .select("id, nome, grupo_id, ativo")
+        .in("grupo_id", gruposAlvo)
+        .eq("ativo", true);
+      if (cErr) throw new Error(cErr.message);
+      elegiveis = (candidatos ?? []).filter((c: any) => c.id !== descartadoPor);
+    }
 
     let novoId: string | null = null;
     let novoNome: string | null = null;
+    let novoGrupoId: string | null = null;
 
     if (elegiveis.length > 0) {
       const ids = elegiveis.map((c: any) => c.id);
@@ -334,7 +351,9 @@ export const descartarLead = createServerFn({ method: "POST" })
       elegiveis.sort((a: any, b: any) => (ultimoPor.get(a.id) ?? 0) - (ultimoPor.get(b.id) ?? 0));
       novoId = elegiveis[0].id;
       novoNome = elegiveis[0].nome;
+      novoGrupoId = elegiveis[0].grupo_id;
     }
+
 
     const agora = new Date().toISOString();
     const { error: uErr } = await context.supabase
