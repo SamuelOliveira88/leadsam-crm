@@ -314,7 +314,7 @@ export const descartarLead = createServerFn({ method: "POST" })
       const { data: secundarios } = await context.supabase
         .from("grupos")
         .select("id")
-        .eq("empresa_id", grupoAtual.empresa_id ?? lead.empresa_id)
+        .eq("empresa_id", (grupoAtual.empresa_id ?? lead.empresa_id) as string)
         .eq("is_principal", false);
       const ids = (secundarios ?? []).map((g: any) => g.id);
       gruposAlvo = ids.length > 0 ? ids : [];
