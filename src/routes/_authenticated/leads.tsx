@@ -244,9 +244,44 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
           >
             <MessageCircle className="mr-2 size-4" /> Notificar corretor (Evolution)
           </Button>
-
-
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setMostrarTransfer((v) => !v)}
+          >
+            <ArrowRightLeft className="mr-2 size-4" /> Transferir corretor
+          </Button>
         </div>
+
+        {mostrarTransfer && (
+          <div className="mb-4 rounded-md border bg-muted/40 p-3">
+            <label className="text-xs font-semibold uppercase text-muted-foreground">
+              Escolha o novo corretor
+            </label>
+            <select
+              className="mt-2 w-full rounded-md border bg-background p-2 text-sm"
+              value={novoCorretor}
+              onChange={(e) => setNovoCorretor(e.target.value)}
+            >
+              <option value="">— Selecione —</option>
+              {(corretores ?? []).map((c: any) => (
+                <option key={c.id} value={c.id} disabled={!c.ativo}>
+                  {c.nome} {c.grupos?.nome ? `· ${c.grupos.nome}` : ""} {c.ativo ? "" : "(inativo)"}
+                </option>
+              ))}
+            </select>
+            <div className="mt-2 flex justify-end gap-2">
+              <Button size="sm" variant="ghost" onClick={() => setMostrarTransfer(false)}>Cancelar</Button>
+              <Button
+                size="sm"
+                disabled={!novoCorretor || transferirMut.isPending}
+                onClick={() => transferirMut.mutate()}
+              >
+                {transferirMut.isPending ? "Transferindo…" : "Confirmar transferência"}
+              </Button>
+            </div>
+          </div>
+        )}
 
         <div className="mb-4">
           <label className="text-xs font-semibold uppercase text-muted-foreground">Nova nota / histórico</label>
