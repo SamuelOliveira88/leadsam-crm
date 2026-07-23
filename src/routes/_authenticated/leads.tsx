@@ -132,8 +132,30 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
   const marcarVistoFn = useServerFn(marcarLeadVisualizado);
   const gerarFn = useServerFn(gerarMensagemAbertura);
   const notificarFn = useServerFn(notificarCorretorDoLead);
+  const transferirFn = useServerFn(transferirLead);
+  const listCorretoresFn = useServerFn(listarCorretores);
   const [texto, setTexto] = useState("");
   const [gerando, setGerando] = useState(false);
+  const [mostrarTransfer, setMostrarTransfer] = useState(false);
+  const [novoCorretor, setNovoCorretor] = useState("");
+
+  const { data: corretores } = useQuery({
+    queryKey: ["corretores-transfer"],
+    queryFn: () => listCorretoresFn(),
+    enabled: mostrarTransfer,
+  });
+
+  const transferirMut = useMutation({
+    mutationFn: () => transferirFn({ data: { lead_id: lead.id, corretor_id: novoCorretor } }),
+    onSuccess: (r: any) => {
+      toast.success(`Lead transferido para ${r.corretor_nome}.`);
+      setMostrarTransfer(false);
+      setNovoCorretor("");
+      qc.invalidateQueries({ queryKey: ["leads"] });
+      onClose();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Falha ao transferir"),
+  });
 
   const { data: notas } = useQuery({
     queryKey: ["notas", lead.id],
