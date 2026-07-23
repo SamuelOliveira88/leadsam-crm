@@ -17,9 +17,11 @@ function TestErrorPage() {
       <h1 className="text-xl font-bold mb-4">Teste de erro</h1>
       <Button
         onClick={async () => {
+          console.log("clicou");
           try {
-            await fn();
-            setResult("Sucesso (inesperado)");
+            const r = await fn();
+            console.log("resposta:", r);
+            setResult(`Sucesso: ${JSON.stringify(r)}`);
           } catch (e: any) {
             console.error("Erro capturado:", e);
             setResult(`Erro: ${e?.message ?? JSON.stringify(e)}`);
