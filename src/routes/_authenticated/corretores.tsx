@@ -197,6 +197,11 @@ function Corretores() {
             <div>
               <div className="flex items-center gap-2 font-medium">
                 {c.nome}
+                {c.ultimo_ping && Date.now() - new Date(c.ultimo_ping).getTime() < 3 * 60_000 ? (
+                  <Badge className="bg-emerald-500 text-white hover:bg-emerald-500">● online</Badge>
+                ) : (
+                  <Badge variant="outline" className="text-muted-foreground">○ offline</Badge>
+                )}
                 <Badge variant={c.ativo ? "default" : "secondary"}>{c.ativo ? "ativo" : "inativo"}</Badge>
                 {c.recebe_via_web && <Badge variant="outline" className="text-[10px]">Web</Badge>}
                 {c.recebe_via_whatsapp && <Badge variant="outline" className="text-[10px]">WhatsApp</Badge>}
