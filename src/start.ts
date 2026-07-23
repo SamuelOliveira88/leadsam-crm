@@ -1,5 +1,6 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
+import { isRedirect } from "@tanstack/react-router";
 
 import { renderErrorPage } from "./lib/error-page";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
@@ -19,8 +20,12 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
     return await next();
   } catch (error) {
-    // Preserve redirects and explicit responses
-    if (error != null && typeof error === "object" && "statusCode" in error) {
+    // Preserve redirects and explicit responses thrown by handlers.
+    if (
+      error instanceof Response ||
+      isRedirect(error) ||
+      (error != null && typeof error === "object" && "statusCode" in error)
+    ) {
       throw error;
     }
 
