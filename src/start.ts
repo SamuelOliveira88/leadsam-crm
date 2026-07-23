@@ -4,31 +4,38 @@ import { getRequest } from "@tanstack/react-start/server";
 import { renderErrorPage } from "./lib/error-page";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
+function isJsonRequest(request: Request | undefined): boolean {
+  if (!request) return false;
+  const accept = request.headers.get("accept") ?? "";
+  const contentType = request.headers.get("content-type") ?? "";
+  return (
+    accept.includes("application/json") ||
+    contentType.includes("application/json") ||
+    request.headers.get("x-tsr-serverFn") === "true"
+  );
+}
+
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
-  console.error("[errorMiddleware] running");
   try {
     return await next();
   } catch (error) {
-    console.error("[errorMiddleware] caught error", error);
+    // Preserve redirects and explicit responses
     if (error != null && typeof error === "object" && "statusCode" in error) {
       throw error;
     }
+
     console.error(error);
+
+    const request = getRequest();
 
     // Server functions and JSON API routes expect JSON errors.
     // Returning HTML here breaks client-side error handling (e.g. empty {} toast).
-    const request = getRequest();
-    const headers = request?.headers;
-    const accept = headers?.get("accept") ?? "";
-    const contentType = headers?.get("content-type") ?? "";
-    console.error("[errorMiddleware] accept:", accept, "content-type:", contentType, "url:", request?.url);
-    const isJsonRequest =
-      accept.includes("application/json") ||
-      contentType.includes("application/json");
-
-    if (isJsonRequest) {
-      console.error("[errorMiddleware] re-throwing for JSON request");
-      throw error;
+    if (isJsonRequest(request)) {
+      const message = error instanceof Error ? error.message : String(error);
+      return new Response(JSON.stringify({ message, status: 500 }), {
+        status: 500,
+        headers: { "content-type": "application/json" },
+      });
     }
 
     return new Response(renderErrorPage(), {
