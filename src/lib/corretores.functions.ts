@@ -139,3 +139,11 @@ export const revogarLiberacaoCorretor = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const heartbeatCorretor = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await context.supabase.rpc("corretor_heartbeat");
+    return { ok: true };
+  });
+
+
