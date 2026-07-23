@@ -133,6 +133,7 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
   const gerarFn = useServerFn(gerarMensagemAbertura);
   const notificarFn = useServerFn(notificarCorretorDoLead);
   const transferirFn = useServerFn(transferirLead);
+  const transferirOnlineFn = useServerFn(transferirLeadParaOnline);
   const listCorretoresFn = useServerFn(listarCorretores);
   const [texto, setTexto] = useState("");
   const [gerando, setGerando] = useState(false);
@@ -143,7 +144,11 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
     queryKey: ["corretores-transfer"],
     queryFn: () => listCorretoresFn(),
     enabled: mostrarTransfer,
+    refetchInterval: 30_000,
   });
+
+  const isOnline = (c: any) =>
+    c?.ultimo_ping && Date.now() - new Date(c.ultimo_ping).getTime() < 3 * 60_000;
 
   const transferirMut = useMutation({
     mutationFn: () => transferirFn({ data: { lead_id: lead.id, corretor_id: novoCorretor } }),
@@ -155,6 +160,16 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
       onClose();
     },
     onError: (e: any) => toast.error(e?.message ?? "Falha ao transferir"),
+  });
+
+  const transferirOnlineMut = useMutation({
+    mutationFn: () => transferirOnlineFn({ data: { lead_id: lead.id } }),
+    onSuccess: (r: any) => {
+      toast.success(`Lead enviado para ${r.corretor_nome} (online).`);
+      qc.invalidateQueries({ queryKey: ["leads"] });
+      onClose();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Nenhum corretor online agora"),
   });
 
   const { data: notas } = useQuery({
