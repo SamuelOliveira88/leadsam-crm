@@ -283,3 +283,87 @@ export const transferirLeadParaOnline = createServerFn({ method: "POST" })
     }
     return { ok: true, corretor_nome: corretor?.nome ?? "Corretor" };
   });
+
+// Corretor descarta o lead: volta ao rodízio do grupo, excluindo quem descartou.
+// Se ninguém sobrar, marca como represado.
+export const descartarLead = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({
+      lead_id: z.string().uuid(),
+      motivo: z.string().max(500).optional(),
+      notificar: z.boolean().optional().default(true),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: lead, error: lErr } = await context.supabase
+      .from("leads").select("id, grupo_id, corretor_id, nome").eq("id", data.lead_id).maybeSingle();
+    if (lErr) throw new Error(lErr.message);
+    if (!lead) throw new Error("Lead não encontrado");
+    if (!lead.grupo_id) throw new Error("Lead sem grupo definido");
+
+    const descartadoPor = lead.corretor_id;
+
+    // Escolhe próximo corretor no grupo, excluindo quem descartou, por rodízio
+    // (menor último lead recebido primeiro).
+    const { data: candidatos, error: cErr } = await context.supabase
+      .from("corretores")
+      .select("id, nome, grupo_id, ativo")
+      .eq("grupo_id", lead.grupo_id)
+      .eq("ativo", true);
+    if (cErr) throw new Error(cErr.message);
+
+    const elegiveis = (candidatos ?? []).filter((c: any) => c.id !== descartadoPor);
+
+    let novoId: string | null = null;
+    let novoNome: string | null = null;
+
+    if (elegiveis.length > 0) {
+      const ids = elegiveis.map((c: any) => c.id);
+      const { data: ultimos } = await context.supabase
+        .from("leads")
+        .select("corretor_id, created_at")
+        .in("corretor_id", ids)
+        .order("created_at", { ascending: false });
+      const ultimoPor = new Map<string, number>();
+      for (const row of ultimos ?? []) {
+        if (row.corretor_id && !ultimoPor.has(row.corretor_id)) {
+          ultimoPor.set(row.corretor_id, new Date(row.created_at as any).getTime());
+        }
+      }
+      elegiveis.sort((a: any, b: any) => (ultimoPor.get(a.id) ?? 0) - (ultimoPor.get(b.id) ?? 0));
+      novoId = elegiveis[0].id;
+      novoNome = elegiveis[0].nome;
+    }
+
+    const agora = new Date().toISOString();
+    const { error: uErr } = await context.supabase
+      .from("leads")
+      .update({
+        corretor_id: novoId,
+        status: novoId ? "distribuido" : "represado",
+        represado_em: novoId ? null : agora,
+        visualizado_em: null,
+        ultima_atividade_em: agora,
+      })
+      .eq("id", data.lead_id);
+    if (uErr) throw new Error(uErr.message);
+
+    // Registra nota de descarte no histórico
+    try {
+      const motivo = data.motivo?.trim();
+      await context.supabase.from("lead_notas").insert({
+        lead_id: data.lead_id,
+        texto: `Lead descartado pelo corretor.${motivo ? ` Motivo: ${motivo}` : ""}${novoNome ? ` Redistribuído para ${novoNome}.` : " Nenhum corretor elegível — represado."}`,
+      });
+    } catch (e) { console.error("[descartarLead] falha registrando nota", e); }
+
+    if (novoId && data.notificar) {
+      try {
+        const { notificarCorretorPorLead } = await import("./evolution.server");
+        await notificarCorretorPorLead(context.supabase, data.lead_id);
+      } catch (e) { console.error("[descartarLead] falha notificando", e); }
+    }
+
+    return { ok: true, corretor_nome: novoNome, represado: !novoId };
+  });
