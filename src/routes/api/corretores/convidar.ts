@@ -12,6 +12,7 @@ const ConviteSchema = z.object({
   recebe_via_web: z.boolean().default(true),
   recebe_via_whatsapp: z.boolean().default(true),
   redirect_to: z.string().url(),
+  role: z.enum(["corretor", "gerente"]).default("corretor"),
 });
 
 function json(body: unknown, status = 200) {
@@ -122,41 +123,54 @@ export const Route = createFileRoute("/api/corretores/convidar")({
           return json({ message: "Sua empresa não foi identificada. Atualize a página e tente novamente." }, 400);
         }
 
-        const { data: corretor, error: corretorError } = await supabaseAdmin
-          .from("corretores")
-          .insert({
-            nome: data.nome,
-            telefone: data.telefone ?? null,
-            grupo_id: data.grupo_id ?? null,
-            empresa_id: empresaId,
-            ativo: true,
-            canal_notificacao: data.canal_notificacao,
-            recebe_via_web: data.recebe_via_web,
-            recebe_via_whatsapp: data.recebe_via_whatsapp,
-          })
-          .select()
-          .single();
+        const isGerente = data.role === "gerente";
 
-        if (corretorError) return json({ message: corretorError.message }, 500);
+        if (isGerente && !data.grupo_id) {
+          return json({ message: "Selecione o grupo que o gerente irá administrar." }, 400);
+        }
+
+        let corretorId: string | null = null;
+
+        if (!isGerente) {
+          const { data: corretor, error: corretorError } = await supabaseAdmin
+            .from("corretores")
+            .insert({
+              nome: data.nome,
+              telefone: data.telefone ?? null,
+              grupo_id: data.grupo_id ?? null,
+              empresa_id: empresaId,
+              ativo: true,
+              canal_notificacao: data.canal_notificacao,
+              recebe_via_web: data.recebe_via_web,
+              recebe_via_whatsapp: data.recebe_via_whatsapp,
+            })
+            .select()
+            .single();
+
+          if (corretorError) return json({ message: corretorError.message }, 500);
+          corretorId = corretor.id;
+        }
 
         const { error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, {
           redirectTo: data.redirect_to,
           data: {
             invited_by_admin: true,
             nome: data.nome,
-            role: "corretor",
+            role: data.role,
             grupo_id: data.grupo_id ?? null,
-            corretor_id: corretor.id,
+            corretor_id: corretorId,
             empresa_id: empresaId,
           },
         });
 
         if (inviteError) {
-          await supabaseAdmin.from("corretores").delete().eq("id", corretor.id);
+          if (corretorId) {
+            await supabaseAdmin.from("corretores").delete().eq("id", corretorId);
+          }
           return json({ message: getFriendlyInviteError(inviteError.message) }, 400);
         }
 
-        return json({ ok: true, corretor });
+        return json({ ok: true, role: data.role });
       },
     },
   },
