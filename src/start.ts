@@ -17,6 +17,13 @@ function isJsonRequest(request: Request | undefined): boolean {
 }
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
+  const req = getRequest();
+  if (req) {
+    const url = new URL(req.url);
+    if (url.pathname.startsWith("/lovable/")) {
+      return next();
+    }
+  }
   try {
     return await next();
   } catch (error) {
