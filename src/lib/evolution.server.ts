@@ -46,6 +46,35 @@ export function mensagemNovoLead(lead: { nome: string; telefone?: string | null;
   return linhas.join("\n");
 }
 
+// === Monitor (período de testes) ===
+// Envia uma cópia de cada evento importante para MONITOR_WHATSAPP.
+export async function notificarMonitor(
+  evento: "entrada" | "entrega",
+  lead: { nome: string; telefone?: string | null; email?: string | null; fonte?: string | null; grupo?: string | null },
+  corretorNome?: string | null,
+): Promise<void> {
+  try {
+    const numero = process.env.MONITOR_WHATSAPP;
+    if (!numero) return;
+    const titulo = evento === "entrada"
+      ? "📥 *Lead entrou no sistema*"
+      : "✅ *Lead entregue a um corretor*";
+    const linhas = [
+      titulo,
+      `Nome: ${lead.nome}`,
+      lead.telefone ? `Telefone: ${lead.telefone}` : null,
+      lead.email ? `Email: ${lead.email}` : null,
+      lead.grupo ? `Grupo: ${lead.grupo}` : null,
+      lead.fonte ? `Fonte: ${lead.fonte}` : null,
+      evento === "entrega" && corretorNome ? `Corretor: ${corretorNome}` : null,
+      evento === "entrega" && !corretorNome ? "Corretor: (represado — fora do horário)" : null,
+    ].filter(Boolean);
+    await sendWhatsAppText(numero, linhas.join("\n"));
+  } catch (e) {
+    console.error("[notificarMonitor] falha", e);
+  }
+}
+
 export async function notificarCorretorPorLead(
   supabaseClient: any,
   leadId: string,
