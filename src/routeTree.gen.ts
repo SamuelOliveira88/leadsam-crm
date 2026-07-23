@@ -26,6 +26,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
 import { Route as AuthenticatedAcessoRouteImport } from './routes/_authenticated/acesso'
 import { Route as ApiPublicWebhookRouteImport } from './routes/api/public/webhook'
+import { Route as ApiCorretoresConvidarRouteImport } from './routes/api/corretores/convidar'
 
 const SetPasswordRoute = SetPasswordRouteImport.update({
   id: '/set-password',
@@ -112,6 +113,11 @@ const ApiPublicWebhookRoute = ApiPublicWebhookRouteImport.update({
   path: '/api/public/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCorretoresConvidarRoute = ApiCorretoresConvidarRouteImport.update({
+  id: '/api/corretores/convidar',
+  path: '/api/corretores/convidar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -129,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/leads': typeof AuthenticatedLeadsRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/propostas': typeof AuthenticatedPropostasRoute
+  '/api/corretores/convidar': typeof ApiCorretoresConvidarRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
 }
 export interface FileRoutesByTo {
@@ -147,6 +154,7 @@ export interface FileRoutesByTo {
   '/leads': typeof AuthenticatedLeadsRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/propostas': typeof AuthenticatedPropostasRoute
+  '/api/corretores/convidar': typeof ApiCorretoresConvidarRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
 }
 export interface FileRoutesById {
@@ -167,6 +175,7 @@ export interface FileRoutesById {
   '/_authenticated/leads': typeof AuthenticatedLeadsRoute
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/propostas': typeof AuthenticatedPropostasRoute
+  '/api/corretores/convidar': typeof ApiCorretoresConvidarRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
 }
 export interface FileRouteTypes {
@@ -187,6 +196,7 @@ export interface FileRouteTypes {
     | '/leads'
     | '/notificacoes'
     | '/propostas'
+    | '/api/corretores/convidar'
     | '/api/public/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -205,6 +215,7 @@ export interface FileRouteTypes {
     | '/leads'
     | '/notificacoes'
     | '/propostas'
+    | '/api/corretores/convidar'
     | '/api/public/webhook'
   id:
     | '__root__'
@@ -224,6 +235,7 @@ export interface FileRouteTypes {
     | '/_authenticated/leads'
     | '/_authenticated/notificacoes'
     | '/_authenticated/propostas'
+    | '/api/corretores/convidar'
     | '/api/public/webhook'
   fileRoutesById: FileRoutesById
 }
@@ -233,6 +245,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CadastroEmpresaRoute: typeof CadastroEmpresaRoute
   SetPasswordRoute: typeof SetPasswordRoute
+  ApiCorretoresConvidarRoute: typeof ApiCorretoresConvidarRoute
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
 }
 
@@ -357,6 +370,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/corretores/convidar': {
+      id: '/api/corretores/convidar'
+      path: '/api/corretores/convidar'
+      fullPath: '/api/corretores/convidar'
+      preLoaderRoute: typeof ApiCorretoresConvidarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -397,18 +417,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CadastroEmpresaRoute: CadastroEmpresaRoute,
   SetPasswordRoute: SetPasswordRoute,
+  ApiCorretoresConvidarRoute: ApiCorretoresConvidarRoute,
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

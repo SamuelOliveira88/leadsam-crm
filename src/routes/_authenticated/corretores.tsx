@@ -3,13 +3,14 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Trash2, Plus, Layers, X, Mail } from "lucide-react";
-import { listarCorretores, criarCorretor, atualizarCorretor, excluirCorretor, convidarCorretor } from "@/lib/corretores.functions";
+import { listarCorretores, criarCorretor, atualizarCorretor, excluirCorretor } from "@/lib/corretores.functions";
 import { listarGrupos, criarGrupo, excluirGrupo } from "@/lib/grupos.functions";
 import { meuPerfil } from "@/lib/perfis.functions";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 
@@ -33,8 +34,6 @@ function Corretores() {
   const [showGrupos, setShowGrupos] = useState(false);
 
   const [form, setForm] = useState({ nome: "", email: "", telefone: "", grupo_id: "", canal_notificacao: "whatsapp" as const, recebe_via_web: true, recebe_via_whatsapp: true });
-  const inviteFn = useServerFn(convidarCorretor);
-
   const resetForm = () => setForm({ nome: "", email: "", telefone: "", grupo_id: "", canal_notificacao: "whatsapp", recebe_via_web: true, recebe_via_whatsapp: true });
 
   const createMut = useMutation({
@@ -46,12 +45,39 @@ function Corretores() {
     onSuccess: () => { resetForm(); qc.invalidateQueries({ queryKey: ["corretores"] }); },
   });
   const inviteMut = useMutation({
-    mutationFn: () => inviteFn({ data: {
-      nome: form.nome, email: form.email, telefone: form.telefone || null,
-      grupo_id: form.grupo_id || null, canal_notificacao: form.canal_notificacao,
-      recebe_via_web: form.recebe_via_web, recebe_via_whatsapp: form.recebe_via_whatsapp,
-      redirect_to: `${window.location.origin}/set-password`,
-    } }),
+    mutationFn: async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) throw new Error("Sua sessão expirou. Entre novamente e tente enviar o convite.");
+
+      const response = await fetch("/api/corretores/convidar", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          nome: form.nome,
+          email: form.email,
+          telefone: form.telefone || null,
+          grupo_id: form.grupo_id || null,
+          canal_notificacao: form.canal_notificacao,
+          recebe_via_web: form.recebe_via_web,
+          recebe_via_whatsapp: form.recebe_via_whatsapp,
+          redirect_to: `${window.location.origin}/set-password`,
+        }),
+      });
+
+      const result = await response.json().catch(() => null);
+      if (!response.ok) {
+        const message =
+          result?.message ||
+          result?.error ||
+          "Não foi possível enviar o convite. Tente novamente.";
+        throw new Error(typeof message === "string" ? message : "Não foi possível enviar o convite.");
+      }
+      return result;
+    },
     onSuccess: () => { resetForm(); qc.invalidateQueries({ queryKey: ["corretores"] }); },
   });
 

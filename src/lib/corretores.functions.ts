@@ -80,6 +80,7 @@ export const convidarCorretor = createServerFn({ method: "POST" })
         nome: data.nome,
         telefone: data.telefone ?? null,
         grupo_id: data.grupo_id ?? null,
+        empresa_id: perfil?.empresa_id ?? null,
         ativo: true,
         canal_notificacao: data.canal_notificacao,
         recebe_via_web: data.recebe_via_web,
@@ -94,6 +95,7 @@ export const convidarCorretor = createServerFn({ method: "POST" })
     const { error: iErr } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, {
       redirectTo: data.redirect_to,
       data: {
+        invited_by_admin: true,
         nome: data.nome,
         role: "corretor",
         grupo_id: data.grupo_id ?? null,
