@@ -12,7 +12,14 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { User } from "@supabase/supabase-js";
 
-const BASE_NAV = [
+const NAV_CORRETOR = [
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/leads", label: "Leads", icon: Users },
+  { to: "/espelho", label: "Espelho", icon: Grid3x3 },
+  { to: "/propostas", label: "Propostas", icon: FileText },
+] as const;
+
+const NAV_ADMIN = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/leads", label: "Leads", icon: Users },
   { to: "/espelho", label: "Espelho", icon: Grid3x3 },
