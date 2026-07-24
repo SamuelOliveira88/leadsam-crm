@@ -192,6 +192,152 @@ export const reenviarConvitesGrupo = createServerFn({ method: "POST" })
     return { ok: true, enviados, falhas };
   });
 
+function gerarSenhaForte(): string {
+  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const lower = "abcdefghijkmnpqrstuvwxyz";
+  const nums  = "23456789";
+  const sym   = "@#$%&*!?";
+  const all = upper + lower + nums + sym;
+  const rand = (s: string) => s[Math.floor(Math.random() * s.length)];
+  let out = rand(upper) + rand(lower) + rand(nums) + rand(sym);
+  for (let i = 0; i < 8; i++) out += rand(all);
+  return out.split("").sort(() => Math.random() - 0.5).join("");
+}
+
+// Cadastra corretor direto (sem e-mail): cria/atualiza o usuário no Auth com a senha
+// definida pelo admin. Retorna a senha em texto claro para o admin repassar por WhatsApp.
+export const cadastrarCorretorComSenha = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    nome: z.string().min(1),
+    email: z.string().email(),
+    telefone: z.string().optional().nullable(),
+    grupo_id: z.string().uuid().nullable().optional(),
+    canal_notificacao: z.enum(["whatsapp", "email", "ambos", "nenhum"]).default("whatsapp"),
+    recebe_via_web: z.boolean().default(true),
+    recebe_via_whatsapp: z.boolean().default(true),
+    role: z.enum(["corretor", "gerente"]).default("corretor"),
+    senha: z.string().min(8).optional(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: perfilAtual } = await context.supabase
+      .from("perfis").select("role, super_admin, empresa_id").eq("id", context.userId).maybeSingle();
+    if (!(perfilAtual?.super_admin || perfilAtual?.role === "master")) {
+      throw new Error("Apenas o administrador pode cadastrar corretores.");
+    }
+
+    const email = data.email.trim().toLowerCase();
+    const senha = data.senha ?? gerarSenhaForte();
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    let userId: string | null = null;
+    const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
+    const existente = list?.users?.find((u) => (u.email ?? "").toLowerCase() === email);
+    if (existente) {
+      userId = existente.id;
+      const { error: uErr } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+        password: senha,
+        email_confirm: true,
+        user_metadata: {
+          ...(existente.user_metadata ?? {}),
+          invited_by_admin: true,
+          nome: data.nome,
+          role: data.role,
+          grupo_id: data.grupo_id ?? null,
+          empresa_id: perfilAtual?.empresa_id ?? null,
+        },
+      });
+      if (uErr) throw new Error(uErr.message);
+    } else {
+      const { data: created, error: cErr } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password: senha,
+        email_confirm: true,
+        user_metadata: {
+          invited_by_admin: true,
+          nome: data.nome,
+          role: data.role,
+          grupo_id: data.grupo_id ?? null,
+          empresa_id: perfilAtual?.empresa_id ?? null,
+        },
+      });
+      if (cErr || !created?.user) throw new Error(cErr?.message || "Falha ao criar usuário");
+      userId = created.user.id;
+    }
+
+    await supabaseAdmin.from("perfis").upsert({
+      id: userId,
+      nome: data.nome,
+      role: data.role,
+      grupo_id: data.grupo_id ?? null,
+      empresa_id: perfilAtual?.empresa_id ?? null,
+    }, { onConflict: "id" });
+
+    let corretorId: string | null = null;
+    if (data.role === "corretor") {
+      const { data: existeCorr } = await supabaseAdmin
+        .from("corretores").select("id").eq("user_id", userId).maybeSingle();
+      if (existeCorr?.id) {
+        corretorId = existeCorr.id;
+        await supabaseAdmin.from("corretores").update({
+          nome: data.nome,
+          telefone: data.telefone ?? null,
+          grupo_id: data.grupo_id ?? null,
+          empresa_id: perfilAtual?.empresa_id ?? null,
+          canal_notificacao: data.canal_notificacao,
+          recebe_via_web: data.recebe_via_web,
+          recebe_via_whatsapp: data.recebe_via_whatsapp,
+          ativo: true,
+        }).eq("id", existeCorr.id);
+      } else {
+        const { data: novo, error: nErr } = await supabaseAdmin.from("corretores").insert({
+          user_id: userId,
+          nome: data.nome,
+          telefone: data.telefone ?? null,
+          grupo_id: data.grupo_id ?? null,
+          empresa_id: perfilAtual?.empresa_id ?? null,
+          ativo: true,
+          canal_notificacao: data.canal_notificacao,
+          recebe_via_web: data.recebe_via_web,
+          recebe_via_whatsapp: data.recebe_via_whatsapp,
+        }).select("id").single();
+        if (nErr) throw new Error(nErr.message);
+        corretorId = novo.id;
+      }
+      await supabaseAdmin.from("perfis").update({ corretor_id: corretorId }).eq("id", userId);
+    }
+
+    return { ok: true, email, senha, user_id: userId, corretor_id: corretorId };
+  });
+
+// Redefine a senha de um corretor já existente (para o admin repassar por WhatsApp)
+export const redefinirSenhaCorretor = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    corretor_id: z.string().uuid(),
+    senha: z.string().min(8).optional(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: perfilAtual } = await context.supabase
+      .from("perfis").select("role, super_admin").eq("id", context.userId).maybeSingle();
+    if (!(perfilAtual?.super_admin || perfilAtual?.role === "master")) {
+      throw new Error("Apenas o administrador pode redefinir senhas.");
+    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: corr } = await supabaseAdmin
+      .from("corretores").select("id, user_id, nome").eq("id", data.corretor_id).maybeSingle();
+    if (!corr?.user_id) throw new Error("Corretor sem usuário vinculado. Use 'Cadastrar com senha'.");
+    const senha = data.senha ?? gerarSenhaForte();
+    const { data: u } = await supabaseAdmin.auth.admin.getUserById(corr.user_id);
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(corr.user_id, {
+      password: senha,
+      email_confirm: true,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true, email: u?.user?.email ?? null, nome: corr.nome, senha };
+  });
+
+
 
 
 

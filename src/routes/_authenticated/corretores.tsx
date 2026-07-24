@@ -2,8 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Trash2, Plus, Layers, X, Mail, UserCog } from "lucide-react";
-import { listarCorretores, criarCorretor, atualizarCorretor, excluirCorretor } from "@/lib/corretores.functions";
+import { Trash2, Plus, Layers, X, Mail, UserCog, KeyRound, Copy } from "lucide-react";
+import { listarCorretores, criarCorretor, atualizarCorretor, excluirCorretor, cadastrarCorretorComSenha, redefinirSenhaCorretor } from "@/lib/corretores.functions";
 import { listarGrupos, criarGrupo, excluirGrupo } from "@/lib/grupos.functions";
 import { meuPerfil } from "@/lib/perfis.functions";
 import { Card } from "@/components/ui/card";
@@ -26,6 +26,8 @@ function Corretores() {
   const createFn = useServerFn(criarCorretor);
   const updateFn = useServerFn(atualizarCorretor);
   const delFn = useServerFn(excluirCorretor);
+  const cadastrarSenhaFn = useServerFn(cadastrarCorretorComSenha);
+  const redefinirSenhaFn = useServerFn(redefinirSenhaCorretor);
   const perfilFn = useServerFn(meuPerfil);
   const { data } = useQuery({ queryKey: ["corretores"], queryFn: () => listFn() });
   const { data: grupos } = useQuery({ queryKey: ["grupos"], queryFn: () => gruposFn() });
@@ -95,6 +97,29 @@ function Corretores() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["corretores"] }),
   });
 
+  const [credenciais, setCredenciais] = useState<{ nome: string; email: string; senha: string } | null>(null);
+
+  const cadastroSenhaMut = useMutation({
+    mutationFn: () => cadastrarSenhaFn({ data: {
+      nome: form.nome, email: form.email, telefone: form.telefone || null,
+      grupo_id: form.grupo_id || null, canal_notificacao: form.canal_notificacao,
+      recebe_via_web: form.recebe_via_web, recebe_via_whatsapp: form.recebe_via_whatsapp,
+      role: form.role,
+    } }),
+    onSuccess: (r: any) => {
+      setCredenciais({ nome: form.nome, email: r.email, senha: r.senha });
+      resetForm();
+      qc.invalidateQueries({ queryKey: ["corretores"] });
+    },
+    onError: (e: any) => toast.error(e?.message || "Falha ao cadastrar com senha"),
+  });
+
+  const redefinirSenhaMut = useMutation({
+    mutationFn: (c: any) => redefinirSenhaFn({ data: { corretor_id: c.id } }),
+    onSuccess: (r: any) => setCredenciais({ nome: r.nome, email: r.email ?? "", senha: r.senha }),
+    onError: (e: any) => toast.error(e?.message || "Falha ao redefinir senha"),
+  });
+
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-2">
@@ -144,24 +169,27 @@ function Corretores() {
           <option value="nenhum">Nenhum</option>
         </select>
         {isMaster ? (
-          <Button
-            disabled={!form.nome || !form.email || (form.role === "gerente" && !form.grupo_id) || inviteMut.isPending}
-            onClick={() => inviteMut.mutate(undefined, {
-              onSuccess: () => toast.success(form.role === "gerente" ? "Convite de gerente enviado!" : "Convite enviado por e-mail!"),
-              onError: (e: any) => {
-                console.error("Erro ao enviar convite:", e);
-                const msg =
-                  e?.message ||
-                  e?.data?.message ||
-                  e?.error?.message ||
-                  e?.error ||
-                  "Falha ao enviar convite";
-                toast.error(typeof msg === "string" ? msg : "Falha ao enviar convite");
-              },
-            })}
-          >
-            <Mail className="mr-2 size-4" /> {inviteMut.isPending ? "Enviando…" : `Enviar convite de ${form.role === "gerente" ? "gerente" : "corretor"}`}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              disabled={!form.nome || !form.email || (form.role === "gerente" && !form.grupo_id) || inviteMut.isPending}
+              onClick={() => inviteMut.mutate(undefined, {
+                onSuccess: () => toast.success(form.role === "gerente" ? "Convite de gerente enviado!" : "Convite enviado por e-mail!"),
+                onError: (e: any) => {
+                  const msg = e?.message || e?.data?.message || e?.error?.message || e?.error || "Falha ao enviar convite";
+                  toast.error(typeof msg === "string" ? msg : "Falha ao enviar convite");
+                },
+              })}
+            >
+              <Mail className="mr-2 size-4" /> {inviteMut.isPending ? "Enviando…" : "Enviar convite por e-mail"}
+            </Button>
+            <Button
+              variant="secondary"
+              disabled={!form.nome || !form.email || (form.role === "gerente" && !form.grupo_id) || cadastroSenhaMut.isPending}
+              onClick={() => cadastroSenhaMut.mutate()}
+            >
+              <KeyRound className="mr-2 size-4" /> {cadastroSenhaMut.isPending ? "Criando…" : "Cadastrar com senha (sem e-mail)"}
+            </Button>
+          </div>
         ) : (
           <Button onClick={() => form.nome && createMut.mutate()}><Plus className="mr-2 size-4" /> Adicionar</Button>
         )}
@@ -214,6 +242,11 @@ function Corretores() {
               <Button size="sm" variant="outline" onClick={() => flagMut.mutate({ id: c.id, patch: { ativo: !c.ativo } })}>
                 {c.ativo ? "Parar de receber leads" : "Voltar a receber leads"}
               </Button>
+              {isMaster && (
+                <Button size="sm" variant="outline" disabled={redefinirSenhaMut.isPending} onClick={() => redefinirSenhaMut.mutate(c)}>
+                  <KeyRound className="mr-2 size-4" /> Definir senha
+                </Button>
+              )}
               <Button size="icon" variant="ghost" onClick={() => delMut.mutate(c.id)}>
                 <Trash2 className="size-4 text-destructive" />
               </Button>
@@ -222,12 +255,53 @@ function Corretores() {
         ))}
       </div>
 
+      {credenciais && (
+        <CredenciaisModal creds={credenciais} onClose={() => setCredenciais(null)} />
+      )}
+
       {showGrupos && isMaster && (
         <GruposModal onClose={() => setShowGrupos(false)} />
       )}
     </div>
   );
 }
+
+function CredenciaisModal({ creds, onClose }: { creds: { nome: string; email: string; senha: string }; onClose: () => void }) {
+  const copiar = async () => {
+    const txt = `Acesso Alexandria Leds\nSite: https://alexandria-leds.lovable.app/auth\nE-mail: ${creds.email}\nSenha: ${creds.senha}`;
+    try { await navigator.clipboard.writeText(txt); toast.success("Copiado! Cole no WhatsApp."); }
+    catch { toast.error("Não foi possível copiar"); }
+  };
+  const wa = `https://wa.me/?text=${encodeURIComponent(
+    `Olá ${creds.nome}, aqui está seu acesso ao Alexandria Leds:\n\n🔗 https://alexandria-leds.lovable.app/auth\n📧 ${creds.email}\n🔑 ${creds.senha}\n\nAo entrar, você pode trocar a senha em "Perfil".`
+  )}`;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+      <Card className="w-full max-w-md p-5" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Credenciais de {creds.nome}</h2>
+          <Button variant="ghost" size="icon" onClick={onClose}><X className="size-4" /></Button>
+        </div>
+        <p className="mb-3 text-xs text-muted-foreground">
+          Copie e envie por WhatsApp. A senha só aparece agora — depois é preciso redefinir.
+        </p>
+        <div className="space-y-2 rounded-md border bg-muted/40 p-3 font-mono text-sm">
+          <div><span className="text-muted-foreground">E-mail:</span> {creds.email}</div>
+          <div><span className="text-muted-foreground">Senha:</span> <strong>{creds.senha}</strong></div>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button onClick={copiar}><Copy className="mr-2 size-4" /> Copiar tudo</Button>
+          <a href={wa} target="_blank" rel="noreferrer">
+            <Button variant="secondary">Abrir WhatsApp</Button>
+          </a>
+          <Button variant="ghost" onClick={onClose}>Fechar</Button>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+
 
 function GruposModal({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient();
