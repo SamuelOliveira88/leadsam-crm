@@ -1030,6 +1030,10 @@ export type Database = {
         Returns: boolean
       }
       dentro_do_horario: { Args: { p_grupo_id: string }; Returns: boolean }
+      descartar_lead: {
+        Args: { _lead_id: string; _motivo?: string }
+        Returns: Json
+      }
       distribuir_lead_direcionado:
         | {
             Args: {
