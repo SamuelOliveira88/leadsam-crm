@@ -146,4 +146,52 @@ export const heartbeatCorretor = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// Reenvia link de definição de senha (recovery) para todos os corretores/gerentes
+// de um grupo (ou de toda a empresa quando grupo_id é omitido). Só super_admin ou master.
+export const reenviarConvitesGrupo = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    grupo_id: z.string().uuid().optional(),
+    redirect_to: z.string().url(),
+    apenas_pendentes: z.boolean().default(false),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: perfilAtual } = await context.supabase
+      .from("perfis").select("role, super_admin, empresa_id").eq("id", context.userId).maybeSingle();
+    if (!(perfilAtual?.super_admin || perfilAtual?.role === "master")) {
+      throw new Error("Apenas o administrador pode reenviar convites.");
+    }
+
+    let query = context.supabase
+      .from("perfis")
+      .select("id, nome, role, grupo_id, empresa_id")
+      .in("role", ["corretor", "gerente"]);
+    if (data.grupo_id) query = query.eq("grupo_id", data.grupo_id);
+    if (perfilAtual?.empresa_id) query = query.eq("empresa_id", perfilAtual.empresa_id);
+
+    const { data: perfis, error } = await query;
+    if (error) throw new Error(error.message);
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const enviados: string[] = [];
+    const falhas: Array<{ email?: string; motivo: string }> = [];
+
+    for (const p of perfis ?? []) {
+      const { data: u, error: uErr } = await supabaseAdmin.auth.admin.getUserById(p.id);
+      if (uErr || !u?.user?.email) { falhas.push({ motivo: uErr?.message || "sem email" }); continue; }
+      if (data.apenas_pendentes && u.user.last_sign_in_at) continue;
+      const { error: rErr } = await supabaseAdmin.auth.admin.generateLink({
+        type: "recovery",
+        email: u.user.email,
+        options: { redirectTo: data.redirect_to },
+      });
+      if (rErr) falhas.push({ email: u.user.email, motivo: rErr.message });
+      else enviados.push(u.user.email);
+    }
+
+    return { ok: true, enviados, falhas };
+  });
+
+
+
 
