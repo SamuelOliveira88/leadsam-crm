@@ -296,94 +296,20 @@ export const descartarLead = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const { data: lead, error: lErr } = await context.supabase
-      .from("leads").select("id, grupo_id, corretor_id, nome, empresa_id").eq("id", data.lead_id).maybeSingle();
-    if (lErr) throw new Error(lErr.message);
-    if (!lead) throw new Error("Lead não encontrado");
-    if (!lead.grupo_id) throw new Error("Lead sem grupo definido");
+    const { data: result, error } = await context.supabase.rpc("descartar_lead", {
+      _lead_id: data.lead_id,
+      _motivo: data.motivo ?? undefined,
+    });
+    if (error) throw new Error(error.message);
+    const r = (result ?? {}) as { novo_corretor_id?: string | null; novo_corretor_nome?: string | null; represado?: boolean };
 
-    const descartadoPor = lead.corretor_id;
-
-    // Descobre se o grupo atual é o principal — se sim, redistribui aos
-    // grupos secundários da mesma empresa; senão, mantém no próprio grupo.
-    const { data: grupoAtual } = await context.supabase
-      .from("grupos").select("id, is_principal, empresa_id").eq("id", lead.grupo_id).maybeSingle();
-
-    let gruposAlvo: string[] = [lead.grupo_id];
-    if (grupoAtual?.is_principal) {
-      const { data: secundarios } = await context.supabase
-        .from("grupos")
-        .select("id")
-        .eq("empresa_id", (grupoAtual.empresa_id ?? lead.empresa_id) as string)
-        .eq("is_principal", false);
-      const ids = (secundarios ?? []).map((g: any) => g.id);
-      gruposAlvo = ids.length > 0 ? ids : [];
-    }
-
-    let elegiveis: any[] = [];
-    if (gruposAlvo.length > 0) {
-      const { data: candidatos, error: cErr } = await context.supabase
-        .from("corretores")
-        .select("id, nome, grupo_id, ativo")
-        .in("grupo_id", gruposAlvo)
-        .eq("ativo", true);
-      if (cErr) throw new Error(cErr.message);
-      elegiveis = (candidatos ?? []).filter((c: any) => c.id !== descartadoPor);
-    }
-
-    let novoId: string | null = null;
-    let novoNome: string | null = null;
-    let novoGrupoId: string | null = null;
-
-    if (elegiveis.length > 0) {
-      const ids = elegiveis.map((c: any) => c.id);
-      const { data: ultimos } = await context.supabase
-        .from("leads")
-        .select("corretor_id, created_at")
-        .in("corretor_id", ids)
-        .order("created_at", { ascending: false });
-      const ultimoPor = new Map<string, number>();
-      for (const row of ultimos ?? []) {
-        if (row.corretor_id && !ultimoPor.has(row.corretor_id)) {
-          ultimoPor.set(row.corretor_id, new Date(row.created_at as any).getTime());
-        }
-      }
-      elegiveis.sort((a: any, b: any) => (ultimoPor.get(a.id) ?? 0) - (ultimoPor.get(b.id) ?? 0));
-      novoId = elegiveis[0].id;
-      novoNome = elegiveis[0].nome;
-      novoGrupoId = elegiveis[0].grupo_id;
-    }
-
-
-    const agora = new Date().toISOString();
-    const { error: uErr } = await context.supabase
-      .from("leads")
-      .update({
-        corretor_id: novoId,
-        grupo_id: novoGrupoId ?? lead.grupo_id,
-        status: novoId ? "distribuido" : "represado",
-        represado_em: novoId ? null : agora,
-        visualizado_em: null,
-        ultima_atividade_em: agora,
-      })
-      .eq("id", data.lead_id);
-    if (uErr) throw new Error(uErr.message);
-
-    // Registra nota de descarte no histórico
-    try {
-      const motivo = data.motivo?.trim();
-      await context.supabase.from("lead_notas").insert({
-        lead_id: data.lead_id,
-        texto: `Lead descartado pelo corretor.${motivo ? ` Motivo: ${motivo}` : ""}${novoNome ? ` Redistribuído para ${novoNome}.` : " Nenhum corretor elegível — represado."}`,
-      });
-    } catch (e) { console.error("[descartarLead] falha registrando nota", e); }
-
-    if (novoId && data.notificar) {
+    if (r.novo_corretor_id && data.notificar) {
       try {
         const { notificarCorretorPorLead } = await import("./evolution.server");
         await notificarCorretorPorLead(context.supabase, data.lead_id);
       } catch (e) { console.error("[descartarLead] falha notificando", e); }
     }
 
-    return { ok: true, corretor_nome: novoNome, represado: !novoId };
+    return { ok: true, corretor_nome: r.novo_corretor_nome ?? null, represado: !!r.represado };
   });
+
