@@ -31,6 +31,7 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as ApiPublicHooksProcessarFilaRouteImport } from './routes/api/public/hooks/processar-fila'
+import { Route as ApiPublicAdminReenviarConvitesRouteImport } from './routes/api/public/admin/reenviar-convites'
 
 const SetPasswordRoute = SetPasswordRouteImport.update({
   id: '/set-password',
@@ -144,6 +145,12 @@ const ApiPublicHooksProcessarFilaRoute =
     path: '/api/public/hooks/processar-fila',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicAdminReenviarConvitesRoute =
+  ApiPublicAdminReenviarConvitesRouteImport.update({
+    id: '/api/public/admin/reenviar-convites',
+    path: '/api/public/admin/reenviar-convites',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -163,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/propostas': typeof AuthenticatedPropostasRoute
   '/api/corretores/convidar': typeof ApiCorretoresConvidarRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
+  '/api/public/admin/reenviar-convites': typeof ApiPublicAdminReenviarConvitesRoute
   '/api/public/hooks/processar-fila': typeof ApiPublicHooksProcessarFilaRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -186,6 +194,7 @@ export interface FileRoutesByTo {
   '/propostas': typeof AuthenticatedPropostasRoute
   '/api/corretores/convidar': typeof ApiCorretoresConvidarRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
+  '/api/public/admin/reenviar-convites': typeof ApiPublicAdminReenviarConvitesRoute
   '/api/public/hooks/processar-fila': typeof ApiPublicHooksProcessarFilaRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -211,6 +220,7 @@ export interface FileRoutesById {
   '/_authenticated/propostas': typeof AuthenticatedPropostasRoute
   '/api/corretores/convidar': typeof ApiCorretoresConvidarRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
+  '/api/public/admin/reenviar-convites': typeof ApiPublicAdminReenviarConvitesRoute
   '/api/public/hooks/processar-fila': typeof ApiPublicHooksProcessarFilaRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -236,6 +246,7 @@ export interface FileRouteTypes {
     | '/propostas'
     | '/api/corretores/convidar'
     | '/api/public/webhook'
+    | '/api/public/admin/reenviar-convites'
     | '/api/public/hooks/processar-fila'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -259,6 +270,7 @@ export interface FileRouteTypes {
     | '/propostas'
     | '/api/corretores/convidar'
     | '/api/public/webhook'
+    | '/api/public/admin/reenviar-convites'
     | '/api/public/hooks/processar-fila'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -283,6 +295,7 @@ export interface FileRouteTypes {
     | '/_authenticated/propostas'
     | '/api/corretores/convidar'
     | '/api/public/webhook'
+    | '/api/public/admin/reenviar-convites'
     | '/api/public/hooks/processar-fila'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -297,6 +310,7 @@ export interface RootRouteChildren {
   SetPasswordRoute: typeof SetPasswordRoute
   ApiCorretoresConvidarRoute: typeof ApiCorretoresConvidarRoute
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
+  ApiPublicAdminReenviarConvitesRoute: typeof ApiPublicAdminReenviarConvitesRoute
   ApiPublicHooksProcessarFilaRoute: typeof ApiPublicHooksProcessarFilaRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -459,6 +473,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessarFilaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/admin/reenviar-convites': {
+      id: '/api/public/admin/reenviar-convites'
+      path: '/api/public/admin/reenviar-convites'
+      fullPath: '/api/public/admin/reenviar-convites'
+      preLoaderRoute: typeof ApiPublicAdminReenviarConvitesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -501,6 +522,7 @@ const rootRouteChildren: RootRouteChildren = {
   SetPasswordRoute: SetPasswordRoute,
   ApiCorretoresConvidarRoute: ApiCorretoresConvidarRoute,
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
+  ApiPublicAdminReenviarConvitesRoute: ApiPublicAdminReenviarConvitesRoute,
   ApiPublicHooksProcessarFilaRoute: ApiPublicHooksProcessarFilaRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
