@@ -98,7 +98,7 @@ export function AppShell({ user, children }: { user: User; children: React.React
         router.navigate({ to: "/auth", replace: true, search: { motivo: "inatividade" } as any });
       }, TIMEOUT_MS);
     };
-    const events: (keyof WindowEventMap)[] = ["mousemove", "mousedown", "keydown", "touchstart", "scroll", "click", "visibilitychange"];
+    const events = ["mousemove", "mousedown", "keydown", "touchstart", "scroll", "click", "visibilitychange"] as const;
     events.forEach((e) => window.addEventListener(e, reset, { passive: true }));
     reset();
     return () => {
