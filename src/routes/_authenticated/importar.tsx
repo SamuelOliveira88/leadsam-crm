@@ -12,9 +12,11 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
+import { RequireAdmin } from "@/components/RequireAdmin";
+
 export const Route = createFileRoute("/_authenticated/importar")({
   head: () => ({ meta: [{ title: "Importar leads — ImobLead" }] }),
-  component: Importar,
+  component: () => <RequireAdmin><Importar /></RequireAdmin>,
 });
 
 type LeadRow = { nome: string; telefone?: string | null; email?: string | null };

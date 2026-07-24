@@ -14,9 +14,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 
+import { RequireAdmin } from "@/components/RequireAdmin";
+
 export const Route = createFileRoute("/_authenticated/corretores")({
   head: () => ({ meta: [{ title: "Corretores — Alexandria Leds" }] }),
-  component: Corretores,
+  component: () => <RequireAdmin><Corretores /></RequireAdmin>,
 });
 
 function Corretores() {

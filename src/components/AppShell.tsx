@@ -12,7 +12,14 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { User } from "@supabase/supabase-js";
 
-const BASE_NAV = [
+const NAV_CORRETOR = [
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/leads", label: "Leads", icon: Users },
+  { to: "/espelho", label: "Espelho", icon: Grid3x3 },
+  { to: "/propostas", label: "Propostas", icon: FileText },
+] as const;
+
+const NAV_ADMIN = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/leads", label: "Leads", icon: Users },
   { to: "/espelho", label: "Espelho", icon: Grid3x3 },
@@ -146,7 +153,7 @@ export function AppShell({ user, children }: { user: User; children: React.React
     );
   }
 
-  const nav = [...BASE_NAV, { to: "/notificacoes" as const, label: "Alertas", icon: Bell }];
+  const nav = [...(isGerenteOuMaster ? NAV_ADMIN : NAV_CORRETOR), { to: "/notificacoes" as const, label: "Alertas", icon: Bell }];
 
   return (
     <div className="min-h-screen bg-background text-foreground">

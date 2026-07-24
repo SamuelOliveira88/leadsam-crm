@@ -10,9 +10,11 @@ import { Button } from "@/components/ui/button";
 
 const DIAS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
+import { RequireAdmin } from "@/components/RequireAdmin";
+
 export const Route = createFileRoute("/_authenticated/horarios")({
   head: () => ({ meta: [{ title: "Horários — Alexandria Leds" }] }),
-  component: Horarios,
+  component: () => <RequireAdmin><Horarios /></RequireAdmin>,
 });
 
 function Horarios() {
