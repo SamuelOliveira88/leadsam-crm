@@ -153,7 +153,7 @@ export function AppShell({ user, children }: { user: User; children: React.React
     );
   }
 
-  const nav = [...BASE_NAV, { to: "/notificacoes" as const, label: "Alertas", icon: Bell }];
+  const nav = [...(isGerenteOuMaster ? NAV_ADMIN : NAV_CORRETOR), { to: "/notificacoes" as const, label: "Alertas", icon: Bell }];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
