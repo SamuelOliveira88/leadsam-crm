@@ -6,7 +6,7 @@ import { Building2, LayoutDashboard, Users, UserCog, Upload, Clock, Layers, LogO
 import { supabase } from "@/integrations/supabase/client";
 import { meuPerfil } from "@/lib/perfis.functions";
 import { heartbeatCorretor } from "@/lib/corretores.functions";
-import { listarNotificacoes } from "@/lib/notificacoes.functions";
+import { listarNotificacoes, notificarLoginMonitor } from "@/lib/notificacoes.functions";
 import { getConfigAcesso } from "@/lib/config-acesso.functions";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
