@@ -1,0 +1,1 @@
+UPDATE public.corretores SET user_id='ed26aadf-28ab-4296-a456-23f2938c6637' WHERE id='1367fec4-ac85-48ad-9e3f-ebb8650febc1';
