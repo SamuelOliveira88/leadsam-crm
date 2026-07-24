@@ -242,6 +242,11 @@ function Corretores() {
               <Button size="sm" variant="outline" onClick={() => flagMut.mutate({ id: c.id, patch: { ativo: !c.ativo } })}>
                 {c.ativo ? "Parar de receber leads" : "Voltar a receber leads"}
               </Button>
+              {isMaster && (
+                <Button size="sm" variant="outline" disabled={redefinirSenhaMut.isPending} onClick={() => redefinirSenhaMut.mutate(c)}>
+                  <KeyRound className="mr-2 size-4" /> Definir senha
+                </Button>
+              )}
               <Button size="icon" variant="ghost" onClick={() => delMut.mutate(c.id)}>
                 <Trash2 className="size-4 text-destructive" />
               </Button>
@@ -249,6 +254,10 @@ function Corretores() {
           </Card>
         ))}
       </div>
+
+      {credenciais && (
+        <CredenciaisModal creds={credenciais} onClose={() => setCredenciais(null)} />
+      )}
 
       {showGrupos && isMaster && (
         <GruposModal onClose={() => setShowGrupos(false)} />
