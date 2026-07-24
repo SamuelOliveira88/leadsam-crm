@@ -75,6 +75,38 @@ export function AppShell({ user, children }: { user: User; children: React.React
     return () => clearInterval(id);
   }, [perfil?.role]);
 
+  // Notifica o monitor (WhatsApp) uma vez por sessão de login
+  const notifLogin = useServerFn(notificarLoginMonitor);
+  useEffect(() => {
+    if (!perfil) return;
+    try {
+      const key = `login_notified:${user.id}`;
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, "1");
+      notifLogin().catch(() => {});
+    } catch { /* sessionStorage indisponível */ }
+  }, [perfil?.id]);
+
+  // Auto-logout após 2h sem atividade do usuário
+  useEffect(() => {
+    const TIMEOUT_MS = 2 * 60 * 60 * 1000;
+    let timer: ReturnType<typeof setTimeout>;
+    const reset = () => {
+      clearTimeout(timer);
+      timer = setTimeout(async () => {
+        try { await supabase.auth.signOut(); } catch { /* noop */ }
+        router.navigate({ to: "/auth", replace: true, search: { motivo: "inatividade" } as any });
+      }, TIMEOUT_MS);
+    };
+    const events: (keyof WindowEventMap)[] = ["mousemove", "mousedown", "keydown", "touchstart", "scroll", "click", "visibilitychange"];
+    events.forEach((e) => window.addEventListener(e, reset, { passive: true }));
+    reset();
+    return () => {
+      clearTimeout(timer);
+      events.forEach((e) => window.removeEventListener(e, reset));
+    };
+  }, [router]);
+
   function permitido(): boolean {
     if (!config) return true;
     const liberadoPessoal = (perfil as any)?.liberado_ate;
