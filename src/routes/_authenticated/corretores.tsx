@@ -169,24 +169,27 @@ function Corretores() {
           <option value="nenhum">Nenhum</option>
         </select>
         {isMaster ? (
-          <Button
-            disabled={!form.nome || !form.email || (form.role === "gerente" && !form.grupo_id) || inviteMut.isPending}
-            onClick={() => inviteMut.mutate(undefined, {
-              onSuccess: () => toast.success(form.role === "gerente" ? "Convite de gerente enviado!" : "Convite enviado por e-mail!"),
-              onError: (e: any) => {
-                console.error("Erro ao enviar convite:", e);
-                const msg =
-                  e?.message ||
-                  e?.data?.message ||
-                  e?.error?.message ||
-                  e?.error ||
-                  "Falha ao enviar convite";
-                toast.error(typeof msg === "string" ? msg : "Falha ao enviar convite");
-              },
-            })}
-          >
-            <Mail className="mr-2 size-4" /> {inviteMut.isPending ? "Enviando…" : `Enviar convite de ${form.role === "gerente" ? "gerente" : "corretor"}`}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              disabled={!form.nome || !form.email || (form.role === "gerente" && !form.grupo_id) || inviteMut.isPending}
+              onClick={() => inviteMut.mutate(undefined, {
+                onSuccess: () => toast.success(form.role === "gerente" ? "Convite de gerente enviado!" : "Convite enviado por e-mail!"),
+                onError: (e: any) => {
+                  const msg = e?.message || e?.data?.message || e?.error?.message || e?.error || "Falha ao enviar convite";
+                  toast.error(typeof msg === "string" ? msg : "Falha ao enviar convite");
+                },
+              })}
+            >
+              <Mail className="mr-2 size-4" /> {inviteMut.isPending ? "Enviando…" : "Enviar convite por e-mail"}
+            </Button>
+            <Button
+              variant="secondary"
+              disabled={!form.nome || !form.email || (form.role === "gerente" && !form.grupo_id) || cadastroSenhaMut.isPending}
+              onClick={() => cadastroSenhaMut.mutate()}
+            >
+              <KeyRound className="mr-2 size-4" /> {cadastroSenhaMut.isPending ? "Criando…" : "Cadastrar com senha (sem e-mail)"}
+            </Button>
+          </div>
         ) : (
           <Button onClick={() => form.nome && createMut.mutate()}><Plus className="mr-2 size-4" /> Adicionar</Button>
         )}
