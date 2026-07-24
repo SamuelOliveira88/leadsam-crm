@@ -26,6 +26,8 @@ function Corretores() {
   const createFn = useServerFn(criarCorretor);
   const updateFn = useServerFn(atualizarCorretor);
   const delFn = useServerFn(excluirCorretor);
+  const cadastrarSenhaFn = useServerFn(cadastrarCorretorComSenha);
+  const redefinirSenhaFn = useServerFn(redefinirSenhaCorretor);
   const perfilFn = useServerFn(meuPerfil);
   const { data } = useQuery({ queryKey: ["corretores"], queryFn: () => listFn() });
   const { data: grupos } = useQuery({ queryKey: ["grupos"], queryFn: () => gruposFn() });
