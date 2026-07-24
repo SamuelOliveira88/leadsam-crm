@@ -298,7 +298,7 @@ export const descartarLead = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: result, error } = await context.supabase.rpc("descartar_lead", {
       _lead_id: data.lead_id,
-      _motivo: data.motivo ?? null,
+      _motivo: data.motivo ?? undefined,
     });
     if (error) throw new Error(error.message);
     const r = (result ?? {}) as { novo_corretor_id?: string | null; novo_corretor_nome?: string | null; represado?: boolean };
