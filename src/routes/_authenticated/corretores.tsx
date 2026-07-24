@@ -266,6 +266,43 @@ function Corretores() {
   );
 }
 
+function CredenciaisModal({ creds, onClose }: { creds: { nome: string; email: string; senha: string }; onClose: () => void }) {
+  const copiar = async () => {
+    const txt = `Acesso Alexandria Leds\nSite: https://alexandria-leds.lovable.app/auth\nE-mail: ${creds.email}\nSenha: ${creds.senha}`;
+    try { await navigator.clipboard.writeText(txt); toast.success("Copiado! Cole no WhatsApp."); }
+    catch { toast.error("Não foi possível copiar"); }
+  };
+  const wa = `https://wa.me/?text=${encodeURIComponent(
+    `Olá ${creds.nome}, aqui está seu acesso ao Alexandria Leds:\n\n🔗 https://alexandria-leds.lovable.app/auth\n📧 ${creds.email}\n🔑 ${creds.senha}\n\nAo entrar, você pode trocar a senha em "Perfil".`
+  )}`;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
+      <Card className="w-full max-w-md p-5" onClick={(e) => e.stopPropagation()}>
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Credenciais de {creds.nome}</h2>
+          <Button variant="ghost" size="icon" onClick={onClose}><X className="size-4" /></Button>
+        </div>
+        <p className="mb-3 text-xs text-muted-foreground">
+          Copie e envie por WhatsApp. A senha só aparece agora — depois é preciso redefinir.
+        </p>
+        <div className="space-y-2 rounded-md border bg-muted/40 p-3 font-mono text-sm">
+          <div><span className="text-muted-foreground">E-mail:</span> {creds.email}</div>
+          <div><span className="text-muted-foreground">Senha:</span> <strong>{creds.senha}</strong></div>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button onClick={copiar}><Copy className="mr-2 size-4" /> Copiar tudo</Button>
+          <a href={wa} target="_blank" rel="noreferrer">
+            <Button variant="secondary">Abrir WhatsApp</Button>
+          </a>
+          <Button variant="ghost" onClick={onClose}>Fechar</Button>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+
+
 function GruposModal({ onClose }: { onClose: () => void }) {
   const qc = useQueryClient();
   const listFn = useServerFn(listarGrupos);
