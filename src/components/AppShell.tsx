@@ -6,7 +6,7 @@ import { Building2, LayoutDashboard, Users, UserCog, Upload, Clock, Layers, LogO
 import { supabase } from "@/integrations/supabase/client";
 import { meuPerfil } from "@/lib/perfis.functions";
 import { heartbeatCorretor } from "@/lib/corretores.functions";
-import { listarNotificacoes } from "@/lib/notificacoes.functions";
+import { listarNotificacoes, notificarLoginMonitor } from "@/lib/notificacoes.functions";
 import { getConfigAcesso } from "@/lib/config-acesso.functions";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -74,6 +74,38 @@ export function AppShell({ user, children }: { user: User; children: React.React
     const id = setInterval(ping, 60_000);
     return () => clearInterval(id);
   }, [perfil?.role]);
+
+  // Notifica o monitor (WhatsApp) uma vez por sessão de login
+  const notifLogin = useServerFn(notificarLoginMonitor);
+  useEffect(() => {
+    if (!perfil) return;
+    try {
+      const key = `login_notified:${user.id}`;
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, "1");
+      notifLogin().catch(() => {});
+    } catch { /* sessionStorage indisponível */ }
+  }, [perfil?.id]);
+
+  // Auto-logout após 2h sem atividade do usuário
+  useEffect(() => {
+    const TIMEOUT_MS = 2 * 60 * 60 * 1000;
+    let timer: ReturnType<typeof setTimeout>;
+    const reset = () => {
+      clearTimeout(timer);
+      timer = setTimeout(async () => {
+        try { await supabase.auth.signOut(); } catch { /* noop */ }
+        router.navigate({ to: "/auth", replace: true, search: { motivo: "inatividade" } as any });
+      }, TIMEOUT_MS);
+    };
+    const events = ["mousemove", "mousedown", "keydown", "touchstart", "scroll", "click", "visibilitychange"] as const;
+    events.forEach((e) => window.addEventListener(e, reset, { passive: true }));
+    reset();
+    return () => {
+      clearTimeout(timer);
+      events.forEach((e) => window.removeEventListener(e, reset));
+    };
+  }, [router]);
 
   function permitido(): boolean {
     if (!config) return true;
