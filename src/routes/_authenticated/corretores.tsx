@@ -97,6 +97,29 @@ function Corretores() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["corretores"] }),
   });
 
+  const [credenciais, setCredenciais] = useState<{ nome: string; email: string; senha: string } | null>(null);
+
+  const cadastroSenhaMut = useMutation({
+    mutationFn: () => cadastrarSenhaFn({ data: {
+      nome: form.nome, email: form.email, telefone: form.telefone || null,
+      grupo_id: form.grupo_id || null, canal_notificacao: form.canal_notificacao,
+      recebe_via_web: form.recebe_via_web, recebe_via_whatsapp: form.recebe_via_whatsapp,
+      role: form.role,
+    } }),
+    onSuccess: (r: any) => {
+      setCredenciais({ nome: form.nome, email: r.email, senha: r.senha });
+      resetForm();
+      qc.invalidateQueries({ queryKey: ["corretores"] });
+    },
+    onError: (e: any) => toast.error(e?.message || "Falha ao cadastrar com senha"),
+  });
+
+  const redefinirSenhaMut = useMutation({
+    mutationFn: (c: any) => redefinirSenhaFn({ data: { corretor_id: c.id } }),
+    onSuccess: (r: any) => setCredenciais({ nome: r.nome, email: r.email ?? "", senha: r.senha }),
+    onError: (e: any) => toast.error(e?.message || "Falha ao redefinir senha"),
+  });
+
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-2">
