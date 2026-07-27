@@ -72,6 +72,9 @@ export async function notificarMonitor(
   try {
     const numero = process.env.MONITOR_WHATSAPP;
     if (!numero) return;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    if (await notificacoesPausadas(supabaseAdmin)) return;
+
     const titulo = evento === "entrada"
       ? "📥 *Lead entrou no sistema*"
       : "✅ *Lead entregue a um corretor*";
