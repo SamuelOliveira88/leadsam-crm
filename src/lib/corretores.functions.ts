@@ -231,9 +231,15 @@ export const cadastrarCorretorComSenha = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     let userId: string | null = null;
+    // Busca por email no Auth e só permite reutilizar se pertencer à mesma empresa do admin.
     const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
     const existente = list?.users?.find((u) => (u.email ?? "").toLowerCase() === email);
     if (existente) {
+      const { data: perfilExistente } = await supabaseAdmin
+        .from("perfis").select("empresa_id").eq("id", existente.id).maybeSingle();
+      if (!perfilAtual?.super_admin && perfilExistente?.empresa_id && perfilExistente.empresa_id !== perfilAtual?.empresa_id) {
+        throw new Error("Este e-mail já pertence a um usuário de outra empresa. Use outro endereço.");
+      }
       userId = existente.id;
       const { error: uErr } = await supabaseAdmin.auth.admin.updateUserById(userId, {
         password: senha,
@@ -249,6 +255,7 @@ export const cadastrarCorretorComSenha = createServerFn({ method: "POST" })
       });
       if (uErr) throw new Error(uErr.message);
     } else {
+
       const { data: created, error: cErr } = await supabaseAdmin.auth.admin.createUser({
         email,
         password: senha,
@@ -264,6 +271,7 @@ export const cadastrarCorretorComSenha = createServerFn({ method: "POST" })
       if (cErr || !created?.user) throw new Error(cErr?.message || "Falha ao criar usuário");
       userId = created.user.id;
     }
+
 
     await supabaseAdmin.from("perfis").upsert({
       id: userId,
@@ -319,14 +327,18 @@ export const redefinirSenhaCorretor = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: perfilAtual } = await context.supabase
-      .from("perfis").select("role, super_admin").eq("id", context.userId).maybeSingle();
+      .from("perfis").select("role, super_admin, empresa_id").eq("id", context.userId).maybeSingle();
     if (!(perfilAtual?.super_admin || perfilAtual?.role === "master")) {
       throw new Error("Apenas o administrador pode redefinir senhas.");
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: corr } = await supabaseAdmin
-      .from("corretores").select("id, user_id, nome").eq("id", data.corretor_id).maybeSingle();
+      .from("corretores").select("id, user_id, nome, empresa_id").eq("id", data.corretor_id).maybeSingle();
     if (!corr?.user_id) throw new Error("Corretor sem usuário vinculado. Use 'Cadastrar com senha'.");
+    if (!perfilAtual?.super_admin && corr.empresa_id !== perfilAtual?.empresa_id) {
+      throw new Error("Acesso negado: este corretor pertence a outra empresa.");
+    }
+
     const senha = data.senha ?? gerarSenhaForte();
     const { data: u } = await supabaseAdmin.auth.admin.getUserById(corr.user_id);
     const { error } = await supabaseAdmin.auth.admin.updateUserById(corr.user_id, {
