@@ -26,6 +26,7 @@ export const Route = createFileRoute("/api/public/webhook")({
           let telefone = body.telefone || body.phone_number || body.phone;
           let email = body.email;
           let grupo_id = body.grupo_id || grupoFromQs;
+          let observacoes = body.mensagem || body.resumo || body.observacoes || body.message || body.notes;
 
           // Facebook lead ads payload
           if (!nome && Array.isArray(body.field_data)) {
@@ -45,6 +46,7 @@ export const Route = createFileRoute("/api/public/webhook")({
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { data, error } = await supabaseAdmin.rpc("distribuir_lead_round_robin", {
             p_nome: nome, p_telefone: telefone ?? null, p_email: email ?? null, p_grupo_id: grupo_id,
+            p_extra: observacoes ? { observacoes } : {},
           });
           if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
 
