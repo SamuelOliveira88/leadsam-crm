@@ -256,21 +256,6 @@ export const cadastrarCorretorComSenha = createServerFn({ method: "POST" })
         },
       });
       if (uErr) throw new Error(uErr.message);
-    }
-
-      const { error: uErr } = await supabaseAdmin.auth.admin.updateUserById(userId, {
-        password: senha,
-        email_confirm: true,
-        user_metadata: {
-          ...(existente.user_metadata ?? {}),
-          invited_by_admin: true,
-          nome: data.nome,
-          role: data.role,
-          grupo_id: data.grupo_id ?? null,
-          empresa_id: perfilAtual?.empresa_id ?? null,
-        },
-      });
-      if (uErr) throw new Error(uErr.message);
     } else {
       const { data: created, error: cErr } = await supabaseAdmin.auth.admin.createUser({
         email,
@@ -287,6 +272,7 @@ export const cadastrarCorretorComSenha = createServerFn({ method: "POST" })
       if (cErr || !created?.user) throw new Error(cErr?.message || "Falha ao criar usuário");
       userId = created.user.id;
     }
+
 
     await supabaseAdmin.from("perfis").upsert({
       id: userId,
