@@ -65,34 +65,36 @@ export const Route = createFileRoute("/api/public/webhook")({
           });
           if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
 
-          // Monitor: lead entrou
-          const { notificarMonitor } = await import("@/lib/evolution.server");
-          const { data: grupoRow } = await supabaseAdmin.from("grupos").select("nome").eq("id", grupo_id).maybeSingle();
-          await notificarMonitor("entrada", { nome, telefone, email, grupo: grupoRow?.nome ?? null, fonte: "webhook" });
+          const corretorId = data as string | null;
 
-          // Notifica o corretor via Evolution (best-effort) + monitor de entrega
-          try {
-            const corretorId = data as string | null;
-            const { data: leadRow } = await supabaseAdmin
-              .from("leads")
-              .select("id, corretores(nome)")
-              .eq("grupo_id", grupo_id)
-              .eq("nome", nome)
-              .order("created_at", { ascending: false })
-              .limit(1)
-              .maybeSingle();
+          // Só notifica quando o lead foi efetivamente distribuído (não represado).
+          if (corretorId) {
+            const { notificarMonitor, notificarCorretorPorLead } = await import("@/lib/evolution.server");
+            const { data: grupoRow } = await supabaseAdmin.from("grupos").select("nome").eq("id", grupo_id).maybeSingle();
+            await notificarMonitor("entrada", { nome, telefone, email, grupo: grupoRow?.nome ?? null, fonte: "webhook" });
 
-            if (corretorId && leadRow?.id) {
-              const { notificarCorretorPorLead } = await import("@/lib/evolution.server");
-              const envio = await notificarCorretorPorLead(supabaseAdmin, leadRow.id);
-              if (!envio.ok) console.error("[webhook] falha Evolution", envio.error);
-            }
-            await notificarMonitor(
-              "entrega",
-              { nome, telefone, email, grupo: grupoRow?.nome ?? null, fonte: "webhook" },
-              (leadRow as any)?.corretores?.nome ?? null,
-            );
-          } catch (e) { console.error("[webhook] falha notificando corretor", e); }
+            try {
+              const { data: leadRow } = await supabaseAdmin
+                .from("leads")
+                .select("id, corretores(nome)")
+                .eq("grupo_id", grupo_id)
+                .eq("nome", nome)
+                .order("created_at", { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+              if (leadRow?.id) {
+                const envio = await notificarCorretorPorLead(supabaseAdmin, leadRow.id);
+                if (!envio.ok) console.error("[webhook] falha Evolution", envio.error);
+              }
+              await notificarMonitor(
+                "entrega",
+                { nome, telefone, email, grupo: grupoRow?.nome ?? null, fonte: "webhook" },
+                (leadRow as any)?.corretores?.nome ?? null,
+              );
+            } catch (e) { console.error("[webhook] falha notificando corretor", e); }
+          }
+
 
           return new Response(JSON.stringify({ ok: true, corretor_id: data }), {
             headers: { "content-type": "application/json" },
