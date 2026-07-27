@@ -249,6 +249,13 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
           <Button variant="ghost" size="icon" onClick={onClose}><X className="size-4" /></Button>
         </div>
 
+        {lead.observacoes && (
+          <div className="mb-4 rounded-lg border bg-muted/40 p-3">
+            <div className="mb-1 text-xs font-semibold text-muted-foreground">Resumo da qualificação (IA)</div>
+            <div className="whitespace-pre-wrap text-sm">{lead.observacoes}</div>
+          </div>
+        )}
+
         <div className="mb-4 flex flex-wrap gap-2">
           <Button size="sm" onClick={handleGerar} disabled={gerando}>
             <Sparkles className="mr-2 size-4" />
