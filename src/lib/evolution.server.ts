@@ -9,6 +9,22 @@ function normalizePhone(raw: string): string {
   return digits;
 }
 
+// Verifica se as notificações automáticas estão pausadas.
+export async function notificacoesPausadas(supabaseClient: any): Promise<boolean> {
+  try {
+    const { data } = await supabaseClient
+      .from("notif_pausa")
+      .select("pausada_ate")
+      .eq("id", 1)
+      .maybeSingle();
+    if (!data?.pausada_ate) return false;
+    return new Date(data.pausada_ate).getTime() > Date.now();
+  } catch {
+    return false;
+  }
+}
+
+
 export async function sendWhatsAppText(numero: string, mensagem: string): Promise<{ ok: boolean; error?: string }> {
   const url = process.env.EVOLUTION_API_URL;
   const key = process.env.EVOLUTION_API_KEY;
