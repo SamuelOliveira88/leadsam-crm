@@ -231,23 +231,21 @@ export const cadastrarCorretorComSenha = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     let userId: string | null = null;
-    // Só permite reutilizar um usuário existente se ele já pertence à mesma empresa do admin.
-    const { data: perfilExistente } = await supabaseAdmin
-      .from("perfis")
-      .select("id, empresa_id")
-      .eq("email", email)
-      .maybeSingle();
-    if (perfilExistente?.id) {
-      if (!perfilAtual?.super_admin && perfilExistente.empresa_id && perfilExistente.empresa_id !== perfilAtual?.empresa_id) {
+    // Busca por email no Auth e só permite reutilizar se pertencer à mesma empresa do admin.
+    const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
+    const existente = list?.users?.find((u) => (u.email ?? "").toLowerCase() === email);
+    if (existente) {
+      const { data: perfilExistente } = await supabaseAdmin
+        .from("perfis").select("empresa_id").eq("id", existente.id).maybeSingle();
+      if (!perfilAtual?.super_admin && perfilExistente?.empresa_id && perfilExistente.empresa_id !== perfilAtual?.empresa_id) {
         throw new Error("Este e-mail já pertence a um usuário de outra empresa. Use outro endereço.");
       }
-      userId = perfilExistente.id;
-      const { data: existente } = await supabaseAdmin.auth.admin.getUserById(userId);
+      userId = existente.id;
       const { error: uErr } = await supabaseAdmin.auth.admin.updateUserById(userId, {
         password: senha,
         email_confirm: true,
         user_metadata: {
-          ...(existente?.user?.user_metadata ?? {}),
+          ...(existente.user_metadata ?? {}),
           invited_by_admin: true,
           nome: data.nome,
           role: data.role,
@@ -257,6 +255,7 @@ export const cadastrarCorretorComSenha = createServerFn({ method: "POST" })
       });
       if (uErr) throw new Error(uErr.message);
     } else {
+
       const { data: created, error: cErr } = await supabaseAdmin.auth.admin.createUser({
         email,
         password: senha,
