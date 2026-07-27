@@ -7,7 +7,7 @@ export const listarLeads = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("leads")
-      .select("id, nome, telefone, email, status, grupo_id, corretor_id, etapa_funil, fonte, cidade, created_at, corretores(nome), grupos(nome)")
+      .select("id, nome, telefone, email, status, grupo_id, corretor_id, etapa_funil, fonte, cidade, observacoes, visualizado_em, created_at, corretores(nome), grupos(nome)")
       .order("created_at", { ascending: false })
       .limit(500);
     if (error) throw new Error(error.message);
