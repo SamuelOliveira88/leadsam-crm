@@ -9,6 +9,22 @@ function normalizePhone(raw: string): string {
   return digits;
 }
 
+// Verifica se as notificações automáticas estão pausadas.
+export async function notificacoesPausadas(supabaseClient: any): Promise<boolean> {
+  try {
+    const { data } = await supabaseClient
+      .from("notif_pausa")
+      .select("pausada_ate")
+      .eq("id", 1)
+      .maybeSingle();
+    if (!data?.pausada_ate) return false;
+    return new Date(data.pausada_ate).getTime() > Date.now();
+  } catch {
+    return false;
+  }
+}
+
+
 export async function sendWhatsAppText(numero: string, mensagem: string): Promise<{ ok: boolean; error?: string }> {
   const url = process.env.EVOLUTION_API_URL;
   const key = process.env.EVOLUTION_API_KEY;
@@ -56,6 +72,9 @@ export async function notificarMonitor(
   try {
     const numero = process.env.MONITOR_WHATSAPP;
     if (!numero) return;
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    if (await notificacoesPausadas(supabaseAdmin)) return;
+
     const titulo = evento === "entrada"
       ? "📥 *Lead entrou no sistema*"
       : "✅ *Lead entregue a um corretor*";
@@ -89,7 +108,12 @@ export async function notificarCorretorPorLead(
   if (!lead) return { ok: false, error: "Lead não encontrado" };
   if (!lead.corretor_id) return { ok: false, error: "Lead sem corretor" };
 
+  if (await notificacoesPausadas(supabaseClient)) {
+    return { ok: false, error: "Notificações pausadas" };
+  }
+
   const { data: corretor, error: corretorError } = await supabaseClient
+
     .from("corretores")
     .select("id, nome, telefone")
     .eq("id", lead.corretor_id)

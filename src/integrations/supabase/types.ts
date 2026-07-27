@@ -682,6 +682,24 @@ export type Database = {
           },
         ]
       }
+      notif_pausa: {
+        Row: {
+          id: number
+          pausada_ate: string | null
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          pausada_ate?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          pausada_ate?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notificacoes: {
         Row: {
           created_at: string
