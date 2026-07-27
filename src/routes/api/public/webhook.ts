@@ -26,6 +26,7 @@ export const Route = createFileRoute("/api/public/webhook")({
           let telefone = body.telefone || body.phone_number || body.phone;
           let email = body.email;
           let grupo_id = body.grupo_id || grupoFromQs;
+          let observacoes = body.mensagem || body.resumo || body.observacoes || body.message || body.notes;
 
           // Facebook lead ads payload
           if (!nome && Array.isArray(body.field_data)) {
