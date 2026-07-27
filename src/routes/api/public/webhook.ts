@@ -40,6 +40,25 @@ export const Route = createFileRoute("/api/public/webhook")({
           }
 
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+          // Deduplicação: mesmo telefone no mesmo grupo nos últimos 10 minutos -> ignora
+          if (telefone) {
+            const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+            const { data: dup } = await supabaseAdmin
+              .from("leads")
+              .select("id")
+              .eq("grupo_id", grupo_id)
+              .eq("telefone", telefone)
+              .gte("created_at", since)
+              .limit(1)
+              .maybeSingle();
+            if (dup?.id) {
+              return new Response(JSON.stringify({ ok: true, deduped: true, lead_id: dup.id }), {
+                headers: { "content-type": "application/json" },
+              });
+            }
+          }
+
           const { data, error } = await supabaseAdmin.rpc("distribuir_lead_round_robin", {
             p_nome: nome, p_telefone: telefone ?? null, p_email: email ?? null, p_grupo_id: grupo_id,
             p_extra: observacoes ? { observacoes } : {},
