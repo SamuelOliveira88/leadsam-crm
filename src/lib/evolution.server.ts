@@ -105,7 +105,12 @@ export async function notificarCorretorPorLead(
   if (!lead) return { ok: false, error: "Lead não encontrado" };
   if (!lead.corretor_id) return { ok: false, error: "Lead sem corretor" };
 
+  if (await notificacoesPausadas(supabaseClient)) {
+    return { ok: false, error: "Notificações pausadas" };
+  }
+
   const { data: corretor, error: corretorError } = await supabaseClient
+
     .from("corretores")
     .select("id, nome, telefone")
     .eq("id", lead.corretor_id)
