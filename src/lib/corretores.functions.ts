@@ -327,14 +327,18 @@ export const redefinirSenhaCorretor = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: perfilAtual } = await context.supabase
-      .from("perfis").select("role, super_admin").eq("id", context.userId).maybeSingle();
+      .from("perfis").select("role, super_admin, empresa_id").eq("id", context.userId).maybeSingle();
     if (!(perfilAtual?.super_admin || perfilAtual?.role === "master")) {
       throw new Error("Apenas o administrador pode redefinir senhas.");
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: corr } = await supabaseAdmin
-      .from("corretores").select("id, user_id, nome").eq("id", data.corretor_id).maybeSingle();
+      .from("corretores").select("id, user_id, nome, empresa_id").eq("id", data.corretor_id).maybeSingle();
     if (!corr?.user_id) throw new Error("Corretor sem usuário vinculado. Use 'Cadastrar com senha'.");
+    if (!perfilAtual?.super_admin && corr.empresa_id !== perfilAtual?.empresa_id) {
+      throw new Error("Acesso negado: este corretor pertence a outra empresa.");
+    }
+
     const senha = data.senha ?? gerarSenhaForte();
     const { data: u } = await supabaseAdmin.auth.admin.getUserById(corr.user_id);
     const { error } = await supabaseAdmin.auth.admin.updateUserById(corr.user_id, {
