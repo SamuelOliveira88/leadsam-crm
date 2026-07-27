@@ -10,14 +10,10 @@ export const Route = createFileRoute("/api/public/webhook")({
           const url = new URL(request.url);
           const token = url.searchParams.get("token") || request.headers.get("x-webhook-token");
           const expected = process.env.WEBHOOK_LEAD_TOKEN;
-          // TODO(temporário): token extra aceito enquanto o CRM_WEBHOOK_TOKEN do site não é
-          // sincronizado com o WEBHOOK_LEAD_TOKEN oficial via variável de ambiente. Remover
-          // esta linha e usar só `expected` assim que possível.
-          const tokenTemporarioSite = "a33a763a470c7be1969651b5069838502e0753bfe62445ee";
-          const tokenValido = (!!expected && token === expected) || token === tokenTemporarioSite;
-          if (!tokenValido) {
+          if (!expected || token !== expected) {
             return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401 });
           }
+
           const grupoFromQs = url.searchParams.get("grupo_id");
           const body = await request.json().catch(() => ({}));
 
