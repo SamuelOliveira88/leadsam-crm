@@ -231,10 +231,33 @@ export const cadastrarCorretorComSenha = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     let userId: string | null = null;
-    const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
-    const existente = list?.users?.find((u) => (u.email ?? "").toLowerCase() === email);
-    if (existente) {
-      userId = existente.id;
+    // Só permite reutilizar um usuário existente se ele já pertence à mesma empresa do admin.
+    const { data: perfilExistente } = await supabaseAdmin
+      .from("perfis")
+      .select("id, empresa_id")
+      .eq("email", email)
+      .maybeSingle();
+    if (perfilExistente?.id) {
+      if (!perfilAtual?.super_admin && perfilExistente.empresa_id && perfilExistente.empresa_id !== perfilAtual?.empresa_id) {
+        throw new Error("Este e-mail já pertence a um usuário de outra empresa. Use outro endereço.");
+      }
+      userId = perfilExistente.id;
+      const { data: existente } = await supabaseAdmin.auth.admin.getUserById(userId);
+      const { error: uErr } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+        password: senha,
+        email_confirm: true,
+        user_metadata: {
+          ...(existente?.user?.user_metadata ?? {}),
+          invited_by_admin: true,
+          nome: data.nome,
+          role: data.role,
+          grupo_id: data.grupo_id ?? null,
+          empresa_id: perfilAtual?.empresa_id ?? null,
+        },
+      });
+      if (uErr) throw new Error(uErr.message);
+    }
+
       const { error: uErr } = await supabaseAdmin.auth.admin.updateUserById(userId, {
         password: senha,
         email_confirm: true,
