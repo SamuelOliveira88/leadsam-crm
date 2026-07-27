@@ -7,6 +7,14 @@ export const Route = createFileRoute("/api/public/hooks/processar-fila")({
     handlers: {
       POST: async ({ request }) => {
         const url = new URL(request.url);
+        const token = url.searchParams.get("token") || request.headers.get("x-webhook-token");
+        const expected = process.env.WEBHOOK_LEAD_TOKEN;
+        if (!expected || token !== expected) {
+          return new Response(JSON.stringify({ error: "unauthorized" }), {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
         const limit = Math.min(Number(url.searchParams.get("limit") ?? "30"), 100);
 
         const supabaseUrl = process.env.SUPABASE_URL!;

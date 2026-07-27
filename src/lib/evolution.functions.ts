@@ -7,7 +7,20 @@ export const enviarWhatsApp = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) =>
     z.object({ numero: z.string().min(6), mensagem: z.string().min(1) }).parse(d),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    // Restrict arbitrary WhatsApp sends to admin roles to prevent open-relay abuse.
+    const { data: perfil } = await context.supabase
+      .from("perfis")
+      .select("role, super_admin")
+      .eq("id", context.userId)
+      .maybeSingle();
+    const permitido =
+      perfil?.super_admin === true ||
+      ["master", "gerente"].includes(perfil?.role ?? "");
+    if (!permitido) {
+      throw new Error("Apenas master, gerente ou super admin podem enviar mensagens WhatsApp livres.");
+    }
+
     const { sendWhatsAppText } = await import("./evolution.server");
     const r = await sendWhatsAppText(data.numero, data.mensagem);
     if (!r.ok) throw new Error(r.error || "Falha ao enviar");
