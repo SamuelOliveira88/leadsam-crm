@@ -100,7 +100,7 @@ export async function notificarCorretorPorLead(
 ): Promise<{ ok: boolean; error?: string }> {
   const { data: lead, error } = await supabaseClient
     .from("leads")
-    .select("id, nome, telefone, email, corretor_id")
+    .select("id, nome, telefone, email, corretor_id, grupo_id")
     .eq("id", leadId)
     .maybeSingle();
 
@@ -111,6 +111,15 @@ export async function notificarCorretorPorLead(
   if (await notificacoesPausadas(supabaseClient)) {
     return { ok: false, error: "Notificações pausadas" };
   }
+
+  // Só notifica dentro do horário de atendimento do grupo do lead
+  if (lead.grupo_id) {
+    const { data: dentro } = await supabaseClient.rpc("dentro_do_horario", { p_grupo_id: lead.grupo_id });
+    if (dentro === false) {
+      return { ok: false, error: "Fora do horário de atendimento" };
+    }
+  }
+
 
   const { data: corretor, error: corretorError } = await supabaseClient
 
