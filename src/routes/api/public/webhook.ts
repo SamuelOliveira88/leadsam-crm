@@ -9,10 +9,14 @@ export const Route = createFileRoute("/api/public/webhook")({
         try {
           const url = new URL(request.url);
           const token = url.searchParams.get("token") || request.headers.get("x-webhook-token");
-          const expected = process.env.WEBHOOK_LEAD_TOKEN;
-          if (!expected || token !== expected) {
+          const aceitos = [process.env.WEBHOOK_LEAD_TOKEN, process.env.WEBHOOK_LEAD_TOKEN_LP].filter(
+            (t): t is string => !!t,
+          );
+          if (!token || !aceitos.includes(token)) {
             return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401 });
           }
+          const origemToken = token === process.env.WEBHOOK_LEAD_TOKEN_LP ? "landing" : "webhook";
+
 
           const grupoFromQs = url.searchParams.get("grupo_id");
           const body = await request.json().catch(() => ({}));
@@ -61,7 +65,7 @@ export const Route = createFileRoute("/api/public/webhook")({
 
           const { data, error } = await supabaseAdmin.rpc("distribuir_lead_round_robin", {
             p_nome: nome, p_telefone: telefone ?? null, p_email: email ?? null, p_grupo_id: grupo_id,
-            p_extra: observacoes ? { observacoes } : {},
+            p_extra: { fonte: origemToken, ...(observacoes ? { observacoes } : {}) },
           });
           if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
 
@@ -71,7 +75,7 @@ export const Route = createFileRoute("/api/public/webhook")({
           if (corretorId) {
             const { notificarMonitor, notificarCorretorPorLead } = await import("@/lib/evolution.server");
             const { data: grupoRow } = await supabaseAdmin.from("grupos").select("nome").eq("id", grupo_id).maybeSingle();
-            await notificarMonitor("entrada", { nome, telefone, email, grupo: grupoRow?.nome ?? null, fonte: "webhook" });
+            await notificarMonitor("entrada", { nome, telefone, email, grupo: grupoRow?.nome ?? null, fonte: origemToken });
 
             try {
               const { data: leadRow } = await supabaseAdmin
@@ -89,7 +93,7 @@ export const Route = createFileRoute("/api/public/webhook")({
               }
               await notificarMonitor(
                 "entrega",
-                { nome, telefone, email, grupo: grupoRow?.nome ?? null, fonte: "webhook" },
+                { nome, telefone, email, grupo: grupoRow?.nome ?? null, fonte: origemToken },
                 (leadRow as any)?.corretores?.nome ?? null,
               );
             } catch (e) { console.error("[webhook] falha notificando corretor", e); }
