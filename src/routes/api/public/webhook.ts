@@ -9,13 +9,20 @@ export const Route = createFileRoute("/api/public/webhook")({
         try {
           const url = new URL(request.url);
           const token = url.searchParams.get("token") || request.headers.get("x-webhook-token");
-          const aceitos = [process.env.WEBHOOK_LEAD_TOKEN, process.env.WEBHOOK_LEAD_TOKEN_LP].filter(
-            (t): t is string => !!t,
-          );
+          const aceitos = [
+            process.env.WEBHOOK_LEAD_TOKEN,
+            process.env.WEBHOOK_LEAD_TOKEN_LP,
+            process.env.WEBHOOK_LEAD_TOKEN_NOTIF,
+          ].filter((t): t is string => !!t);
           if (!token || !aceitos.includes(token)) {
             return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401 });
           }
-          const origemToken = token === process.env.WEBHOOK_LEAD_TOKEN_LP ? "landing" : "webhook";
+          const origemToken =
+            token === process.env.WEBHOOK_LEAD_TOKEN_LP
+              ? "landing"
+              : token === process.env.WEBHOOK_LEAD_TOKEN_NOTIF
+                ? "notificacoes"
+                : "webhook";
 
 
           const grupoFromQs = url.searchParams.get("grupo_id");
