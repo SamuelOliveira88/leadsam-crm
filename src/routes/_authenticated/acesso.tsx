@@ -215,9 +215,17 @@ function AcessoPage() {
         )}
         <div className="mt-4 flex items-center justify-between">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <ShieldCheck className="size-4" /> Masters sempre têm acesso irrestrito.
+            <ShieldCheck className="size-4" />{" "}
+            {perfil?.role === "master"
+              ? "Masters sempre têm acesso irrestrito."
+              : "Apenas usuários Master podem alterar o horário padrão."}
           </div>
-          <Button onClick={() => salvar.mutate()} disabled={salvar.isPending}>Salvar</Button>
+          <Button
+            onClick={() => salvar.mutate()}
+            disabled={salvar.isPending || perfil?.role !== "master"}
+          >
+            Salvar
+          </Button>
         </div>
       </div>
     </div>
