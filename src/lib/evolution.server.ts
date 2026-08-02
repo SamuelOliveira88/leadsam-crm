@@ -151,7 +151,7 @@ export async function processarNotificacoesWhatsAppPendentes(
 ): Promise<{ enviados: number; falhas: Array<{ id: string; motivo: string }> }> {
   const { data: pendentes, error } = await supabaseClient
     .from("fila_notificacoes")
-    .select("id, lead_id")
+    .select("id, lead_id, corretor_id")
     .eq("tipo", "whatsapp")
     .eq("status", "pendente")
     .order("created_at", { ascending: true })
@@ -164,7 +164,14 @@ export async function processarNotificacoesWhatsAppPendentes(
   const leadsProcessados = new Set<string>();
 
   for (const item of pendentes ?? []) {
-    if (leadsProcessados.has(item.lead_id)) continue;
+    // Duplicatas do mesmo lead nesta rodada: descarta a linha para não travar a fila.
+    if (leadsProcessados.has(item.lead_id)) {
+      await supabaseClient
+        .from("fila_notificacoes")
+        .update({ status: "duplicado", enviado_em: new Date().toISOString() })
+        .eq("id", item.id);
+      continue;
+    }
     leadsProcessados.add(item.lead_id);
 
     const result = await notificarCorretorPorLead(supabaseClient, item.lead_id);
@@ -173,7 +180,19 @@ export async function processarNotificacoesWhatsAppPendentes(
     } else {
       falhas.push({ id: item.id, motivo: result.error ?? "Falha ao enviar" });
     }
+
+    // Sempre resolve ESTA linha, mesmo que o corretor do lead tenha mudado —
+    // caso contrário a mesma linha volta para sempre e trava a fila.
+    await supabaseClient
+      .from("fila_notificacoes")
+      .update({
+        status: result.ok ? "enviado" : "erro",
+        enviado_em: new Date().toISOString(),
+      })
+      .eq("id", item.id)
+      .eq("status", "pendente");
   }
 
   return { enviados, falhas };
 }
+
