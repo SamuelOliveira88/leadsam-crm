@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public.setup_whatsapp_cron(text);
