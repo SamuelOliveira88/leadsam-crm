@@ -1137,6 +1137,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      setup_whatsapp_cron: { Args: { p_token: string }; Returns: string }
       sou_corretor_do_lead: { Args: { p_lead_id: string }; Returns: boolean }
       sou_super_admin: { Args: never; Returns: boolean }
     }
