@@ -1127,6 +1127,10 @@ export type Database = {
           read_ct: number
         }[]
       }
+      reatribuir_leads_parados: {
+        Args: { p_minutos?: number }
+        Returns: undefined
+      }
       reatribuir_leads_sem_visualizacao: { Args: never; Returns: undefined }
       registrar_login_corretor: { Args: never; Returns: undefined }
       reservar_unidade: {
