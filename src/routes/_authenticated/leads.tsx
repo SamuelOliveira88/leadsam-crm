@@ -75,6 +75,8 @@ function Leads() {
     }
   }
 
+  const [novoAberto, setNovoAberto] = useState(false);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
@@ -82,10 +84,18 @@ function Leads() {
           <h1 className="text-2xl font-bold tracking-tight">Leads</h1>
           <p className="text-sm text-muted-foreground">Toque em um lead para abrir o histórico e gerar mensagem</p>
         </div>
-        <Button size="sm" variant="outline" onClick={handleExportar} disabled={exportando}>
-          <Download className="mr-2 size-4" /> {exportando ? "Exportando…" : "Exportar planilha"}
-        </Button>
+        <div className="flex gap-2">
+          <Button size="sm" onClick={() => setNovoAberto(true)}>
+            <Plus className="mr-2 size-4" /> Novo lead
+          </Button>
+          <Button size="sm" variant="outline" onClick={handleExportar} disabled={exportando}>
+            <Download className="mr-2 size-4" /> {exportando ? "Exportando…" : "Exportar planilha"}
+          </Button>
+        </div>
       </div>
+
+      <NovoLeadDialog open={novoAberto} onOpenChange={setNovoAberto} />
+
 
       {isLoading && <div className="text-sm text-muted-foreground">Carregando…</div>}
 
