@@ -313,3 +313,44 @@ export const descartarLead = createServerFn({ method: "POST" })
     return { ok: true, corretor_nome: r.novo_corretor_nome ?? null, represado: !!r.represado };
   });
 
+
+// Cadastro manual rápido de lead (apenas nome e telefone) — entra no rodízio do grupo
+export const criarLeadManual = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({
+      nome: z.string().trim().min(2).max(120),
+      telefone: z.string().trim().min(8).max(20),
+      grupo_id: z.string().uuid(),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: corretorId, error } = await context.supabase.rpc("distribuir_lead_round_robin", {
+      p_nome: data.nome,
+      p_telefone: data.telefone,
+      p_email: "",
+      p_grupo_id: data.grupo_id,
+    });
+    if (error) throw new Error(error.message);
+
+    try {
+      const { data: novoLead } = await context.supabase
+        .from("leads")
+        .select("id, corretores(nome), grupos(nome)")
+        .eq("grupo_id", data.grupo_id)
+        .eq("nome", data.nome)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const grupoNome = (novoLead as any)?.grupos?.nome ?? null;
+      const corretorNome = (novoLead as any)?.corretores?.nome ?? null;
+      const { notificarMonitor, notificarCorretorPorLead } = await import("./evolution.server");
+      await notificarMonitor("entrada", { nome: data.nome, telefone: data.telefone, grupo: grupoNome, fonte: "manual" });
+      if (corretorId && novoLead?.id) await notificarCorretorPorLead(context.supabase, novoLead.id);
+      await notificarMonitor("entrega", { nome: data.nome, telefone: data.telefone, grupo: grupoNome, fonte: "manual" }, corretorNome);
+    } catch (e) {
+      console.error("[criarLeadManual] falha notificando", e);
+    }
+
+    return { ok: true, distribuido: Boolean(corretorId) };
+  });
