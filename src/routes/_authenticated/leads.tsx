@@ -408,3 +408,73 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
     </div>
   );
 }
+
+function NovoLeadDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+  const qc = useQueryClient();
+  const fetchGrupos = useServerFn(listarGrupos);
+  const criar = useServerFn(criarLeadManual);
+  const { data: grupos } = useQuery({ queryKey: ["grupos"], queryFn: () => fetchGrupos(), enabled: open });
+  const [nome, setNome] = useState("");
+  const [telefone, setTelefone] = useState("");
+  const [grupoId, setGrupoId] = useState("");
+
+  useEffect(() => {
+    if (open && !grupoId && grupos?.length) {
+      const principal = (grupos as any[]).find((g) => g.is_principal) ?? grupos[0];
+      setGrupoId(principal.id);
+    }
+  }, [open, grupos, grupoId]);
+
+  const mut = useMutation({
+    mutationFn: () => criar({ data: { nome: nome.trim(), telefone: telefone.replace(/\D/g, ""), grupo_id: grupoId } }),
+    onSuccess: (r: any) => {
+      toast.success(r?.distribuido ? "Lead criado e distribuído." : "Lead criado (represado — fora do horário ou sem corretor).");
+      qc.invalidateQueries({ queryKey: ["leads"] });
+      setNome("");
+      setTelefone("");
+      onOpenChange(false);
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Erro ao criar lead"),
+  });
+
+  const valido = nome.trim().length >= 2 && telefone.replace(/\D/g, "").length >= 8 && !!grupoId;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Novo lead manual</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="nl-nome">Nome</Label>
+            <Input id="nl-nome" value={nome} maxLength={120} onChange={(e) => setNome(e.target.value)} placeholder="Nome do cliente" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="nl-tel">Telefone (WhatsApp)</Label>
+            <Input id="nl-tel" value={telefone} maxLength={20} inputMode="tel" onChange={(e) => setTelefone(e.target.value)} placeholder="11999999999" />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="nl-grupo">Grupo</Label>
+            <select
+              id="nl-grupo"
+              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+              value={grupoId}
+              onChange={(e) => setGrupoId(e.target.value)}
+            >
+              {(grupos ?? []).map((g: any) => (
+                <option key={g.id} value={g.id}>{g.nome}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>
+          <Button disabled={!valido || mut.isPending} onClick={() => mut.mutate()}>
+            {mut.isPending ? "Criando…" : "Criar lead"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
