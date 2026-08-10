@@ -454,19 +454,6 @@ function NovoLeadDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
             <Label htmlFor="nl-tel">Telefone (WhatsApp)</Label>
             <Input id="nl-tel" value={telefone} maxLength={20} inputMode="tel" onChange={(e) => setTelefone(e.target.value)} placeholder="11999999999" />
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="nl-grupo">Grupo</Label>
-            <select
-              id="nl-grupo"
-              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-              value={grupoId}
-              onChange={(e) => setGrupoId(e.target.value)}
-            >
-              {(grupos ?? []).map((g: any) => (
-                <option key={g.id} value={g.id}>{g.nome}</option>
-              ))}
-            </select>
-          </div>
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>
