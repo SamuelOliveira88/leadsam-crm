@@ -349,7 +349,7 @@ export const criarLeadManual = createServerFn({ method: "POST" })
       const { data: novoLead } = await context.supabase
         .from("leads")
         .select("id, corretores(nome), grupos(nome)")
-        .eq("grupo_id", data.grupo_id)
+        .eq("grupo_id", grupoId as string)
         .eq("nome", data.nome)
         .order("created_at", { ascending: false })
         .limit(1)
