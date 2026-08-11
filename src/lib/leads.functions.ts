@@ -321,23 +321,35 @@ export const criarLeadManual = createServerFn({ method: "POST" })
     z.object({
       nome: z.string().trim().min(2).max(120),
       telefone: z.string().trim().min(8).max(20),
-      grupo_id: z.string().uuid(),
+      grupo_id: z.string().uuid().optional(),
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
+    // Leads manuais sempre vão para o grupo "Notificações" (fallback: grupo enviado / principal)
+    const { data: gruposDb } = await context.supabase.from("grupos").select("id, nome, is_principal");
+    const norm = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const notif = (gruposDb ?? []).find((g: any) => norm(String(g.nome)).includes("notifica"));
+    const grupoId =
+      notif?.id ??
+      data.grupo_id ??
+      (gruposDb ?? []).find((g: any) => g.is_principal)?.id ??
+      (gruposDb ?? [])[0]?.id;
+    if (!grupoId) throw new Error("Nenhum grupo disponível");
+
     const { data: corretorId, error } = await context.supabase.rpc("distribuir_lead_round_robin", {
       p_nome: data.nome,
       p_telefone: data.telefone,
       p_email: "",
-      p_grupo_id: data.grupo_id,
+      p_grupo_id: grupoId,
     });
     if (error) throw new Error(error.message);
+
 
     try {
       const { data: novoLead } = await context.supabase
         .from("leads")
         .select("id, corretores(nome), grupos(nome)")
-        .eq("grupo_id", data.grupo_id)
+        .eq("grupo_id", grupoId as string)
         .eq("nome", data.nome)
         .order("created_at", { ascending: false })
         .limit(1)
