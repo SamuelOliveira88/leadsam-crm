@@ -420,10 +420,13 @@ function NovoLeadDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
 
   useEffect(() => {
     if (open && !grupoId && grupos?.length) {
-      const principal = (grupos as any[]).find((g) => g.is_principal) ?? grupos[0];
-      setGrupoId(principal.id);
+      const norm = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      const notif = (grupos as any[]).find((g) => norm(String(g.nome)).includes("notifica"));
+      const alvo = notif ?? (grupos as any[]).find((g) => g.is_principal) ?? grupos[0];
+      setGrupoId(alvo.id);
     }
   }, [open, grupos, grupoId]);
+
 
   const mut = useMutation({
     mutationFn: () => criar({ data: { nome: nome.trim(), telefone: telefone.replace(/\D/g, ""), grupo_id: grupoId } }),
