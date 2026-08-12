@@ -97,6 +97,77 @@ export type Database = {
           },
         ]
       }
+      convites_admin: {
+        Row: {
+          corretor_id: string | null
+          created_at: string
+          criado_por: string | null
+          email: string
+          empresa_id: string | null
+          expira_em: string
+          grupo_id: string | null
+          id: string
+          nome: string | null
+          role: string
+          usado_em: string | null
+        }
+        Insert: {
+          corretor_id?: string | null
+          created_at?: string
+          criado_por?: string | null
+          email: string
+          empresa_id?: string | null
+          expira_em?: string
+          grupo_id?: string | null
+          id?: string
+          nome?: string | null
+          role: string
+          usado_em?: string | null
+        }
+        Update: {
+          corretor_id?: string | null
+          created_at?: string
+          criado_por?: string | null
+          email?: string
+          empresa_id?: string | null
+          expira_em?: string
+          grupo_id?: string | null
+          id?: string
+          nome?: string | null
+          role?: string
+          usado_em?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "convites_admin_corretor_id_fkey"
+            columns: ["corretor_id"]
+            isOneToOne: false
+            referencedRelation: "corretores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "convites_admin_corretor_id_fkey"
+            columns: ["corretor_id"]
+            isOneToOne: false
+            referencedRelation: "dashboard_corretores"
+            referencedColumns: ["corretor_id"]
+          },
+          {
+            foreignKeyName: "convites_admin_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "convites_admin_grupo_id_fkey"
+            columns: ["grupo_id"]
+            isOneToOne: false
+            referencedRelation: "grupos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       corretores: {
         Row: {
           ativo: boolean
@@ -1119,6 +1190,7 @@ export type Database = {
         Args: { p_proposta_id: string }
         Returns: boolean
       }
+      posso_operar_grupo: { Args: { p_grupo_id: string }; Returns: boolean }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
