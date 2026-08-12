@@ -239,6 +239,17 @@ export const cadastrarCorretorComSenha = createServerFn({ method: "POST" })
     const senha = data.senha ?? gerarSenhaForte();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
+    await supabaseAdmin.from("convites_admin").insert({
+      email,
+      role: data.role,
+      empresa_id: perfilAtual?.empresa_id ?? null,
+      grupo_id: data.grupo_id ?? null,
+      nome: data.nome,
+      criado_por: context.userId,
+    });
+
+
+
     let userId: string | null = null;
     // Busca por email no Auth e só permite reutilizar se pertencer à mesma empresa do admin.
     const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
