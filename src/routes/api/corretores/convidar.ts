@@ -158,7 +158,7 @@ export const Route = createFileRoute("/api/corretores/convidar")({
           grupo_id: data.grupo_id ?? null,
           corretor_id: corretorId,
           nome: data.nome,
-          criado_por: user.id,
+          criado_por: userData.user.id,
         });
 
         const { error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, {
