@@ -104,6 +104,15 @@ export const cadastrarEmpresa = createServerFn({ method: "POST" })
       .single();
     if (eErr) throw new Error(eErr.message);
 
+    // Registra o convite no servidor (define cargo/empresa com segurança)
+    await supabaseAdmin.from("convites_admin").insert({
+      email: data.email.toLowerCase(),
+      role: "master",
+      empresa_id: empresa.id,
+      nome: data.nome_usuario,
+      criado_por: context.userId,
+    });
+
     // Envia convite por e-mail — o usuário define a própria senha em /set-password
     const redirectTo = `${process.env.SITE_URL ?? "https://alexandria-leds.lovable.app"}/set-password`;
     const { error: iErr } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, {
