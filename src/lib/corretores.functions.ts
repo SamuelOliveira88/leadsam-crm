@@ -90,8 +90,17 @@ export const convidarCorretor = createServerFn({ method: "POST" })
       .single();
     if (cErr) throw new Error(cErr.message);
 
-    // 2) Envia convite por e-mail com metadados que ligam a conta ao corretor
+    // 2) Registra o convite no servidor (fonte de verdade de cargo/empresa)
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("convites_admin").insert({
+      email: data.email.toLowerCase(),
+      role: "corretor",
+      empresa_id: perfil?.empresa_id ?? null,
+      grupo_id: data.grupo_id ?? null,
+      corretor_id: corretor.id,
+      nome: data.nome,
+      criado_por: context.userId,
+    });
     const { error: iErr } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, {
       redirectTo: data.redirect_to,
       data: {
