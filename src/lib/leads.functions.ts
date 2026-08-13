@@ -356,12 +356,19 @@ export const criarLeadManual = createServerFn({ method: "POST" })
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
+      if (data.privado && novoLead?.id) {
+        await context.supabase
+          .from("leads")
+          .update({ visibilidade: "privado", criado_por: context.userId })
+          .eq("id", novoLead.id);
+      }
       const grupoNome = (novoLead as any)?.grupos?.nome ?? null;
       const corretorNome = (novoLead as any)?.corretores?.nome ?? null;
       const { notificarMonitor, notificarCorretorPorLead } = await import("./evolution.server");
       await notificarMonitor("entrada", { nome: data.nome, telefone: data.telefone, grupo: grupoNome, fonte: "manual" });
       if (corretorId && novoLead?.id) await notificarCorretorPorLead(context.supabase, novoLead.id);
       await notificarMonitor("entrega", { nome: data.nome, telefone: data.telefone, grupo: grupoNome, fonte: "manual" }, corretorNome);
+
     } catch (e) {
       console.error("[criarLeadManual] falha notificando", e);
     }
