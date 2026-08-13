@@ -365,7 +365,7 @@ export const criarLeadManual = createServerFn({ method: "POST" })
       const grupoNome = (novoLead as any)?.grupos?.nome ?? null;
       const corretorNome = (novoLead as any)?.corretores?.nome ?? null;
       const { notificarMonitor, notificarCorretorPorLead } = await import("./evolution.server");
-      await notificarMonitor("entrada", { nome: data.nome, telefone: data.telefone, grupo: grupoNome, fonte: "manual" });
+      
       if (corretorId && novoLead?.id) await notificarCorretorPorLead(context.supabase, novoLead.id);
       await notificarMonitor("entrega", { nome: data.nome, telefone: data.telefone, grupo: grupoNome, fonte: "manual" }, corretorNome);
 
