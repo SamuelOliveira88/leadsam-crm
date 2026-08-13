@@ -70,23 +70,24 @@ export async function notificarMonitor(
   corretorNome?: string | null,
 ): Promise<void> {
   try {
+    // Regra: o monitor só recebe aviso quando o lead é EFETIVAMENTE entregue
+    // a um corretor. Entrada no sistema e leads represados não notificam.
+    if (evento !== "entrega") return;
+    if (!corretorNome) return;
+
     const numero = process.env.MONITOR_WHATSAPP;
     if (!numero) return;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     if (await notificacoesPausadas(supabaseAdmin)) return;
 
-    const titulo = evento === "entrada"
-      ? "📥 *Lead entrou no sistema*"
-      : "✅ *Lead entregue a um corretor*";
     const linhas = [
-      titulo,
+      "✅ *Lead entregue a um corretor*",
       `Nome: ${lead.nome}`,
       lead.telefone ? `Telefone: ${lead.telefone}` : null,
       lead.email ? `Email: ${lead.email}` : null,
       lead.grupo ? `Grupo: ${lead.grupo}` : null,
       lead.fonte ? `Fonte: ${lead.fonte}` : null,
-      evento === "entrega" && corretorNome ? `Corretor: ${corretorNome}` : null,
-      evento === "entrega" && !corretorNome ? "Corretor: (represado — fora do horário)" : null,
+      `Corretor: ${corretorNome}`,
     ].filter(Boolean);
     await sendWhatsAppText(numero, linhas.join("\n"));
   } catch (e) {
