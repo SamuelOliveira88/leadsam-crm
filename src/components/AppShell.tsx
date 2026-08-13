@@ -74,6 +74,29 @@ export function AppShell({ user, children }: { user: User; children: React.React
   const isSuperAdmin = !!(perfil as any)?.super_admin;
   const naoLidas = (notifs ?? []).filter((n) => !n.lida).length;
 
+  // Troca de empresa (contexto multi-tenant) — só super-admin
+  const queryClient = useQueryClient();
+  const fetchEmpresas = useServerFn(listarEmpresasContexto);
+  const trocarEmpresa = useServerFn(trocarEmpresaContexto);
+  const [trocando, setTrocando] = useState(false);
+  const { data: ctxEmpresas } = useQuery({
+    queryKey: ["empresas_contexto"],
+    queryFn: () => fetchEmpresas(),
+    enabled: isSuperAdmin,
+  });
+
+  async function handleTrocarEmpresa(empresa_id: string) {
+    if (!empresa_id || empresa_id === (perfil as any)?.empresa_id) return;
+    setTrocando(true);
+    try {
+      await trocarEmpresa({ data: { empresa_id } });
+      await queryClient.invalidateQueries();
+      router.invalidate();
+    } finally {
+      setTrocando(false);
+    }
+  }
+
   const [tick, setTick] = useState(0);
   useEffect(() => { const t = setInterval(() => setTick((x) => x + 1), 30000); return () => clearInterval(t); }, []);
 
