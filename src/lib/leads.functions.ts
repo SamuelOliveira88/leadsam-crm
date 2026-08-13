@@ -322,8 +322,10 @@ export const criarLeadManual = createServerFn({ method: "POST" })
       nome: z.string().trim().min(2).max(120),
       telefone: z.string().trim().min(8).max(20),
       grupo_id: z.string().uuid().optional(),
+      privado: z.boolean().optional(),
     }).parse(d),
   )
+
   .handler(async ({ data, context }) => {
     // Leads manuais sempre vão para o grupo "Notificações" (fallback: grupo enviado / principal)
     const { data: gruposDb } = await context.supabase.from("grupos").select("id, nome, is_principal");
