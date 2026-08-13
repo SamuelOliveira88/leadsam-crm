@@ -82,7 +82,7 @@ export const Route = createFileRoute("/api/public/webhook")({
           if (corretorId) {
             const { notificarMonitor, notificarCorretorPorLead } = await import("@/lib/evolution.server");
             const { data: grupoRow } = await supabaseAdmin.from("grupos").select("nome").eq("id", grupo_id).maybeSingle();
-            await notificarMonitor("entrada", { nome, telefone, email, grupo: grupoRow?.nome ?? null, fonte: origemToken });
+            
 
             try {
               const { data: leadRow } = await supabaseAdmin
