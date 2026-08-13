@@ -858,6 +858,7 @@ export type Database = {
       }
       perfis: {
         Row: {
+          acesso_total: boolean
           corretor_id: string | null
           created_at: string
           empresa_id: string | null
@@ -868,6 +869,7 @@ export type Database = {
           super_admin: boolean
         }
         Insert: {
+          acesso_total?: boolean
           corretor_id?: string | null
           created_at?: string
           empresa_id?: string | null
@@ -878,6 +880,7 @@ export type Database = {
           super_admin?: boolean
         }
         Update: {
+          acesso_total?: boolean
           corretor_id?: string | null
           created_at?: string
           empresa_id?: string | null
@@ -1259,6 +1262,7 @@ export type Database = {
       }
       sou_corretor_do_lead: { Args: { p_lead_id: string }; Returns: boolean }
       sou_super_admin: { Args: never; Returns: boolean }
+      tem_acesso_total: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
