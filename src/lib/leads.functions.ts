@@ -322,8 +322,10 @@ export const criarLeadManual = createServerFn({ method: "POST" })
       nome: z.string().trim().min(2).max(120),
       telefone: z.string().trim().min(8).max(20),
       grupo_id: z.string().uuid().optional(),
+      privado: z.boolean().optional(),
     }).parse(d),
   )
+
   .handler(async ({ data, context }) => {
     // Leads manuais sempre vão para o grupo "Notificações" (fallback: grupo enviado / principal)
     const { data: gruposDb } = await context.supabase.from("grupos").select("id, nome, is_principal");
@@ -354,12 +356,19 @@ export const criarLeadManual = createServerFn({ method: "POST" })
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
+      if (data.privado && novoLead?.id) {
+        await context.supabase
+          .from("leads")
+          .update({ visibilidade: "privado", criado_por: context.userId })
+          .eq("id", novoLead.id);
+      }
       const grupoNome = (novoLead as any)?.grupos?.nome ?? null;
       const corretorNome = (novoLead as any)?.corretores?.nome ?? null;
       const { notificarMonitor, notificarCorretorPorLead } = await import("./evolution.server");
       await notificarMonitor("entrada", { nome: data.nome, telefone: data.telefone, grupo: grupoNome, fonte: "manual" });
       if (corretorId && novoLead?.id) await notificarCorretorPorLead(context.supabase, novoLead.id);
       await notificarMonitor("entrega", { nome: data.nome, telefone: data.telefone, grupo: grupoNome, fonte: "manual" }, corretorNome);
+
     } catch (e) {
       console.error("[criarLeadManual] falha notificando", e);
     }

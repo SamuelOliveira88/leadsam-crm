@@ -417,6 +417,8 @@ function NovoLeadDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
   const [grupoId, setGrupoId] = useState("");
+  const [privado, setPrivado] = useState(false);
+
 
   useEffect(() => {
     if (open && !grupoId && grupos?.length) {
@@ -429,16 +431,18 @@ function NovoLeadDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
 
 
   const mut = useMutation({
-    mutationFn: () => criar({ data: { nome: nome.trim(), telefone: telefone.replace(/\D/g, ""), grupo_id: grupoId } }),
+    mutationFn: () => criar({ data: { nome: nome.trim(), telefone: telefone.replace(/\D/g, ""), grupo_id: grupoId, privado } }),
     onSuccess: (r: any) => {
       toast.success(r?.distribuido ? "Lead criado e distribuído." : "Lead criado (represado — fora do horário ou sem corretor).");
       qc.invalidateQueries({ queryKey: ["leads"] });
       setNome("");
       setTelefone("");
+      setPrivado(false);
       onOpenChange(false);
     },
     onError: (e: any) => toast.error(e?.message ?? "Erro ao criar lead"),
   });
+
 
   const valido = nome.trim().length >= 2 && telefone.replace(/\D/g, "").length >= 8 && !!grupoId;
 
@@ -457,7 +461,15 @@ function NovoLeadDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
             <Label htmlFor="nl-tel">Telefone (WhatsApp)</Label>
             <Input id="nl-tel" value={telefone} maxLength={20} inputMode="tel" onChange={(e) => setTelefone(e.target.value)} placeholder="11999999999" />
           </div>
+          <label className="flex items-start gap-2 rounded-md border p-3 text-sm">
+            <input type="checkbox" className="mt-0.5" checked={privado} onChange={(e) => setPrivado(e.target.checked)} />
+            <span>
+              <span className="font-medium">Lead privado</span>
+              <span className="block text-xs text-muted-foreground">Somente você verá e poderá editar este lead — inclusive master e suporte ficam sem acesso.</span>
+            </span>
+          </label>
         </div>
+
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>
           <Button disabled={!valido || mut.isPending} onClick={() => mut.mutate()}>
