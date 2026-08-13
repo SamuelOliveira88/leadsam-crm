@@ -166,17 +166,28 @@ export const reenviarConvitesGrupo = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: perfilAtual } = await context.supabase
-      .from("perfis").select("role, super_admin, empresa_id").eq("id", context.userId).maybeSingle();
+      .from("perfis").select("role, super_admin, acesso_total, empresa_id, grupo_id").eq("id", context.userId).maybeSingle();
     if (!(perfilAtual?.super_admin || perfilAtual?.role === "master")) {
       throw new Error("Apenas o administrador pode reenviar convites.");
+    }
+    const acessoTotal = !!(perfilAtual?.super_admin || (perfilAtual as any)?.acesso_total);
+    // Sem acesso total, o admin só opera dentro do próprio grupo.
+    let grupoAlvo = data.grupo_id;
+    if (!acessoTotal) {
+      if (!perfilAtual?.grupo_id) throw new Error("Seu usuário não está vinculado a um grupo.");
+      if (grupoAlvo && grupoAlvo !== perfilAtual.grupo_id) {
+        throw new Error("Você só pode reenviar convites do seu grupo.");
+      }
+      grupoAlvo = perfilAtual.grupo_id;
     }
 
     let query = context.supabase
       .from("perfis")
       .select("id, nome, role, grupo_id, empresa_id")
       .in("role", ["corretor", "gerente"]);
-    if (data.grupo_id) query = query.eq("grupo_id", data.grupo_id);
+    if (grupoAlvo) query = query.eq("grupo_id", grupoAlvo);
     if (perfilAtual?.empresa_id) query = query.eq("empresa_id", perfilAtual.empresa_id);
+
 
     const { data: perfis, error } = await query;
     if (error) throw new Error(error.message);
