@@ -649,6 +649,7 @@ export type Database = {
           corretor_id: string | null
           corretor_origem_nome: string | null
           created_at: string
+          criado_por: string | null
           data_atividade: string | null
           email: string | null
           empresa_id: string | null
@@ -666,6 +667,7 @@ export type Database = {
           ultima_atividade: string | null
           ultima_atividade_em: string
           valor_negociacao: number | null
+          visibilidade: string
           visualizado_em: string | null
         }
         Insert: {
@@ -676,6 +678,7 @@ export type Database = {
           corretor_id?: string | null
           corretor_origem_nome?: string | null
           created_at?: string
+          criado_por?: string | null
           data_atividade?: string | null
           email?: string | null
           empresa_id?: string | null
@@ -693,6 +696,7 @@ export type Database = {
           ultima_atividade?: string | null
           ultima_atividade_em?: string
           valor_negociacao?: number | null
+          visibilidade?: string
           visualizado_em?: string | null
         }
         Update: {
@@ -703,6 +707,7 @@ export type Database = {
           corretor_id?: string | null
           corretor_origem_nome?: string | null
           created_at?: string
+          criado_por?: string | null
           data_atividade?: string | null
           email?: string | null
           empresa_id?: string | null
@@ -720,6 +725,7 @@ export type Database = {
           ultima_atividade?: string | null
           ultima_atividade_em?: string
           valor_negociacao?: number | null
+          visibilidade?: string
           visualizado_em?: string | null
         }
         Relationships: [
@@ -749,6 +755,44 @@ export type Database = {
             columns: ["grupo_id"]
             isOneToOne: false
             referencedRelation: "grupos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notas_pessoais: {
+        Row: {
+          conteudo: string | null
+          created_at: string
+          criado_por: string
+          empresa_id: string | null
+          id: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          conteudo?: string | null
+          created_at?: string
+          criado_por?: string
+          empresa_id?: string | null
+          id?: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          conteudo?: string | null
+          created_at?: string
+          criado_por?: string
+          empresa_id?: string | null
+          id?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notas_pessoais_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
             referencedColumns: ["id"]
           },
         ]
