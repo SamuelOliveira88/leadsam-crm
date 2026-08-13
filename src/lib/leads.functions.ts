@@ -69,7 +69,7 @@ export const importarLeads = createServerFn({ method: "POST" })
           const { notificarMonitor } = await import("./evolution.server");
           const grupoNome = (novoLead as any)?.grupos?.nome ?? null;
           const corretorNome = (novoLead as any)?.corretores?.nome ?? null;
-          await notificarMonitor("entrada", { nome: lead.nome, telefone: lead.telefone, email: lead.email, grupo: grupoNome, fonte: "importacao" });
+          
           if (corretorId && novoLead?.id) {
             const { notificarCorretorPorLead } = await import("./evolution.server");
             await notificarCorretorPorLead(context.supabase, novoLead.id);
