@@ -431,16 +431,18 @@ function NovoLeadDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
 
 
   const mut = useMutation({
-    mutationFn: () => criar({ data: { nome: nome.trim(), telefone: telefone.replace(/\D/g, ""), grupo_id: grupoId } }),
+    mutationFn: () => criar({ data: { nome: nome.trim(), telefone: telefone.replace(/\D/g, ""), grupo_id: grupoId, privado } }),
     onSuccess: (r: any) => {
       toast.success(r?.distribuido ? "Lead criado e distribuído." : "Lead criado (represado — fora do horário ou sem corretor).");
       qc.invalidateQueries({ queryKey: ["leads"] });
       setNome("");
       setTelefone("");
+      setPrivado(false);
       onOpenChange(false);
     },
     onError: (e: any) => toast.error(e?.message ?? "Erro ao criar lead"),
   });
+
 
   const valido = nome.trim().length >= 2 && telefone.replace(/\D/g, "").length >= 8 && !!grupoId;
 
