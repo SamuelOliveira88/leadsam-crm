@@ -417,6 +417,8 @@ function NovoLeadDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
   const [grupoId, setGrupoId] = useState("");
+  const [privado, setPrivado] = useState(false);
+
 
   useEffect(() => {
     if (open && !grupoId && grupos?.length) {
