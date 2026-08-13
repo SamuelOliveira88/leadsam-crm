@@ -1,6 +1,6 @@
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Building2, LayoutDashboard, Users, UserCog, Upload, Clock, Layers, LogOut, Bell, Grid3x3, ShieldCheck, FileText, NotebookPen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import { meuPerfil } from "@/lib/perfis.functions";
 import { heartbeatCorretor } from "@/lib/corretores.functions";
 import { listarNotificacoes, notificarLoginMonitor } from "@/lib/notificacoes.functions";
 import { getConfigAcesso } from "@/lib/config-acesso.functions";
+import { listarEmpresasContexto, trocarEmpresaContexto } from "@/lib/empresa-contexto.functions";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { User } from "@supabase/supabase-js";
