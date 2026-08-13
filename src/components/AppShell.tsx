@@ -194,6 +194,23 @@ export function AppShell({ user, children }: { user: User; children: React.React
             <div className="text-[11px] text-muted-foreground">Gestão de Corretores</div>
           </div>
         </div>
+        {isSuperAdmin && (ctxEmpresas?.empresas?.length ?? 0) > 0 && (
+          <div className="px-3 pb-3">
+            <label className="mb-1 block px-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Empresa
+            </label>
+            <select
+              className="w-full rounded-lg border border-sidebar-border bg-card px-2 py-2 text-sm disabled:opacity-60"
+              value={(perfil as any)?.empresa_id ?? ""}
+              disabled={trocando}
+              onChange={(e) => handleTrocarEmpresa(e.target.value)}
+            >
+              {(ctxEmpresas?.empresas ?? []).map((e) => (
+                <option key={e.id} value={e.id}>{e.nome}</option>
+              ))}
+            </select>
+          </div>
+        )}
         <nav className="flex-1 space-y-1 px-3 py-2">
           {nav.map((n) => {
             const Icon = n.icon;
