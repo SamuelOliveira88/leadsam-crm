@@ -241,10 +241,18 @@ export const cadastrarCorretorComSenha = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: perfilAtual } = await context.supabase
-      .from("perfis").select("role, super_admin, empresa_id").eq("id", context.userId).maybeSingle();
+      .from("perfis").select("role, super_admin, acesso_total, empresa_id, grupo_id").eq("id", context.userId).maybeSingle();
     if (!(perfilAtual?.super_admin || perfilAtual?.role === "master")) {
       throw new Error("Apenas o administrador pode cadastrar corretores.");
     }
+    const acessoTotal = !!(perfilAtual?.super_admin || (perfilAtual as any)?.acesso_total);
+    if (!acessoTotal) {
+      if (!perfilAtual?.grupo_id) throw new Error("Seu usuário não está vinculado a um grupo.");
+      if (data.grupo_id !== perfilAtual.grupo_id) {
+        throw new Error("Você só pode cadastrar corretores no seu grupo.");
+      }
+    }
+
 
     const email = data.email.trim().toLowerCase();
     const senha = data.senha ?? gerarSenhaForte();
