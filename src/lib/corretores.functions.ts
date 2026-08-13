@@ -166,17 +166,28 @@ export const reenviarConvitesGrupo = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: perfilAtual } = await context.supabase
-      .from("perfis").select("role, super_admin, empresa_id").eq("id", context.userId).maybeSingle();
+      .from("perfis").select("role, super_admin, acesso_total, empresa_id, grupo_id").eq("id", context.userId).maybeSingle();
     if (!(perfilAtual?.super_admin || perfilAtual?.role === "master")) {
       throw new Error("Apenas o administrador pode reenviar convites.");
+    }
+    const acessoTotal = !!(perfilAtual?.super_admin || (perfilAtual as any)?.acesso_total);
+    // Sem acesso total, o admin só opera dentro do próprio grupo.
+    let grupoAlvo = data.grupo_id;
+    if (!acessoTotal) {
+      if (!perfilAtual?.grupo_id) throw new Error("Seu usuário não está vinculado a um grupo.");
+      if (grupoAlvo && grupoAlvo !== perfilAtual.grupo_id) {
+        throw new Error("Você só pode reenviar convites do seu grupo.");
+      }
+      grupoAlvo = perfilAtual.grupo_id;
     }
 
     let query = context.supabase
       .from("perfis")
       .select("id, nome, role, grupo_id, empresa_id")
       .in("role", ["corretor", "gerente"]);
-    if (data.grupo_id) query = query.eq("grupo_id", data.grupo_id);
+    if (grupoAlvo) query = query.eq("grupo_id", grupoAlvo);
     if (perfilAtual?.empresa_id) query = query.eq("empresa_id", perfilAtual.empresa_id);
+
 
     const { data: perfis, error } = await query;
     if (error) throw new Error(error.message);
@@ -230,10 +241,18 @@ export const cadastrarCorretorComSenha = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: perfilAtual } = await context.supabase
-      .from("perfis").select("role, super_admin, empresa_id").eq("id", context.userId).maybeSingle();
+      .from("perfis").select("role, super_admin, acesso_total, empresa_id, grupo_id").eq("id", context.userId).maybeSingle();
     if (!(perfilAtual?.super_admin || perfilAtual?.role === "master")) {
       throw new Error("Apenas o administrador pode cadastrar corretores.");
     }
+    const acessoTotal = !!(perfilAtual?.super_admin || (perfilAtual as any)?.acesso_total);
+    if (!acessoTotal) {
+      if (!perfilAtual?.grupo_id) throw new Error("Seu usuário não está vinculado a um grupo.");
+      if (data.grupo_id !== perfilAtual.grupo_id) {
+        throw new Error("Você só pode cadastrar corretores no seu grupo.");
+      }
+    }
+
 
     const email = data.email.trim().toLowerCase();
     const senha = data.senha ?? gerarSenhaForte();
@@ -347,17 +366,22 @@ export const redefinirSenhaCorretor = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: perfilAtual } = await context.supabase
-      .from("perfis").select("role, super_admin, empresa_id").eq("id", context.userId).maybeSingle();
+      .from("perfis").select("role, super_admin, acesso_total, empresa_id, grupo_id").eq("id", context.userId).maybeSingle();
     if (!(perfilAtual?.super_admin || perfilAtual?.role === "master")) {
       throw new Error("Apenas o administrador pode redefinir senhas.");
     }
+    const acessoTotal = !!(perfilAtual?.super_admin || (perfilAtual as any)?.acesso_total);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: corr } = await supabaseAdmin
-      .from("corretores").select("id, user_id, nome, empresa_id").eq("id", data.corretor_id).maybeSingle();
+      .from("corretores").select("id, user_id, nome, empresa_id, grupo_id").eq("id", data.corretor_id).maybeSingle();
     if (!corr?.user_id) throw new Error("Corretor sem usuário vinculado. Use 'Cadastrar com senha'.");
-    if (!perfilAtual?.super_admin && corr.empresa_id !== perfilAtual?.empresa_id) {
+    if (!acessoTotal && corr.empresa_id !== perfilAtual?.empresa_id) {
       throw new Error("Acesso negado: este corretor pertence a outra empresa.");
     }
+    if (!acessoTotal && corr.grupo_id !== perfilAtual?.grupo_id) {
+      throw new Error("Você só pode redefinir senhas de corretores do seu grupo.");
+    }
+
 
     const senha = data.senha ?? gerarSenhaForte();
     const { data: u } = await supabaseAdmin.auth.admin.getUserById(corr.user_id);

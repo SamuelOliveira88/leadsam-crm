@@ -92,7 +92,7 @@ export const Route = createFileRoute("/api/corretores/convidar")({
 
         const { data: perfil, error: perfilError } = await supabaseUser
           .from("perfis")
-          .select("role, empresa_id, super_admin")
+          .select("role, empresa_id, super_admin, acesso_total, grupo_id")
           .eq("id", userData.user.id)
           .maybeSingle();
 
@@ -100,9 +100,19 @@ export const Route = createFileRoute("/api/corretores/convidar")({
         if (perfil?.role !== "master" && !perfil?.super_admin) {
           return json({ message: "Apenas o administrador pode convidar corretores." }, 403);
         }
+        const acessoTotal = !!(perfil?.super_admin || (perfil as any)?.acesso_total);
 
         const data = parsed.data;
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+        if (!acessoTotal) {
+          if (!perfil.grupo_id) {
+            return json({ message: "Seu usuário não está vinculado a um grupo." }, 403);
+          }
+          if (data.grupo_id !== perfil.grupo_id) {
+            return json({ message: "Você só pode convidar corretores para o seu grupo." }, 403);
+          }
+        }
 
         let empresaId = perfil.empresa_id ?? null;
         if (data.grupo_id) {
@@ -113,11 +123,12 @@ export const Route = createFileRoute("/api/corretores/convidar")({
             .maybeSingle();
           if (grupoError) return json({ message: grupoError.message }, 500);
           if (!grupo) return json({ message: "Grupo selecionado não foi encontrado." }, 400);
-          if (empresaId && grupo.empresa_id !== empresaId && !perfil.super_admin) {
+          if (empresaId && grupo.empresa_id !== empresaId && !acessoTotal) {
             return json({ message: "Você só pode convidar corretores para grupos da sua empresa." }, 403);
           }
           empresaId = empresaId ?? grupo.empresa_id;
         }
+
 
         if (!empresaId) {
           return json({ message: "Sua empresa não foi identificada. Atualize a página e tente novamente." }, 400);
