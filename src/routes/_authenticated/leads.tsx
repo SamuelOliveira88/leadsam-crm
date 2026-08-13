@@ -461,7 +461,15 @@ function NovoLeadDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
             <Label htmlFor="nl-tel">Telefone (WhatsApp)</Label>
             <Input id="nl-tel" value={telefone} maxLength={20} inputMode="tel" onChange={(e) => setTelefone(e.target.value)} placeholder="11999999999" />
           </div>
+          <label className="flex items-start gap-2 rounded-md border p-3 text-sm">
+            <input type="checkbox" className="mt-0.5" checked={privado} onChange={(e) => setPrivado(e.target.checked)} />
+            <span>
+              <span className="font-medium">Lead privado</span>
+              <span className="block text-xs text-muted-foreground">Somente você verá e poderá editar este lead — inclusive master e suporte ficam sem acesso.</span>
+            </span>
+          </label>
         </div>
+
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>
           <Button disabled={!valido || mut.isPending} onClick={() => mut.mutate()}>
