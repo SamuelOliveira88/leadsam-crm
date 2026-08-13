@@ -1,6 +1,6 @@
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Building2, LayoutDashboard, Users, UserCog, Upload, Clock, Layers, LogOut, Bell, Grid3x3, ShieldCheck, FileText, NotebookPen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import { meuPerfil } from "@/lib/perfis.functions";
 import { heartbeatCorretor } from "@/lib/corretores.functions";
 import { listarNotificacoes, notificarLoginMonitor } from "@/lib/notificacoes.functions";
 import { getConfigAcesso } from "@/lib/config-acesso.functions";
+import { listarEmpresasContexto, trocarEmpresaContexto } from "@/lib/empresa-contexto.functions";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { User } from "@supabase/supabase-js";
@@ -72,6 +73,29 @@ export function AppShell({ user, children }: { user: User; children: React.React
   const isGerenteOuMaster = perfil?.role === "master" || perfil?.role === "gerente";
   const isSuperAdmin = !!(perfil as any)?.super_admin;
   const naoLidas = (notifs ?? []).filter((n) => !n.lida).length;
+
+  // Troca de empresa (contexto multi-tenant) — só super-admin
+  const queryClient = useQueryClient();
+  const fetchEmpresas = useServerFn(listarEmpresasContexto);
+  const trocarEmpresa = useServerFn(trocarEmpresaContexto);
+  const [trocando, setTrocando] = useState(false);
+  const { data: ctxEmpresas } = useQuery({
+    queryKey: ["empresas_contexto"],
+    queryFn: () => fetchEmpresas(),
+    enabled: isSuperAdmin,
+  });
+
+  async function handleTrocarEmpresa(empresa_id: string) {
+    if (!empresa_id || empresa_id === (perfil as any)?.empresa_id) return;
+    setTrocando(true);
+    try {
+      await trocarEmpresa({ data: { empresa_id } });
+      await queryClient.invalidateQueries();
+      router.invalidate();
+    } finally {
+      setTrocando(false);
+    }
+  }
 
   const [tick, setTick] = useState(0);
   useEffect(() => { const t = setInterval(() => setTick((x) => x + 1), 30000); return () => clearInterval(t); }, []);
@@ -170,6 +194,23 @@ export function AppShell({ user, children }: { user: User; children: React.React
             <div className="text-[11px] text-muted-foreground">Gestão de Corretores</div>
           </div>
         </div>
+        {isSuperAdmin && (ctxEmpresas?.empresas?.length ?? 0) > 0 && (
+          <div className="px-3 pb-3">
+            <label className="mb-1 block px-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Empresa
+            </label>
+            <select
+              className="w-full rounded-lg border border-sidebar-border bg-card px-2 py-2 text-sm disabled:opacity-60"
+              value={(perfil as any)?.empresa_id ?? ""}
+              disabled={trocando}
+              onChange={(e) => handleTrocarEmpresa(e.target.value)}
+            >
+              {(ctxEmpresas?.empresas ?? []).map((e) => (
+                <option key={e.id} value={e.id}>{e.nome}</option>
+              ))}
+            </select>
+          </div>
+        )}
         <nav className="flex-1 space-y-1 px-3 py-2">
           {nav.map((n) => {
             const Icon = n.icon;
