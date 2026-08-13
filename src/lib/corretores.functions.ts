@@ -366,17 +366,22 @@ export const redefinirSenhaCorretor = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: perfilAtual } = await context.supabase
-      .from("perfis").select("role, super_admin, empresa_id").eq("id", context.userId).maybeSingle();
+      .from("perfis").select("role, super_admin, acesso_total, empresa_id, grupo_id").eq("id", context.userId).maybeSingle();
     if (!(perfilAtual?.super_admin || perfilAtual?.role === "master")) {
       throw new Error("Apenas o administrador pode redefinir senhas.");
     }
+    const acessoTotal = !!(perfilAtual?.super_admin || (perfilAtual as any)?.acesso_total);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: corr } = await supabaseAdmin
-      .from("corretores").select("id, user_id, nome, empresa_id").eq("id", data.corretor_id).maybeSingle();
+      .from("corretores").select("id, user_id, nome, empresa_id, grupo_id").eq("id", data.corretor_id).maybeSingle();
     if (!corr?.user_id) throw new Error("Corretor sem usuário vinculado. Use 'Cadastrar com senha'.");
-    if (!perfilAtual?.super_admin && corr.empresa_id !== perfilAtual?.empresa_id) {
+    if (!acessoTotal && corr.empresa_id !== perfilAtual?.empresa_id) {
       throw new Error("Acesso negado: este corretor pertence a outra empresa.");
     }
+    if (!acessoTotal && corr.grupo_id !== perfilAtual?.grupo_id) {
+      throw new Error("Você só pode redefinir senhas de corretores do seu grupo.");
+    }
+
 
     const senha = data.senha ?? gerarSenhaForte();
     const { data: u } = await supabaseAdmin.auth.admin.getUserById(corr.user_id);
