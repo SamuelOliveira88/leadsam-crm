@@ -386,7 +386,7 @@ export const atualizarLead = createServerFn({ method: "POST" })
       nome: z.string().trim().min(2).max(120),
       telefone: z.string().trim().max(20).optional().default(""),
       email: z.string().trim().max(160).optional().default(""),
-      origem: z.string().trim().max(80).optional().default(""),
+      fonte: z.string().trim().max(80).optional().default(""),
       observacoes: z.string().trim().max(4000).optional().default(""),
     }).parse(d),
   )
@@ -397,7 +397,7 @@ export const atualizarLead = createServerFn({ method: "POST" })
         nome: data.nome,
         telefone: data.telefone || null,
         email: data.email || null,
-        origem: data.origem || null,
+        fonte: data.fonte || null,
         observacoes: data.observacoes || null,
       })
       .eq("id", data.id)
