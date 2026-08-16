@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Trash2, X, Sparkles, MessageCircle, Eye, Download, ArrowRightLeft, Zap, RotateCcw, Plus } from "lucide-react";
+import { Trash2, X, Sparkles, MessageCircle, Eye, Download, ArrowRightLeft, Zap, RotateCcw, Plus, Pencil } from "lucide-react";
 import * as XLSX from "xlsx";
-import { listarLeads, excluirLead, exportarLeads, transferirLead, transferirLeadParaOnline, descartarLead, criarLeadManual } from "@/lib/leads.functions";
+import { listarLeads, excluirLead, exportarLeads, transferirLead, transferirLeadParaOnline, descartarLead, criarLeadManual, atualizarLead } from "@/lib/leads.functions";
 import { listarCorretores } from "@/lib/corretores.functions";
 import { listarGrupos } from "@/lib/grupos.functions";
 import { listarNotas, criarNota, marcarLeadVisualizado, gerarMensagemAbertura } from "@/lib/notas.functions";
@@ -150,6 +150,25 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
   const transferirFn = useServerFn(transferirLead);
   const transferirOnlineFn = useServerFn(transferirLeadParaOnline);
   const descartarFn = useServerFn(descartarLead);
+  const atualizarFn = useServerFn(atualizarLead);
+  const [editando, setEditando] = useState(false);
+  const [form, setForm] = useState({
+    nome: lead.nome ?? "",
+    telefone: lead.telefone ?? "",
+    email: lead.email ?? "",
+    fonte: lead.fonte ?? "",
+    observacoes: lead.observacoes ?? "",
+  });
+
+  const editarMut = useMutation({
+    mutationFn: () => atualizarFn({ data: { id: lead.id, ...form } }),
+    onSuccess: () => {
+      toast.success("Lead atualizado.");
+      setEditando(false);
+      qc.invalidateQueries({ queryKey: ["leads"] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Falha ao salvar"),
+  });
   const listCorretoresFn = useServerFn(listarCorretores);
   const [texto, setTexto] = useState("");
   const [gerando, setGerando] = useState(false);
@@ -300,6 +319,22 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
           <Button
             size="sm"
             variant="outline"
+            onClick={() => {
+              setForm({
+                nome: lead.nome ?? "",
+                telefone: lead.telefone ?? "",
+                email: lead.email ?? "",
+                fonte: lead.fonte ?? "",
+                observacoes: lead.observacoes ?? "",
+              });
+              setEditando(true);
+            }}
+          >
+            <Pencil className="mr-2 size-4" /> Editar lead
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
             onClick={() => setMostrarTransfer((v) => !v)}
           >
             <ArrowRightLeft className="mr-2 size-4" /> Transferir corretor
@@ -330,6 +365,40 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
             {descartarMut.isPending ? "Descartando…" : "Descartar lead"}
           </Button>
         </div>
+
+        <Dialog open={editando} onOpenChange={(o) => !o && setEditando(false)}>
+          <DialogContent>
+            <DialogHeader><DialogTitle>Editar lead</DialogTitle></DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="ed-nome">Nome</Label>
+                <Input id="ed-nome" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
+              </div>
+              <div>
+                <Label htmlFor="ed-tel">Telefone</Label>
+                <Input id="ed-tel" value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} />
+              </div>
+              <div>
+                <Label htmlFor="ed-email">E-mail</Label>
+                <Input id="ed-email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              </div>
+              <div>
+                <Label htmlFor="ed-fonte">Origem / fonte</Label>
+                <Input id="ed-fonte" value={form.fonte} onChange={(e) => setForm({ ...form, fonte: e.target.value })} />
+              </div>
+              <div>
+                <Label htmlFor="ed-obs">Observações</Label>
+                <Textarea id="ed-obs" rows={4} value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setEditando(false)}>Cancelar</Button>
+              <Button disabled={editarMut.isPending || form.nome.trim().length < 2} onClick={() => editarMut.mutate()}>
+                {editarMut.isPending ? "Salvando…" : "Salvar"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {mostrarTransfer && (
           <div className="mb-4 rounded-md border bg-muted/40 p-3">

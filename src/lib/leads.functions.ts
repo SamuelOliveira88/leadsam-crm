@@ -375,3 +375,36 @@ export const criarLeadManual = createServerFn({ method: "POST" })
 
     return { ok: true, distribuido: Boolean(corretorId) };
   });
+
+
+// Edição manual dos dados do lead (respeita RLS/escopo do usuário logado)
+export const atualizarLead = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({
+      id: z.string().uuid(),
+      nome: z.string().trim().min(2).max(120),
+      telefone: z.string().trim().max(20).optional().default(""),
+      email: z.string().trim().max(160).optional().default(""),
+      fonte: z.string().trim().max(80).optional().default(""),
+      observacoes: z.string().trim().max(4000).optional().default(""),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: rows, error } = await context.supabase
+      .from("leads")
+      .update({
+        nome: data.nome,
+        telefone: data.telefone || null,
+        email: data.email || null,
+        fonte: data.fonte || null,
+        observacoes: data.observacoes || null,
+      })
+      .eq("id", data.id)
+      .select("id");
+    if (error) throw new Error(error.message);
+    if (!rows || rows.length === 0) {
+      throw new Error("Você não tem permissão para editar este lead.");
+    }
+    return { ok: true };
+  });

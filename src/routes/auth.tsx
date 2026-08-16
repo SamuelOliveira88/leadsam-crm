@@ -26,6 +26,8 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [modoReset, setModoReset] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -51,6 +53,20 @@ function AuthPage() {
       navigate({ to: "/dashboard", replace: true });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Falha na autenticação");
+    } finally { setLoading(false); }
+  }
+
+  async function handleReset(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
+        redirectTo: `${window.location.origin}/set-password`,
+      });
+      toast.success("Se este e-mail estiver cadastrado, enviamos um link para redefinir a senha.");
+      setModoReset(false);
+    } catch {
+      toast.success("Se este e-mail estiver cadastrado, enviamos um link para redefinir a senha.");
     } finally { setLoading(false); }
   }
 
@@ -85,6 +101,21 @@ function AuthPage() {
             <div className="h-px flex-1 bg-border" /> OU <div className="h-px flex-1 bg-border" />
           </div>
 
+          {modoReset ? (
+            <form onSubmit={handleReset} className="space-y-4">
+              <div>
+                <Label htmlFor="reset-email">E-mail da sua conta</Label>
+                <Input id="reset-email" type="email" required value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} placeholder="voce@email.com" />
+                <p className="mt-2 text-xs text-muted-foreground">Enviaremos um link para você definir uma nova senha.</p>
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Enviando…" : "Enviar link de redefinição"}
+              </Button>
+              <Button type="button" variant="ghost" className="w-full" onClick={() => setModoReset(false)}>
+                Voltar ao login
+              </Button>
+            </form>
+          ) : (
           <form onSubmit={handleEmail} className="space-y-4">
             <div>
               <Label htmlFor="email">E-mail</Label>
@@ -97,7 +128,15 @@ function AuthPage() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Aguarde…" : "Entrar"}
             </Button>
+            <button
+              type="button"
+              className="w-full text-center text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+              onClick={() => { setResetEmail(email); setModoReset(true); }}
+            >
+              Esqueci minha senha
+            </button>
           </form>
+          )}
 
           <div className="mt-5 rounded-md bg-muted/40 p-3 text-center text-xs text-muted-foreground">
             O acesso ao Alexandria Leds é <strong>somente por convite</strong>.
