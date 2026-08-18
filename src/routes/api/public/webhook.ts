@@ -13,6 +13,7 @@ export const Route = createFileRoute("/api/public/webhook")({
             process.env.WEBHOOK_LEAD_TOKEN,
             process.env.WEBHOOK_LEAD_TOKEN_LP,
             process.env.WEBHOOK_LEAD_TOKEN_NOTIF,
+            process.env.WEBHOOK_LEAD_TOKEN_SAMUELIMOB,
           ].filter((t): t is string => !!t);
           if (!token || !aceitos.includes(token)) {
             return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401 });
@@ -22,7 +23,10 @@ export const Route = createFileRoute("/api/public/webhook")({
               ? "landing"
               : token === process.env.WEBHOOK_LEAD_TOKEN_NOTIF
                 ? "notificacoes"
-                : "webhook";
+                : token === process.env.WEBHOOK_LEAD_TOKEN_SAMUELIMOB
+                  ? "samuelimob"
+                  : "webhook";
+
 
 
           const grupoFromQs = url.searchParams.get("grupo_id");
