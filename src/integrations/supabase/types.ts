@@ -176,6 +176,7 @@ export type Database = {
           empresa_id: string | null
           grupo_id: string | null
           id: string
+          isento_realocacao: boolean
           liberado_ate: string | null
           nome: string
           recebe_via_web: boolean
@@ -191,6 +192,7 @@ export type Database = {
           empresa_id?: string | null
           grupo_id?: string | null
           id?: string
+          isento_realocacao?: boolean
           liberado_ate?: string | null
           nome: string
           recebe_via_web?: boolean
@@ -206,6 +208,7 @@ export type Database = {
           empresa_id?: string | null
           grupo_id?: string | null
           id?: string
+          isento_realocacao?: boolean
           liberado_ate?: string | null
           nome?: string
           recebe_via_web?: boolean
