@@ -50,6 +50,32 @@ export const Route = createFileRoute("/api/public/webhook")({
             }
           }
 
+          // Google Ads Lead Form webhook payload
+          // https://developers.google.com/google-ads/webservice/lead-form-webhook
+          if (!nome && Array.isArray(body.user_column_data)) {
+            // Verificação opcional da chave de segurança configurada no Google Ads.
+            const googleKeyEsperado = process.env.GOOGLE_ADS_WEBHOOK_KEY;
+            if (googleKeyEsperado && body.google_key !== googleKeyEsperado) {
+              return new Response(JSON.stringify({ error: "google_key inválida" }), { status: 401 });
+            }
+
+            for (const f of body.user_column_data) {
+              const columnId = String(f.column_id || f.column_name || "").toUpperCase();
+              const val = f.string_value;
+              if (!val) continue;
+              if (columnId.includes("FULL_NAME") && !nome) nome = val;
+              if (columnId.includes("PHONE") && !telefone) telefone = val;
+              if (columnId.includes("EMAIL") && !email) email = val;
+            }
+
+            // Testes enviados pelo Google Ads (is_test: true) não devem virar leads reais.
+            if (body.is_test) {
+              return new Response(JSON.stringify({ ok: true, test: true }), {
+                headers: { "content-type": "application/json" },
+              });
+            }
+          }
+
           if (!nome || !grupo_id) {
             return new Response(JSON.stringify({ error: "nome e grupo_id são obrigatórios" }), { status: 400 });
           }
