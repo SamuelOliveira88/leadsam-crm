@@ -25,10 +25,10 @@ export async function notificacoesPausadas(supabaseClient: any): Promise<boolean
 }
 
 
-export async function sendWhatsAppText(numero: string, mensagem: string): Promise<{ ok: boolean; error?: string }> {
+export async function sendWhatsAppText(numero: string, mensagem: string, instanceName?: string): Promise<{ ok: boolean; error?: string }> {
   const url = process.env.EVOLUTION_API_URL;
   const key = process.env.EVOLUTION_API_KEY;
-  const instance = process.env.EVOLUTION_INSTANCE;
+  const instance = instanceName || process.env.EVOLUTION_INSTANCE;
   if (!url || !key || !instance) return { ok: false, error: "Evolution não configurada" };
 
   const phone = normalizePhone(numero);
@@ -48,6 +48,11 @@ export async function sendWhatsAppText(numero: string, mensagem: string): Promis
   } catch (e: any) {
     return { ok: false, error: e?.message || "erro desconhecido" };
   }
+}
+
+// Notificações do Alexandria devem sair pelo número 5511932368278 (instância sara-vendedora).
+async function sendWhatsAppNotification(numero: string, mensagem: string): Promise<{ ok: boolean; error?: string }> {
+  return sendWhatsAppText(numero, mensagem, process.env.EVOLUTION_INSTANCE_NOTIF);
 }
 
 export function mensagemNovoLead(lead: { nome: string; telefone?: string | null; email?: string | null }) {
