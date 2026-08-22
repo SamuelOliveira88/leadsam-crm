@@ -1,0 +1,1 @@
+update public.fila_notificacoes set status='pendente', enviado_em=null where status='erro' and created_at > now() - interval '12 hours';
