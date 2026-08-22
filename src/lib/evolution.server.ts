@@ -51,7 +51,7 @@ export async function sendWhatsAppText(numero: string, mensagem: string, instanc
 }
 
 // Notificações do Alexandria devem sair pelo número 5511932368278 (instância sara-vendedora).
-async function sendWhatsAppNotification(numero: string, mensagem: string): Promise<{ ok: boolean; error?: string }> {
+export async function sendWhatsAppNotification(numero: string, mensagem: string): Promise<{ ok: boolean; error?: string }> {
   return sendWhatsAppText(numero, mensagem, process.env.EVOLUTION_INSTANCE_NOTIF);
 }
 
