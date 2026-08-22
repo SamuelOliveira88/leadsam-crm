@@ -59,7 +59,7 @@ export const notificarLoginMonitor = createServerFn({ method: "POST" })
         .maybeSingle();
       const { data: userRes } = await context.supabase.auth.getUser();
       const email = userRes?.user?.email ?? "(sem email)";
-      const { sendWhatsAppText } = await import("@/lib/evolution.server");
+      const { sendWhatsAppNotification } = await import("@/lib/evolution.server");
       const numero = process.env.MONITOR_WHATSAPP;
       if (!numero) return { ok: true, skipped: true };
       const linhas = [
@@ -69,7 +69,7 @@ export const notificarLoginMonitor = createServerFn({ method: "POST" })
         `Perfil: ${perfil?.role ?? "-"}`,
         `Quando: ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}`,
       ];
-      await sendWhatsAppText(numero, linhas.join("\n"));
+      await sendWhatsAppNotification(numero, linhas.join("\n"));
       return { ok: true };
     } catch (e) {
       console.error("[notificarLoginMonitor]", e);
