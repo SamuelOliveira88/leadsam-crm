@@ -41,8 +41,8 @@ export const notificarCorretorDoLead = createServerFn({ method: "POST" })
     const corretorTel = (lead as any).corretores?.telefone;
     if (!corretorTel) throw new Error("Corretor sem telefone cadastrado");
 
-    const { sendWhatsAppText, mensagemNovoLead } = await import("./evolution.server");
-    const r = await sendWhatsAppText(corretorTel, mensagemNovoLead(lead as any));
+    const { sendWhatsAppNotification, mensagemNovoLead } = await import("./evolution.server");
+    const r = await sendWhatsAppNotification(corretorTel, mensagemNovoLead(lead as any));
     if (!r.ok) throw new Error(r.error || "Falha ao enviar");
     return { ok: true };
   });
