@@ -94,7 +94,7 @@ export async function notificarMonitor(
       lead.fonte ? `Fonte: ${lead.fonte}` : null,
       `Corretor: ${corretorNome}`,
     ].filter(Boolean);
-    await sendWhatsAppText(numero, linhas.join("\n"));
+    await sendWhatsAppNotification(numero, linhas.join("\n"));
   } catch (e) {
     console.error("[notificarMonitor] falha", e);
   }
