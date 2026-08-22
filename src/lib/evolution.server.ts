@@ -137,7 +137,7 @@ export async function notificarCorretorPorLead(
   if (corretorError) return { ok: false, error: corretorError.message };
   if (!corretor?.telefone) return { ok: false, error: "Corretor sem telefone cadastrado" };
 
-  const result = await sendWhatsAppText(corretor.telefone, mensagemNovoLead(lead));
+  const result = await sendWhatsAppNotification(corretor.telefone, mensagemNovoLead(lead));
   if (!result.ok) return result;
 
   await supabaseClient
