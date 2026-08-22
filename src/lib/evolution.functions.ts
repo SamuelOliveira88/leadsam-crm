@@ -21,8 +21,8 @@ export const enviarWhatsApp = createServerFn({ method: "POST" })
       throw new Error("Apenas master, gerente ou super admin podem enviar mensagens WhatsApp livres.");
     }
 
-    const { sendWhatsAppText } = await import("./evolution.server");
-    const r = await sendWhatsAppText(data.numero, data.mensagem);
+    const { sendWhatsAppNotification } = await import("./evolution.server");
+    const r = await sendWhatsAppNotification(data.numero, data.mensagem);
     if (!r.ok) throw new Error(r.error || "Falha ao enviar");
     return { ok: true };
   });
