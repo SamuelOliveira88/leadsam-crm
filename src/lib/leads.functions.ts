@@ -327,16 +327,27 @@ export const criarLeadManual = createServerFn({ method: "POST" })
   )
 
   .handler(async ({ data, context }) => {
-    // Leads manuais sempre vão para o grupo "Notificações" (fallback: grupo enviado / principal)
-    const { data: gruposDb } = await context.supabase.from("grupos").select("id, nome, is_principal");
+    // O lead manual entra SEMPRE na empresa ativa do usuário.
+    const { data: perfil } = await context.supabase
+      .from("perfis").select("empresa_id").eq("id", context.userId).maybeSingle();
+    const empresaId = (perfil as any)?.empresa_id as string | null;
+
+    let q = context.supabase.from("grupos").select("id, nome, is_principal, empresa_id");
+    if (empresaId) q = q.eq("empresa_id", empresaId);
+    const { data: gruposDb } = await q;
+
     const norm = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const escolhido = data.grupo_id
+      ? (gruposDb ?? []).find((g: any) => g.id === data.grupo_id)
+      : null;
     const notif = (gruposDb ?? []).find((g: any) => norm(String(g.nome)).includes("notifica"));
     const grupoId =
+      escolhido?.id ??
       notif?.id ??
-      data.grupo_id ??
       (gruposDb ?? []).find((g: any) => g.is_principal)?.id ??
       (gruposDb ?? [])[0]?.id;
-    if (!grupoId) throw new Error("Nenhum grupo disponível");
+    if (!grupoId) throw new Error("Nenhum grupo disponível na sua empresa");
+
 
     const { data: corretorId, error } = await context.supabase.rpc("distribuir_lead_round_robin", {
       p_nome: data.nome,
