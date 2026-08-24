@@ -121,8 +121,15 @@ export function AppShell({ user, children }: { user: User; children: React.React
     } catch { /* sessionStorage indisponível */ }
   }, [perfil?.id]);
 
-  // Auto-logout após 2h sem atividade do usuário
+  // Auto-logout após 2h sem atividade do usuário.
+  // Quem tem liberação permanente (liberado_ate muito no futuro) fica logado.
+  const liberacaoPermanente = (() => {
+    const v = (perfil as any)?.liberado_ate;
+    if (!v) return false;
+    return new Date(v).getTime() > Date.now() + 365 * 24 * 60 * 60 * 1000;
+  })();
   useEffect(() => {
+    if (liberacaoPermanente) return;
     const TIMEOUT_MS = 2 * 60 * 60 * 1000;
     let timer: ReturnType<typeof setTimeout>;
     const reset = () => {
@@ -139,7 +146,7 @@ export function AppShell({ user, children }: { user: User; children: React.React
       clearTimeout(timer);
       events.forEach((e) => window.removeEventListener(e, reset));
     };
-  }, [router]);
+  }, [router, liberacaoPermanente]);
 
   function permitido(): boolean {
     if (!config) return true;
