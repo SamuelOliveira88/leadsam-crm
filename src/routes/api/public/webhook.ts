@@ -1,5 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+// Cabeçalhos CORS — permite que landing pages externas enviem o formulário via browser.
+const CORS = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-methods": "POST, GET, OPTIONS",
+  "access-control-allow-headers": "content-type, x-webhook-token",
+  "access-control-max-age": "86400",
+} as const;
+
+function json(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json", ...CORS },
+  });
+}
+
 // Webhook público — aceita { nome, telefone, email, grupo_id } ou payload Facebook Lead Ads.
 // Distribui via rodízio no grupo indicado.
 export const Route = createFileRoute("/api/public/webhook")({
@@ -16,7 +31,7 @@ export const Route = createFileRoute("/api/public/webhook")({
             process.env.WEBHOOK_LEAD_TOKEN_SAMUELIMOB,
           ].filter((t): t is string => !!t);
           if (!token || !aceitos.includes(token)) {
-            return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401 });
+            return json({ error: "unauthorized" }, 401);
           }
           const origemToken =
             token === process.env.WEBHOOK_LEAD_TOKEN_LP
@@ -56,7 +71,7 @@ export const Route = createFileRoute("/api/public/webhook")({
             // Verificação opcional da chave de segurança configurada no Google Ads.
             const googleKeyEsperado = process.env.GOOGLE_ADS_WEBHOOK_KEY;
             if (googleKeyEsperado && body.google_key !== googleKeyEsperado) {
-              return new Response(JSON.stringify({ error: "google_key inválida" }), { status: 401 });
+              return json({ error: "google_key inválida" }, 401);
             }
 
             for (const f of body.user_column_data) {
@@ -70,14 +85,12 @@ export const Route = createFileRoute("/api/public/webhook")({
 
             // Testes enviados pelo Google Ads (is_test: true) não devem virar leads reais.
             if (body.is_test) {
-              return new Response(JSON.stringify({ ok: true, test: true }), {
-                headers: { "content-type": "application/json" },
-              });
+              return json({ ok: true, test: true });
             }
           }
 
           if (!nome || !grupo_id) {
-            return new Response(JSON.stringify({ error: "nome e grupo_id são obrigatórios" }), { status: 400 });
+            return json({ error: "nome e grupo_id são obrigatórios" }, 400);
           }
 
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -94,9 +107,7 @@ export const Route = createFileRoute("/api/public/webhook")({
               .limit(1)
               .maybeSingle();
             if (dup?.id) {
-              return new Response(JSON.stringify({ ok: true, deduped: true, lead_id: dup.id }), {
-                headers: { "content-type": "application/json" },
-              });
+              return json({ ok: true, deduped: true, lead_id: dup.id });
             }
           }
 
@@ -104,7 +115,7 @@ export const Route = createFileRoute("/api/public/webhook")({
             p_nome: nome, p_telefone: telefone ?? null, p_email: email ?? null, p_grupo_id: grupo_id,
             p_extra: { fonte: origemToken, ...(observacoes ? { observacoes } : {}) },
           });
-          if (error) return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+          if (error) return json({ error: error.message }, 500);
 
           const corretorId = data as string | null;
 
@@ -137,21 +148,20 @@ export const Route = createFileRoute("/api/public/webhook")({
           }
 
 
-          return new Response(JSON.stringify({ ok: true, corretor_id: data }), {
-            headers: { "content-type": "application/json" },
-          });
+          return json({ ok: true, corretor_id: data });
 
         } catch (e: any) {
-          return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+          return json({ error: e.message }, 500);
         }
       },
       GET: async ({ request }) => {
         // Facebook webhook verification
         const url = new URL(request.url);
         const challenge = url.searchParams.get("hub.challenge");
-        if (challenge) return new Response(challenge);
-        return new Response("ok");
+        if (challenge) return new Response(challenge, { headers: CORS });
+        return new Response("ok", { headers: CORS });
       },
+      OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
     },
   },
 });
