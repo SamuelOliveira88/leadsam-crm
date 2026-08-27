@@ -53,6 +53,11 @@ export const Route = createFileRoute("/api/public/webhook")({
           let email = body.email;
           let grupo_id = body.grupo_id || grupoFromQs;
           let observacoes = body.mensagem || body.resumo || body.observacoes || body.message || body.notes;
+          if (body.empreendimento) {
+            observacoes = observacoes
+              ? `Empreendimento: ${body.empreendimento}\n${observacoes}`
+              : `Empreendimento: ${body.empreendimento}`;
+          }
 
           // Facebook lead ads payload
           if (!nome && Array.isArray(body.field_data)) {
