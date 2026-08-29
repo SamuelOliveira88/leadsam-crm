@@ -1164,10 +1164,6 @@ export type Database = {
     }
     Functions: {
       corretor_heartbeat: { Args: never; Returns: undefined }
-      delete_email: {
-        Args: { message_id: number; queue_name: string }
-        Returns: boolean
-      }
       dentro_do_horario: { Args: { p_grupo_id: string }; Returns: boolean }
       descartar_lead: {
         Args: { _lead_id: string; _motivo?: string }
@@ -1205,11 +1201,6 @@ export type Database = {
         }
         Returns: string
       }
-      email_queue_dispatch: { Args: never; Returns: undefined }
-      enqueue_email: {
-        Args: { payload: Json; queue_name: string }
-        Returns: number
-      }
       escolher_corretor_online: {
         Args: { p_grupo_id: string }
         Returns: string
@@ -1226,29 +1217,12 @@ export type Database = {
       liberar_leads_inativos_6d: { Args: never; Returns: undefined }
       liberar_leads_represados: { Args: never; Returns: undefined }
       liberar_unidade: { Args: { p_unidade_id: string }; Returns: undefined }
-      move_to_dlq: {
-        Args: {
-          dlq_name: string
-          message_id: number
-          payload: Json
-          source_queue: string
-        }
-        Returns: number
-      }
       pode_dar_suporte: { Args: never; Returns: boolean }
       posso_acessar_proposta: {
         Args: { p_proposta_id: string }
         Returns: boolean
       }
       posso_operar_grupo: { Args: { p_grupo_id: string }; Returns: boolean }
-      read_email_batch: {
-        Args: { batch_size: number; queue_name: string; vt: number }
-        Returns: {
-          message: Json
-          msg_id: number
-          read_ct: number
-        }[]
-      }
       reatribuir_leads_parados: {
         Args: { p_minutos?: number }
         Returns: undefined
