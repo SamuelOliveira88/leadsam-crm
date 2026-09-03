@@ -49,8 +49,18 @@ WITH CHECK (
   )
 );
 
--- Fix mutable search_path on the 4 pgmq wrapper functions
-ALTER FUNCTION public.enqueue_email(text, jsonb) SET search_path = public;
-ALTER FUNCTION public.read_email_batch(text, integer, integer) SET search_path = public;
-ALTER FUNCTION public.delete_email(text, bigint) SET search_path = public;
-ALTER FUNCTION public.move_to_dlq(text, text, bigint, jsonb) SET search_path = public;
+-- Fix mutable search_path on the 4 pgmq wrapper functions (if they still exist)
+DO $do$
+DECLARE r record;
+BEGIN
+  FOR r IN
+    SELECT p.oid::regprocedure AS sig
+    FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'public'
+      AND p.proname IN ('enqueue_email','read_email_batch','delete_email','move_to_dlq')
+  LOOP
+    EXECUTE format('ALTER FUNCTION %s SET search_path = public', r.sig);
+  END LOOP;
+END
+$do$;
