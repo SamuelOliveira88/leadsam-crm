@@ -1201,6 +1201,7 @@ export type Database = {
         }
         Returns: string
       }
+      distribuir_lote_diario_planilha: { Args: never; Returns: Json }
       escolher_corretor_online: {
         Args: { p_grupo_id: string }
         Returns: string
