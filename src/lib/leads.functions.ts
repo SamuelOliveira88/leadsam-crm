@@ -19,12 +19,24 @@ export const dashboardStats = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase.from("dashboard_corretores").select("*");
     if (error) throw new Error(error.message);
-    const { data: leads } = await context.supabase.from("leads").select("id, status, created_at");
-    const total = leads?.length ?? 0;
-    const represados = leads?.filter((l) => l.status === "represado").length ?? 0;
-    const hoje = leads?.filter((l) => new Date(l.created_at).toDateString() === new Date().toDateString()).length ?? 0;
-    return { corretores: data ?? [], total, represados, hoje };
+
+    const inicioHoje = new Date();
+    inicioHoje.setHours(0, 0, 0, 0);
+
+    const [totalRes, represadosRes, hojeRes] = await Promise.all([
+      context.supabase.from("leads").select("id", { count: "exact", head: true }),
+      context.supabase.from("leads").select("id", { count: "exact", head: true }).eq("status", "represado"),
+      context.supabase.from("leads").select("id", { count: "exact", head: true }).gte("created_at", inicioHoje.toISOString()),
+    ]);
+
+    return {
+      corretores: data ?? [],
+      total: totalRes.count ?? 0,
+      represados: represadosRes.count ?? 0,
+      hoje: hojeRes.count ?? 0,
+    };
   });
+
 
 const LeadImportInput = z.object({
   grupo_id: z.string().uuid(),
