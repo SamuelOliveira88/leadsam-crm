@@ -188,19 +188,27 @@ export const importarLeadsPlanilha = createServerFn({ method: "POST" })
 export const exportarLeads = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
-      .from("leads")
-      .select(`
-        nome, telefone, email, status, etapa_funil, fonte, canal, cidade,
-        motivo_perda, observacoes, ultima_atividade, data_atividade,
-        valor_negociacao, codigo_imovel, campanha, corretor_origem_nome,
-        created_at, corretores(nome), grupos(nome)
-      `)
-      .order("created_at", { ascending: false })
-      .limit(10000);
-    if (error) throw new Error(error.message);
-    return data ?? [];
+    const PAGINA = 1000;
+    const MAX = 10000;
+    const todos: any[] = [];
+    for (let inicio = 0; inicio < MAX; inicio += PAGINA) {
+      const { data, error } = await context.supabase
+        .from("leads")
+        .select(`
+          nome, telefone, email, status, etapa_funil, fonte, canal, cidade,
+          motivo_perda, observacoes, ultima_atividade, data_atividade,
+          valor_negociacao, codigo_imovel, campanha, corretor_origem_nome,
+          created_at, corretores(nome), grupos(nome)
+        `)
+        .order("created_at", { ascending: false })
+        .range(inicio, inicio + PAGINA - 1);
+      if (error) throw new Error(error.message);
+      todos.push(...(data ?? []));
+      if (!data || data.length < PAGINA) break;
+    }
+    return todos;
   });
+
 
 export const excluirLead = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
