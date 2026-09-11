@@ -655,6 +655,7 @@ export type Database = {
           criado_por: string | null
           data_atividade: string | null
           email: string | null
+          empreendimento_interesse: string | null
           empresa_id: string | null
           etapa_funil: string | null
           fonte: string | null
@@ -664,11 +665,13 @@ export type Database = {
           motivo_perda: string | null
           nome: string
           observacoes: string | null
+          opt_out: boolean
           represado_em: string | null
           status: string
           telefone: string | null
           ultima_atividade: string | null
           ultima_atividade_em: string
+          ultimo_contato: string | null
           valor_negociacao: number | null
           visibilidade: string
           visualizado_em: string | null
@@ -684,6 +687,7 @@ export type Database = {
           criado_por?: string | null
           data_atividade?: string | null
           email?: string | null
+          empreendimento_interesse?: string | null
           empresa_id?: string | null
           etapa_funil?: string | null
           fonte?: string | null
@@ -693,11 +697,13 @@ export type Database = {
           motivo_perda?: string | null
           nome: string
           observacoes?: string | null
+          opt_out?: boolean
           represado_em?: string | null
           status?: string
           telefone?: string | null
           ultima_atividade?: string | null
           ultima_atividade_em?: string
+          ultimo_contato?: string | null
           valor_negociacao?: number | null
           visibilidade?: string
           visualizado_em?: string | null
@@ -713,6 +719,7 @@ export type Database = {
           criado_por?: string | null
           data_atividade?: string | null
           email?: string | null
+          empreendimento_interesse?: string | null
           empresa_id?: string | null
           etapa_funil?: string | null
           fonte?: string | null
@@ -722,11 +729,13 @@ export type Database = {
           motivo_perda?: string | null
           nome?: string
           observacoes?: string | null
+          opt_out?: boolean
           represado_em?: string | null
           status?: string
           telefone?: string | null
           ultima_atividade?: string | null
           ultima_atividade_em?: string
+          ultimo_contato?: string | null
           valor_negociacao?: number | null
           visibilidade?: string
           visualizado_em?: string | null

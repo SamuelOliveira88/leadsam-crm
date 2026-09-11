@@ -27,6 +27,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
 import { Route as AuthenticatedAcessoRouteImport } from './routes/_authenticated/acesso'
 import { Route as ApiPublicWebhookRouteImport } from './routes/api/public/webhook'
+import { Route as ApiPublicReativacaoRouteImport } from './routes/api/public/reativacao'
 import { Route as ApiCorretoresConvidarRouteImport } from './routes/api/corretores/convidar'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
@@ -123,6 +124,11 @@ const ApiPublicWebhookRoute = ApiPublicWebhookRouteImport.update({
   path: '/api/public/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicReativacaoRoute = ApiPublicReativacaoRouteImport.update({
+  id: '/api/public/reativacao',
+  path: '/api/public/reativacao',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCorretoresConvidarRoute = ApiCorretoresConvidarRouteImport.update({
   id: '/api/corretores/convidar',
   path: '/api/corretores/convidar',
@@ -169,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/propostas': typeof AuthenticatedPropostasRoute
   '/api/corretores/convidar': typeof ApiCorretoresConvidarRoute
+  '/api/public/reativacao': typeof ApiPublicReativacaoRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/api/public/admin/reenviar-convites': typeof ApiPublicAdminReenviarConvitesRoute
   '/api/public/hooks/processar-fila': typeof ApiPublicHooksProcessarFilaRoute
@@ -193,6 +200,7 @@ export interface FileRoutesByTo {
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/propostas': typeof AuthenticatedPropostasRoute
   '/api/corretores/convidar': typeof ApiCorretoresConvidarRoute
+  '/api/public/reativacao': typeof ApiPublicReativacaoRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/api/public/admin/reenviar-convites': typeof ApiPublicAdminReenviarConvitesRoute
   '/api/public/hooks/processar-fila': typeof ApiPublicHooksProcessarFilaRoute
@@ -219,6 +227,7 @@ export interface FileRoutesById {
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/propostas': typeof AuthenticatedPropostasRoute
   '/api/corretores/convidar': typeof ApiCorretoresConvidarRoute
+  '/api/public/reativacao': typeof ApiPublicReativacaoRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/api/public/admin/reenviar-convites': typeof ApiPublicAdminReenviarConvitesRoute
   '/api/public/hooks/processar-fila': typeof ApiPublicHooksProcessarFilaRoute
@@ -245,6 +254,7 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/propostas'
     | '/api/corretores/convidar'
+    | '/api/public/reativacao'
     | '/api/public/webhook'
     | '/api/public/admin/reenviar-convites'
     | '/api/public/hooks/processar-fila'
@@ -269,6 +279,7 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/propostas'
     | '/api/corretores/convidar'
+    | '/api/public/reativacao'
     | '/api/public/webhook'
     | '/api/public/admin/reenviar-convites'
     | '/api/public/hooks/processar-fila'
@@ -294,6 +305,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notificacoes'
     | '/_authenticated/propostas'
     | '/api/corretores/convidar'
+    | '/api/public/reativacao'
     | '/api/public/webhook'
     | '/api/public/admin/reenviar-convites'
     | '/api/public/hooks/processar-fila'
@@ -308,6 +320,7 @@ export interface RootRouteChildren {
   CadastroEmpresaRoute: typeof CadastroEmpresaRoute
   SetPasswordRoute: typeof SetPasswordRoute
   ApiCorretoresConvidarRoute: typeof ApiCorretoresConvidarRoute
+  ApiPublicReativacaoRoute: typeof ApiPublicReativacaoRoute
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
   ApiPublicAdminReenviarConvitesRoute: typeof ApiPublicAdminReenviarConvitesRoute
   ApiPublicHooksProcessarFilaRoute: typeof ApiPublicHooksProcessarFilaRoute
@@ -443,6 +456,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/reativacao': {
+      id: '/api/public/reativacao'
+      path: '/api/public/reativacao'
+      fullPath: '/api/public/reativacao'
+      preLoaderRoute: typeof ApiPublicReativacaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/corretores/convidar': {
       id: '/api/corretores/convidar'
       path: '/api/corretores/convidar'
@@ -521,6 +541,7 @@ const rootRouteChildren: RootRouteChildren = {
   CadastroEmpresaRoute: CadastroEmpresaRoute,
   SetPasswordRoute: SetPasswordRoute,
   ApiCorretoresConvidarRoute: ApiCorretoresConvidarRoute,
+  ApiPublicReativacaoRoute: ApiPublicReativacaoRoute,
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
   ApiPublicAdminReenviarConvitesRoute: ApiPublicAdminReenviarConvitesRoute,
   ApiPublicHooksProcessarFilaRoute: ApiPublicHooksProcessarFilaRoute,
