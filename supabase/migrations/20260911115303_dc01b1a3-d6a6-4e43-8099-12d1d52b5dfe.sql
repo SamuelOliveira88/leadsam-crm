@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.dentro_do_horario(uuid) TO authenticated, service_role;
