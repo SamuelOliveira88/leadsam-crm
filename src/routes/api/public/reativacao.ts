@@ -75,21 +75,37 @@ export const Route = createFileRoute("/api/public/reativacao")({
 
         const digits = parsed.data.telefone.replace(/\D/g, "");
         const sufixo = digits.slice(-8);
+        if (sufixo.length < 8) return json({ error: "telefone inválido" }, 400);
 
-        const { data, error } = await admin()
+        const db = admin();
+
+        // Busca candidatos e compara apenas os dígitos (o telefone pode estar salvo formatado).
+        const { data: candidatos, error: erroBusca } = await db
+          .from("leads")
+          .select("id, nome, telefone, created_at")
+          .eq("empresa_id", EMPRESA_ID)
+          .eq("opt_out", false)
+          .not("telefone", "is", null)
+          .order("created_at", { ascending: false });
+
+        if (erroBusca) return json({ error: erroBusca.message }, 500);
+
+        const match = (candidatos ?? []).find(
+          (l) => (l.telefone ?? "").replace(/\D/g, "").endsWith(sufixo),
+        );
+        if (!match) return json({ ok: false, error: "lead não encontrado" }, 404);
+
+        const { data, error } = await db
           .from("leads")
           .update({
             status: "contatado_reativacao",
             ultimo_contato: new Date().toISOString(),
           })
-          .eq("empresa_id", EMPRESA_ID)
-          .eq("opt_out", false)
-          .like("telefone", `%${sufixo}`)
+          .eq("id", match.id)
           .select("nome, telefone, status, ultimo_contato");
 
         if (error) return json({ error: error.message }, 500);
-        if (!data || data.length === 0) return json({ ok: false, error: "lead não encontrado" }, 404);
-        return json({ ok: true, atualizados: data.length, leads: data });
+        return json({ ok: true, atualizados: data?.length ?? 0, leads: data ?? [] });
       },
     },
   },
