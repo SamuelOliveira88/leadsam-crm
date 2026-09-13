@@ -61,51 +61,75 @@ export const Route = createFileRoute("/api/public/reativacao")({
       },
 
       POST: async ({ request }) => {
+
         const url = new URL(request.url);
+
         if (!autorizado(request, url)) return json({ error: "unauthorized" }, 401);
 
         let body: unknown;
+
         try {
+
           body = await request.json();
+
         } catch {
+
           return json({ error: "json inválido" }, 400);
+
         }
+
         const parsed = patchSchema.safeParse(body);
+
         if (!parsed.success) return json({ error: "telefone obrigatório" }, 400);
 
         const digits = parsed.data.telefone.replace(/\D/g, "");
+
         const sufixo = digits.slice(-8);
+
         if (sufixo.length < 8) return json({ error: "telefone inválido" }, 400);
 
         const db = admin();
 
-        // Busca candidatos e compara apenas os dígitos (o telefone pode estar salvo formatado).
         const { data: candidatos, error: erroBusca } = await db
+
           .from("leads")
+
           .select("id, nome, telefone, created_at")
+
           .eq("empresa_id", EMPRESA_ID)
+
           .eq("opt_out", false)
+
           .not("telefone", "is", null)
-          .order("created_at", { ascending: false });
+
+          .ilike("telefone", `%${sufixo}`);
 
         if (erroBusca) return json({ error: erroBusca.message }, 500);
 
-        const match = (candidatos ?? []).find(
-          (l) => (l.telefone ?? "").replace(/\D/g, "").endsWith(sufixo),
-        );
+        const match = (candidatos ?? [])[0];
+
         if (!match) return json({ ok: false, error: "lead não encontrado" }, 404);
 
         const { data, error } = await db
+
           .from("leads")
+
           .update({
+
             status: "contatado_reativacao",
+
             ultimo_contato: new Date().toISOString(),
+
           })
+
           .eq("id", match.id)
+
           .select("nome, telefone, status, ultimo_contato");
 
         if (error) return json({ error: error.message }, 500);
+
         return json({ ok: true, atualizados: data?.length ?? 0, leads: data ?? [] });
+
       },
     },
   },
