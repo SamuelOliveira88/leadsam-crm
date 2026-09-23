@@ -8,7 +8,10 @@ export const listarLeads = createServerFn({ method: "GET" })
     const { data: perfil } = await context.supabase
       .from("perfis").select("role, corretor_id, acesso_total, super_admin").eq("id", context.userId).maybeSingle();
     const p = perfil as any;
-    const apenasMeus = p?.corretor_id && !p?.acesso_total && !p?.super_admin && p?.role !== "master";
+    // Gerentes que devem ver apenas os próprios leads (ex.: Sofia). Outros gerentes veem todos.
+    const GERENTES_SO_PROPRIOS = ["181c21fb-a90f-4655-b413-c347aacdf66f"];
+    const apenasMeus = p?.corretor_id && !p?.acesso_total && !p?.super_admin &&
+      (p?.role === "corretor" || GERENTES_SO_PROPRIOS.includes(p.corretor_id));
     let q = context.supabase
       .from("leads")
       .select("id, nome, telefone, email, status, grupo_id, corretor_id, etapa_funil, fonte, cidade, observacoes, visualizado_em, created_at, corretores(nome), grupos(nome)");
