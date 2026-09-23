@@ -5,9 +5,15 @@ import { z } from "zod";
 export const listarLeads = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
+    const { data: perfil } = await context.supabase
+      .from("perfis").select("role, corretor_id, acesso_total, super_admin").eq("id", context.userId).maybeSingle();
+    const p = perfil as any;
+    const apenasMeus = p?.corretor_id && !p?.acesso_total && !p?.super_admin && p?.role !== "master";
+    let q = context.supabase
       .from("leads")
-      .select("id, nome, telefone, email, status, grupo_id, corretor_id, etapa_funil, fonte, cidade, observacoes, visualizado_em, created_at, corretores(nome), grupos(nome)")
+      .select("id, nome, telefone, email, status, grupo_id, corretor_id, etapa_funil, fonte, cidade, observacoes, visualizado_em, created_at, corretores(nome), grupos(nome)");
+    if (apenasMeus) q = q.eq("corretor_id", p.corretor_id);
+    const { data, error } = await q
       .order("created_at", { ascending: false })
       .limit(500);
     if (error) throw new Error(error.message);
