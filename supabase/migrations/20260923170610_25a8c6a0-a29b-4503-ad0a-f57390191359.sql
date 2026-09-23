@@ -1,0 +1,2 @@
+update public.perfis set empresa_id='1765d307-d778-48da-b96d-201ad7d7776c' where id='64612306-9eda-48be-abe6-98020ad412e5';
+update public.corretores set empresa_id='1765d307-d778-48da-b96d-201ad7d7776c' where id='181c21fb-a90f-4655-b413-c347aacdf66f';
