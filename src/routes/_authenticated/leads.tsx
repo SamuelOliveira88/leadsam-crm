@@ -77,6 +77,21 @@ function Leads() {
 
   const [novoAberto, setNovoAberto] = useState(false);
   const [filtroContato, setFiltroContato] = useState<"todos" | "contatados" | "nao">("todos");
+  const [busca, setBusca] = useState("");
+
+  const soDigitos = (s: string | null | undefined) => (s ?? "").replace(/\D/g, "");
+  const bateBusca = (l: any) => {
+    if (!busca.trim()) return true;
+    const q = soDigitos(busca);
+    if (q.length >= 3) {
+      const tel = soDigitos(l.telefone);
+      return tel.includes(q);
+    }
+    return (l.nome ?? "").toLowerCase().includes(busca.trim().toLowerCase());
+  };
+  const leadsFiltrados = (data ?? []).filter((l: any) =>
+    (filtroContato === "todos" ? true : filtroContato === "contatados" ? l.etapa_funil === "Já contatado" : l.etapa_funil !== "Já contatado") && bateBusca(l),
+  );
 
   return (
     <div className="space-y-4">
