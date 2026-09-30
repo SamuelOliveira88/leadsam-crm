@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Trash2, X, Sparkles, MessageCircle, Eye, Download, ArrowRightLeft, Zap, RotateCcw, Plus, Pencil } from "lucide-react";
+import { Trash2, X, Search, Sparkles, MessageCircle, Eye, Download, ArrowRightLeft, Zap, RotateCcw, Plus, Pencil } from "lucide-react";
 import * as XLSX from "xlsx";
 import { listarLeads, excluirLead, exportarLeads, transferirLead, transferirLeadParaOnline, descartarLead, criarLeadManual, atualizarLead } from "@/lib/leads.functions";
 import { listarCorretores } from "@/lib/corretores.functions";
@@ -77,6 +77,21 @@ function Leads() {
 
   const [novoAberto, setNovoAberto] = useState(false);
   const [filtroContato, setFiltroContato] = useState<"todos" | "contatados" | "nao">("todos");
+  const [busca, setBusca] = useState("");
+
+  const soDigitos = (s: string | null | undefined) => (s ?? "").replace(/\D/g, "");
+  const bateBusca = (l: any) => {
+    if (!busca.trim()) return true;
+    const q = soDigitos(busca);
+    if (q.length >= 3) {
+      const tel = soDigitos(l.telefone);
+      return tel.includes(q);
+    }
+    return (l.nome ?? "").toLowerCase().includes(busca.trim().toLowerCase());
+  };
+  const leadsFiltrados = (data ?? []).filter((l: any) =>
+    (filtroContato === "todos" ? true : filtroContato === "contatados" ? l.etapa_funil === "Já contatado" : l.etapa_funil !== "Já contatado") && bateBusca(l),
+  );
 
   return (
     <div className="space-y-4">
@@ -100,16 +115,36 @@ function Leads() {
 
       {isLoading && <div className="text-sm text-muted-foreground">Carregando…</div>}
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {([["todos", "Todos"], ["contatados", "✓ Já contatados"], ["nao", "Ainda não contatados"]] as const).map(([k, t]) => (
           <Button key={k} size="sm" variant={filtroContato === k ? "default" : "outline"} onClick={() => setFiltroContato(k)}>
             {t} ({(data ?? []).filter((l: any) => k === "todos" ? true : k === "contatados" ? l.etapa_funil === "Já contatado" : l.etapa_funil !== "Já contatado").length})
           </Button>
         ))}
+        <div className="relative min-w-[220px] flex-1 sm:max-w-xs">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            placeholder="Buscar por telefone…"
+            className="pl-9 pr-9"
+            inputMode="tel"
+          />
+          {busca && (
+            <button
+              type="button"
+              onClick={() => setBusca("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:text-foreground"
+              aria-label="Limpar busca"
+            >
+              <X className="size-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="grid gap-3">
-        {(data ?? []).filter((l: any) => filtroContato === "todos" ? true : filtroContato === "contatados" ? l.etapa_funil === "Já contatado" : l.etapa_funil !== "Já contatado").map((l: any) => (
+        {leadsFiltrados.map((l: any) => (
           <Card
             key={l.id}
             className="flex cursor-pointer items-center justify-between p-4 transition hover:bg-accent/50"
@@ -141,8 +176,10 @@ function Leads() {
             </Button>
           </Card>
         ))}
-        {!isLoading && (data ?? []).length === 0 && (
-          <Card className="p-8 text-center text-sm text-muted-foreground">Nenhum lead ainda.</Card>
+        {!isLoading && leadsFiltrados.length === 0 && (
+          <Card className="p-8 text-center text-sm text-muted-foreground">
+            {(data ?? []).length === 0 ? "Nenhum lead ainda." : "Nenhum lead encontrado com esse telefone."}
+          </Card>
         )}
       </div>
 
