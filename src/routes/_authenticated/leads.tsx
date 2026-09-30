@@ -76,6 +76,7 @@ function Leads() {
   }
 
   const [novoAberto, setNovoAberto] = useState(false);
+  const [filtroContato, setFiltroContato] = useState<"todos" | "contatados" | "nao">("todos");
 
   return (
     <div className="space-y-4">
@@ -99,8 +100,16 @@ function Leads() {
 
       {isLoading && <div className="text-sm text-muted-foreground">Carregando…</div>}
 
+      <div className="flex flex-wrap gap-2">
+        {([["todos", "Todos"], ["contatados", "✓ Já contatados"], ["nao", "Ainda não contatados"]] as const).map(([k, t]) => (
+          <Button key={k} size="sm" variant={filtroContato === k ? "default" : "outline"} onClick={() => setFiltroContato(k)}>
+            {t} ({(data ?? []).filter((l: any) => k === "todos" ? true : k === "contatados" ? l.etapa_funil === "Já contatado" : l.etapa_funil !== "Já contatado").length})
+          </Button>
+        ))}
+      </div>
+
       <div className="grid gap-3">
-        {(data ?? []).map((l: any) => (
+        {(data ?? []).filter((l: any) => filtroContato === "todos" ? true : filtroContato === "contatados" ? l.etapa_funil === "Já contatado" : l.etapa_funil !== "Já contatado").map((l: any) => (
           <Card
             key={l.id}
             className="flex cursor-pointer items-center justify-between p-4 transition hover:bg-accent/50"
@@ -110,7 +119,9 @@ function Leads() {
               <div className="flex items-center gap-2">
                 <div className="truncate font-semibold">{l.nome}</div>
                 <Badge variant={l.status === "represado" ? "secondary" : "default"}>{l.status}</Badge>
-                {l.etapa_funil && <Badge variant="outline">{l.etapa_funil}</Badge>}
+                {l.etapa_funil === "Já contatado" ? (
+                  <Badge className="border-transparent bg-emerald-600 text-white">✓ Já contatado</Badge>
+                ) : l.etapa_funil ? <Badge variant="outline">{l.etapa_funil}</Badge> : null}
                 {!l.visualizado_em && l.corretor_id && (
                   <Badge variant="outline" className="border-orange-400 text-orange-600">novo</Badge>
                 )}
