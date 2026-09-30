@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Trash2, X, Sparkles, MessageCircle, Eye, Download, ArrowRightLeft, Zap, RotateCcw, Plus, Pencil } from "lucide-react";
+import { Trash2, X, Search, Sparkles, MessageCircle, Eye, Download, ArrowRightLeft, Zap, RotateCcw, Plus, Pencil } from "lucide-react";
 import * as XLSX from "xlsx";
 import { listarLeads, excluirLead, exportarLeads, transferirLead, transferirLeadParaOnline, descartarLead, criarLeadManual, atualizarLead } from "@/lib/leads.functions";
 import { listarCorretores } from "@/lib/corretores.functions";
@@ -176,8 +176,10 @@ function Leads() {
             </Button>
           </Card>
         ))}
-        {!isLoading && (data ?? []).length === 0 && (
-          <Card className="p-8 text-center text-sm text-muted-foreground">Nenhum lead ainda.</Card>
+        {!isLoading && leadsFiltrados.length === 0 && (
+          <Card className="p-8 text-center text-sm text-muted-foreground">
+            {(data ?? []).length === 0 ? "Nenhum lead ainda." : "Nenhum lead encontrado com esse telefone."}
+          </Card>
         )}
       </div>
 
