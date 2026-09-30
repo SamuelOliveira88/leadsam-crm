@@ -115,16 +115,36 @@ function Leads() {
 
       {isLoading && <div className="text-sm text-muted-foreground">Carregando…</div>}
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {([["todos", "Todos"], ["contatados", "✓ Já contatados"], ["nao", "Ainda não contatados"]] as const).map(([k, t]) => (
           <Button key={k} size="sm" variant={filtroContato === k ? "default" : "outline"} onClick={() => setFiltroContato(k)}>
             {t} ({(data ?? []).filter((l: any) => k === "todos" ? true : k === "contatados" ? l.etapa_funil === "Já contatado" : l.etapa_funil !== "Já contatado").length})
           </Button>
         ))}
+        <div className="relative min-w-[220px] flex-1 sm:max-w-xs">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            placeholder="Buscar por telefone…"
+            className="pl-9 pr-9"
+            inputMode="tel"
+          />
+          {busca && (
+            <button
+              type="button"
+              onClick={() => setBusca("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:text-foreground"
+              aria-label="Limpar busca"
+            >
+              <X className="size-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="grid gap-3">
-        {(data ?? []).filter((l: any) => filtroContato === "todos" ? true : filtroContato === "contatados" ? l.etapa_funil === "Já contatado" : l.etapa_funil !== "Já contatado").map((l: any) => (
+        {leadsFiltrados.map((l: any) => (
           <Card
             key={l.id}
             className="flex cursor-pointer items-center justify-between p-4 transition hover:bg-accent/50"
