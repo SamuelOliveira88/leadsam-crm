@@ -12,15 +12,22 @@ export const listarLeads = createServerFn({ method: "GET" })
     const GERENTES_SO_PROPRIOS = ["181c21fb-a90f-4655-b413-c347aacdf66f"];
     const apenasMeus = p?.corretor_id && !p?.acesso_total && !p?.super_admin &&
       (p?.role === "corretor" || GERENTES_SO_PROPRIOS.includes(p.corretor_id));
-    let q = context.supabase
-      .from("leads")
-      .select("id, nome, telefone, email, status, grupo_id, corretor_id, etapa_funil, fonte, cidade, observacoes, visualizado_em, created_at, corretores(nome), grupos(nome)");
-    if (apenasMeus) q = q.eq("corretor_id", p.corretor_id);
-    const { data, error } = await q
-      .order("created_at", { ascending: false })
-      .limit(500);
-    if (error) throw new Error(error.message);
-    return data ?? [];
+    const todos: any[] = [];
+    const PAG = 1000;
+    for (let inicio = 0; inicio < 20000; inicio += PAG) {
+      let q = context.supabase
+        .from("leads")
+        .select("id, nome, telefone, email, status, grupo_id, corretor_id, etapa_funil, fonte, cidade, observacoes, visualizado_em, created_at, corretores(nome), grupos(nome)");
+      if (apenasMeus) q = q.eq("corretor_id", p.corretor_id);
+      const { data, error } = await q
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: true })
+        .range(inicio, inicio + PAG - 1);
+      if (error) throw new Error(error.message);
+      todos.push(...(data ?? []));
+      if (!data || data.length < PAG) break;
+    }
+    return todos;
   });
 
 export const dashboardStats = createServerFn({ method: "GET" })
