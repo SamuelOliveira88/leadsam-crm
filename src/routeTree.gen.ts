@@ -9,43 +9,34 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as CadastroEmpresaRouteImport } from './routes/cadastro-empresa'
 import { Route as SetPasswordRouteImport } from './routes/set-password'
-import { Route as AuthenticatedAcessoRouteImport } from './routes/_authenticated/acesso'
-import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedEmpresasRouteImport } from './routes/_authenticated/empresas'
-import { Route as AuthenticatedEspelhoRouteImport } from './routes/_authenticated/espelho'
-import { Route as AuthenticatedGruposRouteImport } from './routes/_authenticated/grupos'
-import { Route as AuthenticatedHorariosRouteImport } from './routes/_authenticated/horarios'
-import { Route as AuthenticatedImportarRouteImport } from './routes/_authenticated/importar'
-import { Route as AuthenticatedLeadsRouteImport } from './routes/_authenticated/leads'
-import { Route as AuthenticatedNotasRouteImport } from './routes/_authenticated/notas'
-import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
+import { Route as CadastroEmpresaRouteImport } from './routes/cadastro-empresa'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedPropostasRouteImport } from './routes/_authenticated/propostas'
-import { Route as ApiCorretoresConvidarRouteImport } from './routes/api/corretores/convidar'
-import { Route as ApiPublicReativacaoRouteImport } from './routes/api/public/reativacao'
+import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
+import { Route as AuthenticatedNotasRouteImport } from './routes/_authenticated/notas'
+import { Route as AuthenticatedLeadsRouteImport } from './routes/_authenticated/leads'
+import { Route as AuthenticatedImportarRouteImport } from './routes/_authenticated/importar'
+import { Route as AuthenticatedHorariosRouteImport } from './routes/_authenticated/horarios'
+import { Route as AuthenticatedGruposRouteImport } from './routes/_authenticated/grupos'
+import { Route as AuthenticatedEspelhoRouteImport } from './routes/_authenticated/espelho'
+import { Route as AuthenticatedEmpresasRouteImport } from './routes/_authenticated/empresas'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
+import { Route as AuthenticatedAcessoRouteImport } from './routes/_authenticated/acesso'
 import { Route as ApiPublicWebhookRouteImport } from './routes/api/public/webhook'
-import { Route as ApiPublicAdminReenviarConvitesRouteImport } from './routes/api/public/admin/reenviar-convites'
-import { Route as ApiPublicHooksProcessarFilaRouteImport } from './routes/api/public/hooks/processar-fila'
-import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as ApiPublicReativacaoRouteImport } from './routes/api/public/reativacao'
+import { Route as ApiCorretoresConvidarRouteImport } from './routes/api/corretores/convidar'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
+import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as ApiPublicHooksProcessarFilaRouteImport } from './routes/api/public/hooks/processar-fila'
+import { Route as ApiPublicAdminReenviarConvitesRouteImport } from './routes/api/public/admin/reenviar-convites'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const SetPasswordRoute = SetPasswordRouteImport.update({
+  id: '/set-password',
+  path: '/set-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CadastroEmpresaRoute = CadastroEmpresaRouteImport.update({
@@ -53,59 +44,23 @@ const CadastroEmpresaRoute = CadastroEmpresaRouteImport.update({
   path: '/cadastro-empresa',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SetPasswordRoute = SetPasswordRouteImport.update({
-  id: '/set-password',
-  path: '/set-password',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAcessoRoute = AuthenticatedAcessoRouteImport.update({
-  id: '/acesso',
-  path: '/acesso',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedCorretoresRoute = AuthenticatedCorretoresRouteImport.update({
-  id: '/corretores',
-  path: '/corretores',
-  getParentRoute: () => AuthenticatedRouteRoute,
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedEmpresasRoute = AuthenticatedEmpresasRouteImport.update({
-  id: '/empresas',
-  path: '/empresas',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedEspelhoRoute = AuthenticatedEspelhoRouteImport.update({
-  id: '/espelho',
-  path: '/espelho',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedGruposRoute = AuthenticatedGruposRouteImport.update({
-  id: '/grupos',
-  path: '/grupos',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedHorariosRoute = AuthenticatedHorariosRouteImport.update({
-  id: '/horarios',
-  path: '/horarios',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedImportarRoute = AuthenticatedImportarRouteImport.update({
-  id: '/importar',
-  path: '/importar',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedLeadsRoute = AuthenticatedLeadsRouteImport.update({
-  id: '/leads',
-  path: '/leads',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedNotasRoute = AuthenticatedNotasRouteImport.update({
-  id: '/notas',
-  path: '/notas',
+const AuthenticatedPropostasRoute = AuthenticatedPropostasRouteImport.update({
+  id: '/propostas',
+  path: '/propostas',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedNotificacoesRoute =
@@ -114,14 +69,59 @@ const AuthenticatedNotificacoesRoute =
     path: '/notificacoes',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedPropostasRoute = AuthenticatedPropostasRouteImport.update({
-  id: '/propostas',
-  path: '/propostas',
+const AuthenticatedNotasRoute = AuthenticatedNotasRouteImport.update({
+  id: '/notas',
+  path: '/notas',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const ApiCorretoresConvidarRoute = ApiCorretoresConvidarRouteImport.update({
-  id: '/api/corretores/convidar',
-  path: '/api/corretores/convidar',
+const AuthenticatedLeadsRoute = AuthenticatedLeadsRouteImport.update({
+  id: '/leads',
+  path: '/leads',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedImportarRoute = AuthenticatedImportarRouteImport.update({
+  id: '/importar',
+  path: '/importar',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHorariosRoute = AuthenticatedHorariosRouteImport.update({
+  id: '/horarios',
+  path: '/horarios',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGruposRoute = AuthenticatedGruposRouteImport.update({
+  id: '/grupos',
+  path: '/grupos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedEspelhoRoute = AuthenticatedEspelhoRouteImport.update({
+  id: '/espelho',
+  path: '/espelho',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedEmpresasRoute = AuthenticatedEmpresasRouteImport.update({
+  id: '/empresas',
+  path: '/empresas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCorretoresRoute = AuthenticatedCorretoresRouteImport.update({
+  id: '/corretores',
+  path: '/corretores',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAcessoRoute = AuthenticatedAcessoRouteImport.update({
+  id: '/acesso',
+  path: '/acesso',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const ApiPublicWebhookRoute = ApiPublicWebhookRouteImport.update({
+  id: '/api/public/webhook',
+  path: '/api/public/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicReativacaoRoute = ApiPublicReativacaoRouteImport.update({
@@ -129,26 +129,9 @@ const ApiPublicReativacaoRoute = ApiPublicReativacaoRouteImport.update({
   path: '/api/public/reativacao',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicWebhookRoute = ApiPublicWebhookRouteImport.update({
-  id: '/api/public/webhook',
-  path: '/api/public/webhook',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicAdminReenviarConvitesRoute =
-  ApiPublicAdminReenviarConvitesRouteImport.update({
-    id: '/api/public/admin/reenviar-convites',
-    path: '/api/public/admin/reenviar-convites',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksProcessarFilaRoute =
-  ApiPublicHooksProcessarFilaRouteImport.update({
-    id: '/api/public/hooks/processar-fila',
-    path: '/api/public/hooks/processar-fila',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
-  id: '/lovable/email/auth/preview',
-  path: '/lovable/email/auth/preview',
+const ApiCorretoresConvidarRoute = ApiCorretoresConvidarRouteImport.update({
+  id: '/api/corretores/convidar',
+  path: '/api/corretores/convidar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
@@ -156,6 +139,23 @@ const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
   path: '/lovable/email/auth/webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
+  id: '/lovable/email/auth/preview',
+  path: '/lovable/email/auth/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicHooksProcessarFilaRoute =
+  ApiPublicHooksProcessarFilaRouteImport.update({
+    id: '/api/public/hooks/processar-fila',
+    path: '/api/public/hooks/processar-fila',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicAdminReenviarConvitesRoute =
+  ApiPublicAdminReenviarConvitesRouteImport.update({
+    id: '/api/public/admin/reenviar-convites',
+    path: '/api/public/admin/reenviar-convites',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -330,25 +330,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/set-password': {
+      id: '/set-password'
+      path: '/set-password'
+      fullPath: '/set-password'
+      preLoaderRoute: typeof SetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cadastro-empresa': {
@@ -358,81 +344,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CadastroEmpresaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/set-password': {
-      id: '/set-password'
-      path: '/set-password'
-      fullPath: '/set-password'
-      preLoaderRoute: typeof SetPasswordRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/acesso': {
-      id: '/_authenticated/acesso'
-      path: '/acesso'
-      fullPath: '/acesso'
-      preLoaderRoute: typeof AuthenticatedAcessoRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/corretores': {
-      id: '/_authenticated/corretores'
-      path: '/corretores'
-      fullPath: '/corretores'
-      preLoaderRoute: typeof AuthenticatedCorretoresRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/empresas': {
-      id: '/_authenticated/empresas'
-      path: '/empresas'
-      fullPath: '/empresas'
-      preLoaderRoute: typeof AuthenticatedEmpresasRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/espelho': {
-      id: '/_authenticated/espelho'
-      path: '/espelho'
-      fullPath: '/espelho'
-      preLoaderRoute: typeof AuthenticatedEspelhoRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/grupos': {
-      id: '/_authenticated/grupos'
-      path: '/grupos'
-      fullPath: '/grupos'
-      preLoaderRoute: typeof AuthenticatedGruposRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/horarios': {
-      id: '/_authenticated/horarios'
-      path: '/horarios'
-      fullPath: '/horarios'
-      preLoaderRoute: typeof AuthenticatedHorariosRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/importar': {
-      id: '/_authenticated/importar'
-      path: '/importar'
-      fullPath: '/importar'
-      preLoaderRoute: typeof AuthenticatedImportarRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/leads': {
-      id: '/_authenticated/leads'
-      path: '/leads'
-      fullPath: '/leads'
-      preLoaderRoute: typeof AuthenticatedLeadsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/notas': {
-      id: '/_authenticated/notas'
-      path: '/notas'
-      fullPath: '/notas'
-      preLoaderRoute: typeof AuthenticatedNotasRouteImport
+    '/_authenticated/propostas': {
+      id: '/_authenticated/propostas'
+      path: '/propostas'
+      fullPath: '/propostas'
+      preLoaderRoute: typeof AuthenticatedPropostasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/notificacoes': {
@@ -442,18 +379,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNotificacoesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/propostas': {
-      id: '/_authenticated/propostas'
-      path: '/propostas'
-      fullPath: '/propostas'
-      preLoaderRoute: typeof AuthenticatedPropostasRouteImport
+    '/_authenticated/notas': {
+      id: '/_authenticated/notas'
+      path: '/notas'
+      fullPath: '/notas'
+      preLoaderRoute: typeof AuthenticatedNotasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/api/corretores/convidar': {
-      id: '/api/corretores/convidar'
-      path: '/api/corretores/convidar'
-      fullPath: '/api/corretores/convidar'
-      preLoaderRoute: typeof ApiCorretoresConvidarRouteImport
+    '/_authenticated/leads': {
+      id: '/_authenticated/leads'
+      path: '/leads'
+      fullPath: '/leads'
+      preLoaderRoute: typeof AuthenticatedLeadsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/importar': {
+      id: '/_authenticated/importar'
+      path: '/importar'
+      fullPath: '/importar'
+      preLoaderRoute: typeof AuthenticatedImportarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/horarios': {
+      id: '/_authenticated/horarios'
+      path: '/horarios'
+      fullPath: '/horarios'
+      preLoaderRoute: typeof AuthenticatedHorariosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/grupos': {
+      id: '/_authenticated/grupos'
+      path: '/grupos'
+      fullPath: '/grupos'
+      preLoaderRoute: typeof AuthenticatedGruposRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/espelho': {
+      id: '/_authenticated/espelho'
+      path: '/espelho'
+      fullPath: '/espelho'
+      preLoaderRoute: typeof AuthenticatedEspelhoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/empresas': {
+      id: '/_authenticated/empresas'
+      path: '/empresas'
+      fullPath: '/empresas'
+      preLoaderRoute: typeof AuthenticatedEmpresasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/corretores': {
+      id: '/_authenticated/corretores'
+      path: '/corretores'
+      fullPath: '/corretores'
+      preLoaderRoute: typeof AuthenticatedCorretoresRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/acesso': {
+      id: '/_authenticated/acesso'
+      path: '/acesso'
+      fullPath: '/acesso'
+      preLoaderRoute: typeof AuthenticatedAcessoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/webhook': {
+      id: '/api/public/webhook'
+      path: '/api/public/webhook'
+      fullPath: '/api/public/webhook'
+      preLoaderRoute: typeof ApiPublicWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/reativacao': {
@@ -463,25 +463,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicReativacaoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/webhook': {
-      id: '/api/public/webhook'
-      path: '/api/public/webhook'
-      fullPath: '/api/public/webhook'
-      preLoaderRoute: typeof ApiPublicWebhookRouteImport
+    '/api/corretores/convidar': {
+      id: '/api/corretores/convidar'
+      path: '/api/corretores/convidar'
+      fullPath: '/api/corretores/convidar'
+      preLoaderRoute: typeof ApiCorretoresConvidarRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/admin/reenviar-convites': {
-      id: '/api/public/admin/reenviar-convites'
-      path: '/api/public/admin/reenviar-convites'
-      fullPath: '/api/public/admin/reenviar-convites'
-      preLoaderRoute: typeof ApiPublicAdminReenviarConvitesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/processar-fila': {
-      id: '/api/public/hooks/processar-fila'
-      path: '/api/public/hooks/processar-fila'
-      fullPath: '/api/public/hooks/processar-fila'
-      preLoaderRoute: typeof ApiPublicHooksProcessarFilaRouteImport
+    '/lovable/email/auth/webhook': {
+      id: '/lovable/email/auth/webhook'
+      path: '/lovable/email/auth/webhook'
+      fullPath: '/lovable/email/auth/webhook'
+      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/lovable/email/auth/preview': {
@@ -491,11 +484,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lovable/email/auth/webhook': {
-      id: '/lovable/email/auth/webhook'
-      path: '/lovable/email/auth/webhook'
-      fullPath: '/lovable/email/auth/webhook'
-      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
+    '/api/public/hooks/processar-fila': {
+      id: '/api/public/hooks/processar-fila'
+      path: '/api/public/hooks/processar-fila'
+      fullPath: '/api/public/hooks/processar-fila'
+      preLoaderRoute: typeof ApiPublicHooksProcessarFilaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/admin/reenviar-convites': {
+      id: '/api/public/admin/reenviar-convites'
+      path: '/api/public/admin/reenviar-convites'
+      fullPath: '/api/public/admin/reenviar-convites'
+      preLoaderRoute: typeof ApiPublicAdminReenviarConvitesRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
