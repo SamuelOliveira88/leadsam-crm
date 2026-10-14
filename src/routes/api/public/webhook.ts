@@ -23,24 +23,13 @@ export const Route = createFileRoute("/api/public/webhook")({
       POST: async ({ request }) => {
         try {
           const url = new URL(request.url);
-          const token = url.searchParams.get("token") || request.headers.get("x-webhook-token");
-          const aceitos = [
-            process.env.WEBHOOK_LEAD_TOKEN,
-            process.env.WEBHOOK_LEAD_TOKEN_LP,
-            process.env.WEBHOOK_LEAD_TOKEN_NOTIF,
-            process.env.WEBHOOK_LEAD_TOKEN_SAMUELIMOB,
-          ].filter((t): t is string => !!t);
-          if (!token || !aceitos.includes(token)) {
-            return json({ error: "unauthorized" }, 401);
-          }
-          const origemToken =
-            token === process.env.WEBHOOK_LEAD_TOKEN_LP
-              ? "landing"
-              : token === process.env.WEBHOOK_LEAD_TOKEN_NOTIF
-                ? "notificacoes"
-                : token === process.env.WEBHOOK_LEAD_TOKEN_SAMUELIMOB
-                  ? "samuelimob"
-                  : "webhook";
+          const token = request.headers.get("x-webhook-token") || url.searchParams.get("token");
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const { resolverEmpresaPorToken } = await import("@/lib/empresa-token.server");
+          const acesso = await resolverEmpresaPorToken(supabaseAdmin, token, ["samuelimob", "webhook", "landing", "notificacoes"]);
+          if (!acesso) return json({ error: "unauthorized" }, 401);
+          const origemToken = acesso.origem;
+
 
 
 
@@ -98,7 +87,12 @@ export const Route = createFileRoute("/api/public/webhook")({
             return json({ error: "nome e grupo_id são obrigatórios" }, 400);
           }
 
-          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          // O grupo precisa pertencer à empresa dona do token.
+          const { data: grupoRow } = await supabaseAdmin
+            .from("grupos").select("id, nome, empresa_id").eq("id", grupo_id).maybeSingle();
+          if (!grupoRow || grupoRow.empresa_id !== acesso.empresa_id) {
+            return json({ error: "grupo_id não pertence à empresa deste token" }, 403);
+          }
 
           // Deduplicação: mesmo telefone no mesmo grupo nos últimos 10 minutos -> ignora
           if (telefone) {
@@ -116,44 +110,32 @@ export const Route = createFileRoute("/api/public/webhook")({
             }
           }
 
-          const { data, error } = await supabaseAdmin.rpc("distribuir_lead_round_robin", {
+          const { data, error } = await supabaseAdmin.rpc("distribuir_lead_rr", {
             p_nome: nome, p_telefone: telefone ?? null, p_email: email ?? null, p_grupo_id: grupo_id,
             p_extra: { fonte: origemToken, ...(observacoes ? { observacoes } : {}) },
           });
           if (error) return json({ error: error.message }, 500);
 
-          const corretorId = data as string | null;
+          const resultado = (data ?? {}) as { lead_id?: string; corretor_id?: string | null };
+          const leadId = resultado.lead_id ?? null;
+          const corretorId = resultado.corretor_id ?? null;
 
           // Só notifica quando o lead foi efetivamente distribuído (não represado).
-          if (corretorId) {
+          if (corretorId && leadId) {
             const { notificarMonitor, notificarCorretorPorLead } = await import("@/lib/evolution.server");
-            const { data: grupoRow } = await supabaseAdmin.from("grupos").select("nome").eq("id", grupo_id).maybeSingle();
-            
-
             try {
-              const { data: leadRow } = await supabaseAdmin
-                .from("leads")
-                .select("id, corretores(nome)")
-                .eq("grupo_id", grupo_id)
-                .eq("nome", nome)
-                .order("created_at", { ascending: false })
-                .limit(1)
-                .maybeSingle();
-
-              if (leadRow?.id) {
-                const envio = await notificarCorretorPorLead(supabaseAdmin, leadRow.id);
-                if (!envio.ok) console.error("[webhook] falha Evolution", envio.error);
-              }
+              const envio = await notificarCorretorPorLead(supabaseAdmin, leadId);
+              if (!envio.ok) console.error("[webhook] falha Evolution", envio.error);
+              const { data: corr } = await supabaseAdmin.from("corretores").select("nome").eq("id", corretorId).maybeSingle();
               await notificarMonitor(
                 "entrega",
-                { nome, telefone, email, grupo: grupoRow?.nome ?? null, fonte: origemToken },
-                (leadRow as any)?.corretores?.nome ?? null,
+                { nome, telefone, email, grupo: grupoRow.nome ?? null, fonte: origemToken },
+                corr?.nome ?? null,
               );
             } catch (e) { console.error("[webhook] falha notificando corretor", e); }
           }
 
-
-          return json({ ok: true, corretor_id: data });
+          return json({ ok: true, lead_id: leadId, corretor_id: corretorId });
 
         } catch (e: any) {
           return json({ error: e.message }, 500);
