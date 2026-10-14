@@ -1,8 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
-
-const EMPRESA_ID = "1765d307-d778-48da-b96d-201ad7d7776c"; // Samuel Imob
 
 const cors = {
   "Content-Type": "application/json",
@@ -14,21 +11,24 @@ const cors = {
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: cors });
 
-function autorizado(request: Request, url: URL) {
-  const expected = process.env.REATIVACAO_API_KEY;
-  const provided =
+function tokenDaRequisicao(request: Request, url: URL) {
+  return (
     request.headers.get("x-api-key") ||
     (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "") ||
-    url.searchParams.get("key");
-  return Boolean(expected) && provided === expected;
+    url.searchParams.get("key")
+  );
 }
 
-function admin() {
-  const supabaseUrl = process.env.SUPABASE_URL!;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-  return createClient(supabaseUrl, serviceKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+async function admin() {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  return supabaseAdmin as any;
+}
+
+/** A empresa vem do token usado (tabela webhook_tokens ou REATIVACAO_API_KEY legado). */
+async function empresaDoToken(db: any, request: Request, url: URL) {
+  const { resolverEmpresaPorToken } = await import("@/lib/empresa-token.server");
+  const r = await resolverEmpresaPorToken(db, tokenDaRequisicao(request, url), ["reativacao"]);
+  return r?.empresa_id ?? null;
 }
 
 const patchSchema = z.object({
