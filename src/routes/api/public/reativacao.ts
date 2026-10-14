@@ -42,12 +42,14 @@ export const Route = createFileRoute("/api/public/reativacao")({
 
       GET: async ({ request }) => {
         const url = new URL(request.url);
-        if (!autorizado(request, url)) return json({ error: "unauthorized" }, 401);
+        const db = await admin();
+        const EMPRESA_ID = await empresaDoToken(db, request, url);
+        if (!EMPRESA_ID) return json({ error: "unauthorized" }, 401);
 
         const limit = Math.min(Number(url.searchParams.get("limit") ?? "100"), 500);
         const offset = Math.max(Number(url.searchParams.get("offset") ?? "0"), 0);
 
-        const { data, error } = await admin()
+        const { data, error } = await db
           .from("leads")
           .select("nome, telefone, empreendimento_interesse")
           .eq("empresa_id", EMPRESA_ID)
@@ -64,7 +66,9 @@ export const Route = createFileRoute("/api/public/reativacao")({
 
         const url = new URL(request.url);
 
-        if (!autorizado(request, url)) return json({ error: "unauthorized" }, 401);
+        const db = await admin();
+        const EMPRESA_ID = await empresaDoToken(db, request, url);
+        if (!EMPRESA_ID) return json({ error: "unauthorized" }, 401);
 
         let body: unknown;
 
@@ -88,7 +92,6 @@ export const Route = createFileRoute("/api/public/reativacao")({
 
         if (sufixo.length < 8) return json({ error: "telefone inválido" }, 400);
 
-        const db = admin();
 
         const { data: candidatos, error: erroBusca } = await db
 
