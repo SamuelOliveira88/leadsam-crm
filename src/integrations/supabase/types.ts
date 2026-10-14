@@ -1149,6 +1149,41 @@ export type Database = {
           },
         ]
       }
+      webhook_tokens: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          empresa_id: string
+          id: string
+          nome: string
+          token_hash: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          empresa_id: string
+          id?: string
+          nome: string
+          token_hash: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          empresa_id?: string
+          id?: string
+          nome?: string
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_tokens_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       dashboard_corretores: {
@@ -1210,6 +1245,16 @@ export type Database = {
           p_telefone: string
         }
         Returns: string
+      }
+      distribuir_lead_rr: {
+        Args: {
+          p_email: string
+          p_extra?: Json
+          p_grupo_id: string
+          p_nome: string
+          p_telefone: string
+        }
+        Returns: Json
       }
       escolher_corretor_online: {
         Args: { p_grupo_id: string }
