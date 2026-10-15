@@ -17,8 +17,10 @@ export const listarEmpresas = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
 
     // Uso atual de cada empresa (pra comparar com o limite do plano)
-    const { data: corretoresPorEmpresa } = await context.supabase.from("corretores").select("empresa_id");
-    const { data: leadsPorEmpresa } = await context.supabase.from("leads").select("empresa_id");
+    // Contagem de todas as empresas: usa o cliente de serviço (a trava por empresa ativa vale só nas telas de dados)
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: corretoresPorEmpresa } = await supabaseAdmin.from("corretores").select("empresa_id");
+    const { data: leadsPorEmpresa } = await supabaseAdmin.from("leads").select("empresa_id").limit(100000);
     const contarPor = (rows: any[] | null, id: string) => (rows ?? []).filter((r) => r.empresa_id === id).length;
 
     return (data ?? []).map((e) => ({
