@@ -430,6 +430,8 @@ export type Database = {
           nome: string
           plano: string
           slug: string | null
+          status: string
+          teste_ate: string | null
         }
         Insert: {
           ativo?: boolean
@@ -440,6 +442,8 @@ export type Database = {
           nome: string
           plano?: string
           slug?: string | null
+          status?: string
+          teste_ate?: string | null
         }
         Update: {
           ativo?: boolean
@@ -450,6 +454,8 @@ export type Database = {
           nome?: string
           plano?: string
           slug?: string | null
+          status?: string
+          teste_ate?: string | null
         }
         Relationships: []
       }

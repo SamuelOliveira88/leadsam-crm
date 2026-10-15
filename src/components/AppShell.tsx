@@ -9,6 +9,7 @@ import { heartbeatCorretor } from "@/lib/corretores.functions";
 import { listarNotificacoes, notificarLoginMonitor } from "@/lib/notificacoes.functions";
 import { getConfigAcesso } from "@/lib/config-acesso.functions";
 import { listarEmpresasContexto, trocarEmpresaContexto } from "@/lib/empresa-contexto.functions";
+import { statusMinhaEmpresa } from "@/lib/empresas.functions";
 import { useGeolocalizacao } from "@/hooks/use-geolocalizacao";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -62,6 +63,13 @@ export function AppShell({ user, children }: { user: User; children: React.React
   const fetchNotif = useServerFn(listarNotificacoes);
   const fetchConfig = useServerFn(getConfigAcesso);
   const { data: perfil } = useQuery({ queryKey: ["meuPerfil"], queryFn: () => fetchPerfil() });
+  const fetchStatusEmpresa = useServerFn(statusMinhaEmpresa);
+  const { data: statusEmpresa } = useQuery({
+    queryKey: ["statusMinhaEmpresa"],
+    queryFn: () => fetchStatusEmpresa(),
+    refetchInterval: 5 * 60 * 1000,
+    enabled: !!perfil,
+  });
   const { data: notifs } = useQuery({
     queryKey: ["notificacoes"],
     queryFn: () => fetchNotif(),
@@ -300,7 +308,21 @@ export function AppShell({ user, children }: { user: User; children: React.React
       </aside>
 
       <main className="pb-20 md:ml-64 md:pb-0">
-        <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">{children}</div>
+        {statusEmpresa?.status === "teste" && !statusEmpresa.bloqueada && statusEmpresa.dias_restantes !== null && (
+          <div className="border-b border-amber-300/50 bg-amber-50 px-4 py-1.5 text-center text-xs text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+            Período de teste: {statusEmpresa.dias_restantes} {statusEmpresa.dias_restantes === 1 ? "dia restante" : "dias restantes"}
+          </div>
+        )}
+        <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">
+          {statusEmpresa?.bloqueada && !statusEmpresa.super_admin ? (
+            <div className="mx-auto mt-16 max-w-md rounded-lg border border-border bg-card p-8 text-center">
+              <h1 className="text-xl font-bold">Teste encerrado</h1>
+              <p className="mt-2 text-sm text-muted-foreground">Fale com o administrador para ativar.</p>
+            </div>
+          ) : (
+            children
+          )}
+        </div>
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 backdrop-blur md:hidden">
