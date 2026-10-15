@@ -17,7 +17,7 @@ export const listarLeads = createServerFn({ method: "GET" })
     for (let inicio = 0; inicio < 20000; inicio += PAG) {
       let q = context.supabase
         .from("leads")
-        .select("id, nome, telefone, email, status, grupo_id, corretor_id, etapa_funil, fonte, cidade, observacoes, visualizado_em, created_at, corretores(nome), grupos(nome)");
+        .select("id, nome, telefone, email, status, grupo_id, corretor_id, etapa_funil, motivo_perda, valor_negociacao, fonte, cidade, observacoes, visualizado_em, created_at, corretores(nome), grupos(nome)");
       if (apenasMeus) q = q.eq("corretor_id", p.corretor_id);
       const { data, error } = await q
         .order("created_at", { ascending: false })
