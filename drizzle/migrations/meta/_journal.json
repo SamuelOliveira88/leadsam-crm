@@ -8,6 +8,13 @@
       "when": 1791997009691,
       "tag": "0000_webhook_tokens_e_rodizio_lead_id",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792072158973,
+      "tag": "0001_etapa1_isolamento_multiempresa",
+      "breakpoints": true
     }
   ]
 }
