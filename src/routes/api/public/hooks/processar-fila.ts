@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
-import { processarNotificacoesWhatsAppPendentes } from "@/lib/evolution.server";
+import { processarLembretesDeCompromisso, processarNotificacoesWhatsAppPendentes } from "@/lib/evolution.server";
 
 export const Route = createFileRoute("/api/public/hooks/processar-fila")({
   server: {
@@ -32,8 +32,16 @@ export const Route = createFileRoute("/api/public/hooks/processar-fila")({
 
         try {
           const resultado = await processarNotificacoesWhatsAppPendentes(supabase, limit);
+          // Lembretes de visita (1 h antes). Se falhar, não derruba o envio dos avisos de lead.
+          let lembretes: unknown = null;
+          try {
+            lembretes = await processarLembretesDeCompromisso(supabase, limit);
+          } catch (e: any) {
+            lembretes = { erro: e?.message ?? "erro nos lembretes" };
+            console.error("[processar-fila] lembretes", e);
+          }
           return new Response(
-            JSON.stringify({ ok: true, ...resultado }),
+            JSON.stringify({ ok: true, ...resultado, lembretes }),
             { headers: { "Content-Type": "application/json" } },
           );
         } catch (e: any) {

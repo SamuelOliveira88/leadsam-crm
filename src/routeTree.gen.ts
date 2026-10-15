@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CadastroEmpresaRouteImport } from './routes/cadastro-empresa'
 import { Route as SetPasswordRouteImport } from './routes/set-password'
 import { Route as AuthenticatedAcessoRouteImport } from './routes/_authenticated/acesso'
+import { Route as AuthenticatedAgendaRouteImport } from './routes/_authenticated/agenda'
 import { Route as AuthenticatedCheckinRouteImport } from './routes/_authenticated/checkin'
 import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -63,6 +64,11 @@ const SetPasswordRoute = SetPasswordRouteImport.update({
 const AuthenticatedAcessoRoute = AuthenticatedAcessoRouteImport.update({
   id: '/acesso',
   path: '/acesso',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAgendaRoute = AuthenticatedAgendaRouteImport.update({
+  id: '/agenda',
+  path: '/agenda',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCheckinRoute = AuthenticatedCheckinRouteImport.update({
@@ -176,6 +182,7 @@ export interface FileRoutesByFullPath {
   '/cadastro-empresa': typeof CadastroEmpresaRoute
   '/set-password': typeof SetPasswordRoute
   '/acesso': typeof AuthenticatedAcessoRoute
+  '/agenda': typeof AuthenticatedAgendaRoute
   '/checkin': typeof AuthenticatedCheckinRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -203,6 +210,7 @@ export interface FileRoutesByTo {
   '/cadastro-empresa': typeof CadastroEmpresaRoute
   '/set-password': typeof SetPasswordRoute
   '/acesso': typeof AuthenticatedAcessoRoute
+  '/agenda': typeof AuthenticatedAgendaRoute
   '/checkin': typeof AuthenticatedCheckinRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -232,6 +240,7 @@ export interface FileRoutesById {
   '/cadastro-empresa': typeof CadastroEmpresaRoute
   '/set-password': typeof SetPasswordRoute
   '/_authenticated/acesso': typeof AuthenticatedAcessoRoute
+  '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
   '/_authenticated/checkin': typeof AuthenticatedCheckinRoute
   '/_authenticated/corretores': typeof AuthenticatedCorretoresRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -261,6 +270,7 @@ export interface FileRouteTypes {
     | '/cadastro-empresa'
     | '/set-password'
     | '/acesso'
+    | '/agenda'
     | '/checkin'
     | '/corretores'
     | '/dashboard'
@@ -288,6 +298,7 @@ export interface FileRouteTypes {
     | '/cadastro-empresa'
     | '/set-password'
     | '/acesso'
+    | '/agenda'
     | '/checkin'
     | '/corretores'
     | '/dashboard'
@@ -316,6 +327,7 @@ export interface FileRouteTypes {
     | '/cadastro-empresa'
     | '/set-password'
     | '/_authenticated/acesso'
+    | '/_authenticated/agenda'
     | '/_authenticated/checkin'
     | '/_authenticated/corretores'
     | '/_authenticated/dashboard'
@@ -395,6 +407,13 @@ declare module '@tanstack/react-router' {
       path: '/acesso'
       fullPath: '/acesso'
       preLoaderRoute: typeof AuthenticatedAcessoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/agenda': {
+      id: '/_authenticated/agenda'
+      path: '/agenda'
+      fullPath: '/agenda'
+      preLoaderRoute: typeof AuthenticatedAgendaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/checkin': {
@@ -542,6 +561,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAcessoRoute: typeof AuthenticatedAcessoRoute
+  AuthenticatedAgendaRoute: typeof AuthenticatedAgendaRoute
   AuthenticatedCheckinRoute: typeof AuthenticatedCheckinRoute
   AuthenticatedCorretoresRoute: typeof AuthenticatedCorretoresRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -559,6 +579,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAcessoRoute: AuthenticatedAcessoRoute,
+  AuthenticatedAgendaRoute: AuthenticatedAgendaRoute,
   AuthenticatedCheckinRoute: AuthenticatedCheckinRoute,
   AuthenticatedCorretoresRoute: AuthenticatedCorretoresRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,

@@ -294,3 +294,122 @@ export async function processarNotificacoesWhatsAppPendentes(
 
   return { enviados, adiados, repetir, falhas };
 }
+
+/**
+ * Lembretes de compromisso (visita, ligação, reunião): 1 hora antes, pelo WhatsApp do corretor.
+ * 1) pede ao banco para colocar na fila os compromissos que entraram na janela de 1 hora;
+ * 2) envia os avisos da fila, com a mesma repetição automática dos avisos de lead.
+ */
+export async function processarLembretesDeCompromisso(
+  supabaseClient: any,
+  limit = 30,
+): Promise<{ enfileirados: number; enviados: number; descartados: number; repetir: number; falhas: Array<{ id: string; motivo: string }> }> {
+  const { data: novos } = await supabaseClient.rpc("enfileirar_lembretes_visita");
+  const enfileirados = typeof novos === "number" ? novos : 0;
+
+  const { data: pendentes, error } = await supabaseClient
+    .from("fila_notificacoes")
+    .select("id, compromisso_id, corretor_id, tentativas, created_at")
+    .eq("tipo", "lembrete_visita")
+    .eq("status", "pendente")
+    .lte("proxima_tentativa", new Date().toISOString())
+    .order("created_at", { ascending: true })
+    .limit(limit);
+  if (error) throw new Error(error.message);
+
+  let enviados = 0;
+  let descartados = 0;
+  let repetir = 0;
+  const falhas: Array<{ id: string; motivo: string }> = [];
+
+  const fechar = (id: string, patch: Record<string, unknown>) =>
+    supabaseClient.from("fila_notificacoes").update(patch).eq("id", id);
+
+  for (const item of pendentes ?? []) {
+    // Reserva a linha por 3 min para duas execuções simultâneas não enviarem em dobro.
+    const { data: reservada } = await supabaseClient
+      .from("fila_notificacoes")
+      .update({ proxima_tentativa: new Date(Date.now() + 3 * 60_000).toISOString() })
+      .eq("id", item.id)
+      .eq("status", "pendente")
+      .lte("proxima_tentativa", new Date().toISOString())
+      .select("id");
+    if (!reservada?.length) continue;
+
+    const { data: comp } = await supabaseClient
+      .from("compromissos")
+      .select("id, tipo, status, data_hora, empreendimento, observacoes, corretor_id, leads(nome, telefone)")
+      .eq("id", item.compromisso_id)
+      .maybeSingle();
+
+    // Cancelado, concluído ou apagado: não avisa.
+    if (!comp || comp.status !== "agendado") {
+      await fechar(item.id, { status: "cancelado", enviado_em: new Date().toISOString() });
+      descartados++;
+      continue;
+    }
+    // Já passou da hora há mais de 15 min: aviso inútil.
+    if (new Date(comp.data_hora).getTime() < Date.now() - 15 * 60_000) {
+      await fechar(item.id, { status: "expirado", enviado_em: new Date().toISOString(), ultimo_erro: "Horário já passou" });
+      descartados++;
+      continue;
+    }
+
+    let motivo: MotivoFalha | null = null;
+    let erro: string | null = null;
+
+    if (await notificacoesPausadas(supabaseClient)) {
+      motivo = "adiar";
+      erro = "Notificações pausadas";
+    } else {
+      const { data: corretor } = await supabaseClient
+        .from("corretores")
+        .select("telefone")
+        .eq("id", comp.corretor_id)
+        .maybeSingle();
+      if (!corretor?.telefone) {
+        motivo = "definitivo";
+        erro = "Corretor sem telefone cadastrado";
+      } else {
+        const { mensagemLembrete } = await import("@/lib/agenda");
+        const r = await sendWhatsAppNotification(
+          corretor.telefone,
+          mensagemLembrete({
+            tipo: comp.tipo,
+            leadNome: comp.leads?.nome ?? null,
+            leadTelefone: comp.leads?.telefone ?? null,
+            empreendimento: comp.empreendimento,
+            dataHora: comp.data_hora,
+            observacoes: comp.observacoes,
+          }),
+        );
+        if (r.ok) {
+          await fechar(item.id, { status: "enviado", enviado_em: new Date().toISOString(), ultimo_erro: null });
+          enviados++;
+          continue;
+        }
+        motivo = r.permanente ? "definitivo" : "tentar_de_novo";
+        erro = r.error ?? "Falha ao enviar";
+      }
+    }
+
+    const d = decidirAposFalha({
+      motivo: motivo ?? "tentar_de_novo",
+      erro,
+      tentativas: item.tentativas ?? 0,
+      criadoEm: new Date(item.created_at),
+      agora: new Date(),
+    });
+    if (d.status === "pendente") repetir++;
+    else falhas.push({ id: item.id, motivo: d.erro ?? "Falha ao enviar" });
+    await fechar(item.id, {
+      status: d.status,
+      tentativas: d.tentativas,
+      proxima_tentativa: d.proxima.toISOString(),
+      ultimo_erro: d.erro,
+      ...(d.status === "pendente" ? {} : { enviado_em: new Date().toISOString() }),
+    });
+  }
+
+  return { enfileirados, enviados, descartados, repetir, falhas };
+}

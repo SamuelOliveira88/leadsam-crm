@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { CalendarPlus } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMoverEtapa, type EtapaMovida } from "@/hooks/use-mover-etapa";
 import { listarHistoricoLead } from "@/lib/funil.functions";
+import { AgendarVisitaDialog } from "@/components/AgendarVisitaDialog";
+import { Button } from "@/components/ui/button";
 import { ETAPAS_FUNIL, ehEtapaFunil, formatarReais, type EtapaFunil } from "@/lib/funil";
 
 type LeadEtapa = {
@@ -11,10 +14,13 @@ type LeadEtapa = {
   etapa_funil?: string | null;
   motivo_perda?: string | null;
   valor_negociacao?: number | null;
+  corretor_id?: string | null;
 };
 
 /** Etapa do funil dentro do lead: seletor para mudar e histórico das mudanças. */
 export function LeadEtapaPanel({ lead }: { lead: LeadEtapa }) {
+  const qc = useQueryClient();
+  const [agendando, setAgendando] = useState(false);
   const historicoFn = useServerFn(listarHistoricoLead);
   const [atual, setAtual] = useState({
     etapa: (ehEtapaFunil(lead.etapa_funil) ? lead.etapa_funil : "Novo") as EtapaFunil,
@@ -60,6 +66,9 @@ export function LeadEtapaPanel({ lead }: { lead: LeadEtapa }) {
             <option key={e} value={e}>{e}</option>
           ))}
         </select>
+        <Button type="button" size="sm" variant="outline" className="ml-auto" onClick={() => setAgendando(true)}>
+          <CalendarPlus className="mr-2 size-4" /> Agendar visita
+        </Button>
       </div>
 
       {atual.etapa === "Perdido" && atual.motivo && (
@@ -88,6 +97,16 @@ export function LeadEtapaPanel({ lead }: { lead: LeadEtapa }) {
       </details>
 
       {dialogo}
+      <AgendarVisitaDialog
+        lead={lead}
+        aberto={agendando}
+        aoFechar={() => setAgendando(false)}
+        aoAgendar={(tipo) => {
+          // Visita move o lead para "Visita agendada" (exceto se já vendido): reflete na tela e no histórico.
+          if (tipo === "visita" && atual.etapa !== "Vendido") setAtual((a) => ({ ...a, etapa: "Visita agendada" }));
+          qc.invalidateQueries({ queryKey: ["lead_historico", lead.id] });
+        }}
+      />
     </div>
   );
 }

@@ -455,6 +455,7 @@ export type Database = {
       }
       fila_notificacoes: {
         Row: {
+          compromisso_id: string | null
           corretor_id: string | null
           created_at: string
           empresa_id: string | null
@@ -468,6 +469,7 @@ export type Database = {
           ultimo_erro: string | null
         }
         Insert: {
+          compromisso_id?: string | null
           corretor_id?: string | null
           created_at?: string
           empresa_id?: string | null
@@ -481,6 +483,7 @@ export type Database = {
           ultimo_erro?: string | null
         }
         Update: {
+          compromisso_id?: string | null
           corretor_id?: string | null
           created_at?: string
           empresa_id?: string | null
@@ -494,6 +497,13 @@ export type Database = {
           ultimo_erro?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fila_notificacoes_compromisso_id_fkey"
+            columns: ["compromisso_id"]
+            isOneToOne: false
+            referencedRelation: "compromissos"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fila_notificacoes_corretor_id_fkey"
             columns: ["corretor_id"]
@@ -606,6 +616,73 @@ export type Database = {
             columns: ["grupo_id"]
             isOneToOne: false
             referencedRelation: "grupos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compromissos: {
+        Row: {
+          atualizado_em: string
+          corretor_id: string | null
+          created_at: string
+          criado_por: string | null
+          data_hora: string
+          empreendimento: string | null
+          empresa_id: string | null
+          id: string
+          lead_id: string | null
+          observacoes: string | null
+          status: string
+          tipo: string
+        }
+        Insert: {
+          atualizado_em?: string
+          corretor_id?: string | null
+          created_at?: string
+          criado_por?: string | null
+          data_hora: string
+          empreendimento?: string | null
+          empresa_id?: string | null
+          id?: string
+          lead_id?: string | null
+          observacoes?: string | null
+          status?: string
+          tipo?: string
+        }
+        Update: {
+          atualizado_em?: string
+          corretor_id?: string | null
+          created_at?: string
+          criado_por?: string | null
+          data_hora?: string
+          empreendimento?: string | null
+          empresa_id?: string | null
+          id?: string
+          lead_id?: string | null
+          observacoes?: string | null
+          status?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compromissos_corretor_id_fkey"
+            columns: ["corretor_id"]
+            isOneToOne: false
+            referencedRelation: "corretores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compromissos_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compromissos_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
             referencedColumns: ["id"]
           },
         ]
@@ -1450,6 +1527,18 @@ export type Database = {
         Returns: undefined
       }
       reatribuir_leads_sem_visualizacao: { Args: never; Returns: undefined }
+      agendar_compromisso: {
+        Args: {
+          p_corretor_id?: string
+          p_data_hora: string
+          p_empreendimento?: string
+          p_lead_id: string
+          p_observacoes?: string
+          p_tipo: string
+        }
+        Returns: Json
+      }
+      enfileirar_lembretes_visita: { Args: never; Returns: number }
       registrar_checkin: {
         Args: {
           p_latitude: number
