@@ -50,7 +50,22 @@ export const registrarLoginCorretor = createServerFn({ method: "POST" })
 
 export const notificarLoginMonitor = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        posicao: z
+          .object({
+            latitude: z.number().finite().min(-90).max(90),
+            longitude: z.number().finite().min(-180).max(180),
+            precisaoMetros: z.number().finite().min(0).max(100000).optional().nullable(),
+          })
+          .optional()
+          .nullable(),
+      })
+      .optional()
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
     try {
       const { data: perfil } = await context.supabase
         .from("perfis")
@@ -69,6 +84,26 @@ export const notificarLoginMonitor = createServerFn({ method: "POST" })
         `Perfil: ${perfil?.role ?? "-"}`,
         `Quando: ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}`,
       ];
+      // Localização do login: registra no banco e informa o monitor (não bloqueia o login).
+      const pos = data?.posicao;
+      if (pos) {
+        const { data: r } = await context.supabase.rpc("registrar_checkin", {
+          p_tipo: "login",
+          p_latitude: pos.latitude,
+          p_longitude: pos.longitude,
+          p_precisao_metros: pos.precisaoMetros ?? undefined,
+        });
+        const reg = r as any;
+        const { linkMapa, textoDistancia } = await import("@/lib/checkin.functions");
+        if (reg?.local_nome) {
+          linhas.push(`📍 ${reg.dentro ? "No local" : "FORA do local"}: ${reg.local_nome} (${textoDistancia(reg.distancia_metros)})`);
+        } else {
+          linhas.push("📍 Localização registrada (nenhum local de plantão cadastrado)");
+        }
+        linhas.push(`Mapa: ${linkMapa(pos.latitude, pos.longitude)}`);
+      } else {
+        linhas.push("📍 Localização: não informada");
+      }
       await sendWhatsAppNotification(numero, linhas.join("\n"));
       return { ok: true };
     } catch (e) {

@@ -2,13 +2,14 @@ import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Building2, LayoutDashboard, Users, UserCog, Upload, Clock, Layers, LogOut, Bell, Grid3x3, ShieldCheck, FileText, NotebookPen, Plug } from "lucide-react";
+import { Building2, LayoutDashboard, Users, UserCog, Upload, Clock, Layers, LogOut, Bell, Grid3x3, ShieldCheck, FileText, NotebookPen, Plug, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { meuPerfil } from "@/lib/perfis.functions";
 import { heartbeatCorretor } from "@/lib/corretores.functions";
 import { listarNotificacoes, notificarLoginMonitor } from "@/lib/notificacoes.functions";
 import { getConfigAcesso } from "@/lib/config-acesso.functions";
 import { listarEmpresasContexto, trocarEmpresaContexto } from "@/lib/empresa-contexto.functions";
+import { useGeolocalizacao } from "@/hooks/use-geolocalizacao";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { User } from "@supabase/supabase-js";
@@ -19,6 +20,7 @@ const NAV_CORRETOR = [
   { to: "/espelho", label: "Espelho", icon: Grid3x3 },
   { to: "/propostas", label: "Propostas", icon: FileText },
   { to: "/notas", label: "Notas", icon: NotebookPen },
+  { to: "/checkin", label: "Check-in", icon: MapPin },
 ] as const;
 
 const NAV_ADMIN = [
@@ -30,6 +32,7 @@ const NAV_ADMIN = [
   { to: "/importar", label: "Importar", icon: Upload },
   { to: "/corretores", label: "Corretores", icon: UserCog },
   { to: "/horarios", label: "Horários", icon: Clock },
+  { to: "/checkin", label: "Check-in", icon: MapPin },
 ] as const;
 
 
@@ -111,13 +114,20 @@ export function AppShell({ user, children }: { user: User; children: React.React
 
   // Notifica o monitor (WhatsApp) uma vez por sessão de login
   const notifLogin = useServerFn(notificarLoginMonitor);
+  const { obter: obterPosicao } = useGeolocalizacao({ timeoutMs: 8000, idadeMaximaMs: 60_000 });
   useEffect(() => {
     if (!perfil) return;
     try {
       const key = `login_notified:${user.id}`;
       if (sessionStorage.getItem(key)) return;
       sessionStorage.setItem(key, "1");
-      notifLogin().catch(() => {});
+      // Tenta anexar a localização ao aviso de login, sem travar nada: se o aparelho
+      // negar ou demorar, o aviso sai normalmente sem localização.
+      obterPosicao()
+        .then((p) => ({ posicao: { latitude: p.latitude, longitude: p.longitude, precisaoMetros: p.precisaoMetros } }))
+        .catch(() => ({ posicao: null }))
+        .then((payload) => notifLogin({ data: payload }))
+        .catch(() => {});
     } catch { /* sessionStorage indisponível */ }
   }, [perfil?.id]);
 
@@ -292,7 +302,7 @@ export function AppShell({ user, children }: { user: User; children: React.React
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 backdrop-blur md:hidden">
-        <div className="grid grid-cols-8">
+        <div className="grid" style={{ gridTemplateColumns: `repeat(${nav.length}, minmax(0, 1fr))` }}>
           {nav.map((n) => {
             const Icon = n.icon;
             const active = pathname === n.to || pathname.startsWith(n.to + "/");

@@ -601,6 +601,116 @@ export type Database = {
           },
         ]
       }
+      checkins: {
+        Row: {
+          corretor_id: string | null
+          created_at: string
+          dentro_do_raio: boolean | null
+          distancia_metros: number | null
+          empresa_id: string
+          grupo_id: string | null
+          id: string
+          latitude: number
+          local_id: string | null
+          local_nome: string | null
+          longitude: number
+          precisao_metros: number | null
+          tipo: string
+          usuario_id: string
+          usuario_nome: string | null
+        }
+        Insert: {
+          corretor_id?: string | null
+          created_at?: string
+          dentro_do_raio?: boolean | null
+          distancia_metros?: number | null
+          empresa_id: string
+          grupo_id?: string | null
+          id?: string
+          latitude: number
+          local_id?: string | null
+          local_nome?: string | null
+          longitude: number
+          precisao_metros?: number | null
+          tipo: string
+          usuario_id: string
+          usuario_nome?: string | null
+        }
+        Update: {
+          corretor_id?: string | null
+          created_at?: string
+          dentro_do_raio?: boolean | null
+          distancia_metros?: number | null
+          empresa_id?: string
+          grupo_id?: string | null
+          id?: string
+          latitude?: number
+          local_id?: string | null
+          local_nome?: string | null
+          longitude?: number
+          precisao_metros?: number | null
+          tipo?: string
+          usuario_id?: string
+          usuario_nome?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkins_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkins_local_id_fkey"
+            columns: ["local_id"]
+            isOneToOne: false
+            referencedRelation: "locais_checkin"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      locais_checkin: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          empresa_id: string
+          id: string
+          latitude: number
+          longitude: number
+          nome: string
+          raio_metros: number
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          empresa_id?: string
+          id?: string
+          latitude: number
+          longitude: number
+          nome: string
+          raio_metros?: number
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          empresa_id?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+          nome?: string
+          raio_metros?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "locais_checkin_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_historico: {
         Row: {
           created_at: string
@@ -1331,6 +1441,15 @@ export type Database = {
         Returns: undefined
       }
       reatribuir_leads_sem_visualizacao: { Args: never; Returns: undefined }
+      registrar_checkin: {
+        Args: {
+          p_latitude: number
+          p_longitude: number
+          p_precisao_metros?: number
+          p_tipo: string
+        }
+        Returns: Json
+      }
       registrar_login_corretor: { Args: never; Returns: undefined }
       reservar_unidade: {
         Args: {

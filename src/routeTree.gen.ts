@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CadastroEmpresaRouteImport } from './routes/cadastro-empresa'
 import { Route as SetPasswordRouteImport } from './routes/set-password'
 import { Route as AuthenticatedAcessoRouteImport } from './routes/_authenticated/acesso'
+import { Route as AuthenticatedCheckinRouteImport } from './routes/_authenticated/checkin'
 import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedEmpresasRouteImport } from './routes/_authenticated/empresas'
@@ -62,6 +63,11 @@ const SetPasswordRoute = SetPasswordRouteImport.update({
 const AuthenticatedAcessoRoute = AuthenticatedAcessoRouteImport.update({
   id: '/acesso',
   path: '/acesso',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCheckinRoute = AuthenticatedCheckinRouteImport.update({
+  id: '/checkin',
+  path: '/checkin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCorretoresRoute = AuthenticatedCorretoresRouteImport.update({
@@ -170,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/cadastro-empresa': typeof CadastroEmpresaRoute
   '/set-password': typeof SetPasswordRoute
   '/acesso': typeof AuthenticatedAcessoRoute
+  '/checkin': typeof AuthenticatedCheckinRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/empresas': typeof AuthenticatedEmpresasRoute
@@ -196,6 +203,7 @@ export interface FileRoutesByTo {
   '/cadastro-empresa': typeof CadastroEmpresaRoute
   '/set-password': typeof SetPasswordRoute
   '/acesso': typeof AuthenticatedAcessoRoute
+  '/checkin': typeof AuthenticatedCheckinRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/empresas': typeof AuthenticatedEmpresasRoute
@@ -224,6 +232,7 @@ export interface FileRoutesById {
   '/cadastro-empresa': typeof CadastroEmpresaRoute
   '/set-password': typeof SetPasswordRoute
   '/_authenticated/acesso': typeof AuthenticatedAcessoRoute
+  '/_authenticated/checkin': typeof AuthenticatedCheckinRoute
   '/_authenticated/corretores': typeof AuthenticatedCorretoresRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/empresas': typeof AuthenticatedEmpresasRoute
@@ -252,6 +261,7 @@ export interface FileRouteTypes {
     | '/cadastro-empresa'
     | '/set-password'
     | '/acesso'
+    | '/checkin'
     | '/corretores'
     | '/dashboard'
     | '/empresas'
@@ -278,6 +288,7 @@ export interface FileRouteTypes {
     | '/cadastro-empresa'
     | '/set-password'
     | '/acesso'
+    | '/checkin'
     | '/corretores'
     | '/dashboard'
     | '/empresas'
@@ -305,6 +316,7 @@ export interface FileRouteTypes {
     | '/cadastro-empresa'
     | '/set-password'
     | '/_authenticated/acesso'
+    | '/_authenticated/checkin'
     | '/_authenticated/corretores'
     | '/_authenticated/dashboard'
     | '/_authenticated/empresas'
@@ -383,6 +395,13 @@ declare module '@tanstack/react-router' {
       path: '/acesso'
       fullPath: '/acesso'
       preLoaderRoute: typeof AuthenticatedAcessoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/checkin': {
+      id: '/_authenticated/checkin'
+      path: '/checkin'
+      fullPath: '/checkin'
+      preLoaderRoute: typeof AuthenticatedCheckinRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/corretores': {
@@ -523,6 +542,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAcessoRoute: typeof AuthenticatedAcessoRoute
+  AuthenticatedCheckinRoute: typeof AuthenticatedCheckinRoute
   AuthenticatedCorretoresRoute: typeof AuthenticatedCorretoresRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEmpresasRoute: typeof AuthenticatedEmpresasRoute
@@ -539,6 +559,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAcessoRoute: AuthenticatedAcessoRoute,
+  AuthenticatedCheckinRoute: AuthenticatedCheckinRoute,
   AuthenticatedCorretoresRoute: AuthenticatedCorretoresRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEmpresasRoute: AuthenticatedEmpresasRoute,
