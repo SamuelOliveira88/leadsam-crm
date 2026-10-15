@@ -2,9 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Check, Copy, KeyRound, ShieldAlert } from "lucide-react";
+import { Check, Copy, KeyRound, MessageCircle, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { meuPerfil } from "@/lib/perfis.functions";
+import { enviarAvisoTeste, reenviarAviso, statusEntregas } from "@/lib/entregas.functions";
 import { criarToken, definirTokenAtivo, listarTokens } from "@/lib/webhook-tokens.functions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -179,6 +180,8 @@ function Tokens() {
         )}
       </Card>
 
+      <EntregasCard />
+
       <AlertDialog open={!!desativar} onOpenChange={(o) => { if (!o) setDesativar(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -198,5 +201,91 @@ function Tokens() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+function EntregasCard() {
+  const qc = useQueryClient();
+  const statusFn = useServerFn(statusEntregas);
+  const reenviarFn = useServerFn(reenviarAviso);
+  const testeFn = useServerFn(enviarAvisoTeste);
+  const [telefone, setTelefone] = useState("");
+
+  const { data, isLoading, refetch, isFetching } = useQuery({
+    queryKey: ["entregas"],
+    queryFn: () => statusFn(),
+    refetchInterval: 30_000,
+  });
+
+  const reenviar = useMutation({
+    mutationFn: (id: string) => reenviarFn({ data: { id } }),
+    onSuccess: () => { toast.success("Aviso recolocado na fila. Sai em até 1 minuto."); qc.invalidateQueries({ queryKey: ["entregas"] }); },
+    onError: (e: any) => toast.error(e?.message ?? "Não foi possível reenviar."),
+  });
+  const teste = useMutation({
+    mutationFn: () => testeFn({ data: { telefone } }),
+    onSuccess: () => toast.success("Teste enviado. Confira o WhatsApp."),
+    onError: (e: any) => toast.error(e?.message ?? "Não foi possível enviar o teste."),
+  });
+
+  const zap = data?.whatsapp;
+  const corZap = zap?.estado === "conectado" ? "bg-emerald-600 text-white" : zap?.estado === "desconectado" ? "bg-destructive text-white" : "bg-amber-500 text-white";
+  const textoZap = zap?.estado === "conectado" ? "WhatsApp conectado" : zap?.estado === "desconectado" ? "WhatsApp desconectado" : "Sem resposta do WhatsApp";
+
+  return (
+    <Card className="space-y-4 p-5">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-2 text-sm font-semibold"><MessageCircle className="size-4" /> Avisos de lead no WhatsApp</div>
+        {zap && <Badge className={corZap}>{textoZap}</Badge>}
+        <Button type="button" variant="ghost" size="sm" className="ml-auto" onClick={() => refetch()} disabled={isFetching}>
+          {isFetching ? "Atualizando…" : "Atualizar"}
+        </Button>
+      </div>
+      {zap?.detalhe && zap.estado !== "conectado" && <p className="text-xs text-destructive">{zap.detalhe}</p>}
+      <p className="text-xs text-muted-foreground">
+        Quando o envio falha, o sistema tenta de novo sozinho (até 6 vezes, em cerca de 40 minutos). Avisos pausados ou fora do horário esperam até 12 horas.
+      </p>
+
+      {isLoading ? (
+        <div className="text-sm text-muted-foreground">Carregando…</div>
+      ) : (
+        <div className="grid grid-cols-3 gap-3 text-center">
+          <div className="rounded-lg border p-3"><div className="text-xl font-bold text-emerald-600">{data?.enviados ?? 0}</div><div className="text-xs text-muted-foreground">Enviados (7 dias)</div></div>
+          <div className="rounded-lg border p-3"><div className="text-xl font-bold text-amber-600">{data?.aguardando ?? 0}</div><div className="text-xs text-muted-foreground">Na fila</div></div>
+          <div className="rounded-lg border p-3"><div className="text-xl font-bold text-destructive">{data?.comProblema ?? 0}</div><div className="text-xs text-muted-foreground">Com problema</div></div>
+        </div>
+      )}
+
+      {(data?.problemas.length ?? 0) > 0 && (
+        <ul className="divide-y rounded-lg border">
+          {data!.problemas.map((p) => (
+            <li key={p.id} className="flex flex-wrap items-center gap-3 px-3 py-2 text-sm">
+              <div className="min-w-0 flex-1">
+                <div className="truncate font-medium">{p.lead} <span className="font-normal text-muted-foreground">→ {p.corretor}</span></div>
+                <div className="truncate text-xs text-muted-foreground">
+                  {p.status === "expirado" ? "Expirou (mais de 12 h)" : "Falhou"}{p.erro ? ` — ${p.erro}` : ""}
+                </div>
+              </div>
+              <Button type="button" size="sm" variant="outline" disabled={reenviar.isPending} onClick={() => reenviar.mutate(p.id)}>
+                Reenviar
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <form
+        className="flex flex-col gap-2 border-t pt-4 sm:flex-row sm:items-end"
+        onSubmit={(e) => { e.preventDefault(); if (telefone.replace(/\D/g, "").length >= 10) teste.mutate(); }}
+      >
+        <div className="flex-1">
+          <Label htmlFor="tel-teste">Enviar um aviso de teste para</Label>
+          <Input id="tel-teste" inputMode="tel" value={telefone} onChange={(e) => setTelefone(e.target.value)} placeholder="(11) 99999-9999" />
+        </div>
+        <Button type="submit" variant="outline" disabled={teste.isPending || telefone.replace(/\D/g, "").length < 10}>
+          {teste.isPending ? "Enviando…" : "Enviar teste"}
+        </Button>
+      </form>
+    </Card>
   );
 }

@@ -1,4 +1,5 @@
 // Evolution API helper — server-only.
+import { decidirAposFalha, type MotivoFalha } from "@/lib/fila-notificacao";
 // Envia mensagens de WhatsApp via instância Evolution configurada em secrets.
 
 function normalizePhone(raw: string): string {
@@ -25,7 +26,11 @@ export async function notificacoesPausadas(supabaseClient: any): Promise<boolean
 }
 
 
-export async function sendWhatsAppText(numero: string, mensagem: string, instanceName?: string): Promise<{ ok: boolean; error?: string }> {
+export async function sendWhatsAppText(
+  numero: string,
+  mensagem: string,
+  instanceName?: string,
+): Promise<{ ok: boolean; error?: string; permanente?: boolean }> {
   const url = process.env.EVOLUTION_API_URL;
   const key = process.env.EVOLUTION_API_KEY;
   const instance = instanceName || process.env.EVOLUTION_INSTANCE;
@@ -42,7 +47,9 @@ export async function sendWhatsAppText(numero: string, mensagem: string, instanc
     });
     if (!res.ok) {
       const txt = await res.text().catch(() => "");
-      return { ok: false, error: `Evolution ${res.status}: ${txt.slice(0, 200)}` };
+      // 400 com "exists":false = o número não tem WhatsApp. Repetir não adianta.
+      const permanente = res.status === 400 && /"exists"\s*:\s*false/.test(txt);
+      return { ok: false, error: `Evolution ${res.status}: ${txt.slice(0, 200)}`, permanente };
     }
     return { ok: true };
   } catch (e: any) {
@@ -51,7 +58,10 @@ export async function sendWhatsAppText(numero: string, mensagem: string, instanc
 }
 
 // Notificações do Alexandria devem sair pelo número 5511932368278 (instância sara-vendedora).
-export async function sendWhatsAppNotification(numero: string, mensagem: string): Promise<{ ok: boolean; error?: string }> {
+export async function sendWhatsAppNotification(
+  numero: string,
+  mensagem: string,
+): Promise<{ ok: boolean; error?: string; permanente?: boolean }> {
   return sendWhatsAppText(numero, mensagem, process.env.EVOLUTION_INSTANCE_NOTIF);
 }
 
@@ -103,26 +113,26 @@ export async function notificarMonitor(
 export async function notificarCorretorPorLead(
   supabaseClient: any,
   leadId: string,
-): Promise<{ ok: boolean; error?: string }> {
+): Promise<{ ok: boolean; error?: string; motivo?: MotivoFalha }> {
   const { data: lead, error } = await supabaseClient
     .from("leads")
     .select("id, nome, telefone, email, corretor_id, grupo_id")
     .eq("id", leadId)
     .maybeSingle();
 
-  if (error) return { ok: false, error: error.message };
-  if (!lead) return { ok: false, error: "Lead não encontrado" };
-  if (!lead.corretor_id) return { ok: false, error: "Lead sem corretor" };
+  if (error) return { ok: false, error: error.message, motivo: "tentar_de_novo" };
+  if (!lead) return { ok: false, error: "Lead não encontrado", motivo: "definitivo" };
+  if (!lead.corretor_id) return { ok: false, error: "Lead sem corretor", motivo: "definitivo" };
 
   if (await notificacoesPausadas(supabaseClient)) {
-    return { ok: false, error: "Notificações pausadas" };
+    return { ok: false, error: "Notificações pausadas", motivo: "adiar" };
   }
 
   // Só notifica dentro do horário de atendimento do grupo do lead
   if (lead.grupo_id) {
     const { data: dentro } = await supabaseClient.rpc("dentro_do_horario", { p_grupo_id: lead.grupo_id });
     if (dentro === false) {
-      return { ok: false, error: "Fora do horário de atendimento" };
+      return { ok: false, error: "Fora do horário de atendimento", motivo: "adiar" };
     }
   }
 
@@ -134,11 +144,11 @@ export async function notificarCorretorPorLead(
     .eq("id", lead.corretor_id)
     .maybeSingle();
 
-  if (corretorError) return { ok: false, error: corretorError.message };
-  if (!corretor?.telefone) return { ok: false, error: "Corretor sem telefone cadastrado" };
+  if (corretorError) return { ok: false, error: corretorError.message, motivo: "tentar_de_novo" };
+  if (!corretor?.telefone) return { ok: false, error: "Corretor sem telefone cadastrado", motivo: "definitivo" };
 
   const result = await sendWhatsAppNotification(corretor.telefone, mensagemNovoLead(lead));
-  if (!result.ok) return result;
+  if (!result.ok) return { ok: false, error: result.error, motivo: result.permanente ? "definitivo" : "tentar_de_novo" };
 
   await supabaseClient
     .from("fila_notificacoes")
@@ -203,22 +213,37 @@ export async function notificarCorretorLeadRepetido(
 export async function processarNotificacoesWhatsAppPendentes(
   supabaseClient: any,
   limit = 20,
-): Promise<{ enviados: number; falhas: Array<{ id: string; motivo: string }> }> {
+): Promise<{ enviados: number; adiados: number; repetir: number; falhas: Array<{ id: string; motivo: string }> }> {
+  const agora = new Date();
   const { data: pendentes, error } = await supabaseClient
     .from("fila_notificacoes")
-    .select("id, lead_id, corretor_id")
+    .select("id, lead_id, corretor_id, tentativas, created_at")
     .eq("tipo", "whatsapp")
     .eq("status", "pendente")
+    .lte("proxima_tentativa", agora.toISOString())
     .order("created_at", { ascending: true })
     .limit(limit);
 
   if (error) throw new Error(error.message);
 
   let enviados = 0;
+  let adiados = 0;
+  let repetir = 0;
   const falhas: Array<{ id: string; motivo: string }> = [];
   const leadsProcessados = new Set<string>();
 
   for (const item of pendentes ?? []) {
+    // Reserva a linha por 3 min: se outra execução da fila estiver rodando ao mesmo tempo,
+    // só uma delas envia (evita aviso em dobro).
+    const { data: reservada } = await supabaseClient
+      .from("fila_notificacoes")
+      .update({ proxima_tentativa: new Date(Date.now() + 3 * 60_000).toISOString() })
+      .eq("id", item.id)
+      .eq("status", "pendente")
+      .lte("proxima_tentativa", agora.toISOString())
+      .select("id");
+    if (!reservada?.length) continue;
+
     // Duplicatas do mesmo lead nesta rodada: descarta a linha para não travar a fila.
     if (leadsProcessados.has(item.lead_id)) {
       await supabaseClient
@@ -230,24 +255,42 @@ export async function processarNotificacoesWhatsAppPendentes(
     leadsProcessados.add(item.lead_id);
 
     const result = await notificarCorretorPorLead(supabaseClient, item.lead_id);
+
     if (result.ok) {
       enviados++;
-    } else {
-      falhas.push({ id: item.id, motivo: result.error ?? "Falha ao enviar" });
+      await supabaseClient
+        .from("fila_notificacoes")
+        .update({ status: "enviado", enviado_em: new Date().toISOString(), ultimo_erro: null })
+        .eq("id", item.id);
+      continue;
     }
 
-    // Sempre resolve ESTA linha, mesmo que o corretor do lead tenha mudado —
-    // caso contrário a mesma linha volta para sempre e trava a fila.
+    // Falhou: decide entre esperar (pausa/fora do horário), repetir daqui a pouco ou desistir.
+    const d = decidirAposFalha({
+      motivo: result.motivo ?? "tentar_de_novo",
+      erro: result.error ?? "Falha ao enviar",
+      tentativas: item.tentativas ?? 0,
+      criadoEm: new Date(item.created_at),
+      agora: new Date(),
+    });
+    if (d.status === "pendente") {
+      if (result.motivo === "adiar") adiados++;
+      else repetir++;
+    } else {
+      falhas.push({ id: item.id, motivo: d.erro ?? "Falha ao enviar" });
+    }
     await supabaseClient
       .from("fila_notificacoes")
       .update({
-        status: result.ok ? "enviado" : "erro",
-        enviado_em: new Date().toISOString(),
+        status: d.status,
+        tentativas: d.tentativas,
+        proxima_tentativa: d.proxima.toISOString(),
+        ultimo_erro: d.erro,
+        ...(d.status === "pendente" ? {} : { enviado_em: new Date().toISOString() }),
       })
       .eq("id", item.id)
       .eq("status", "pendente");
   }
 
-  return { enviados, falhas };
+  return { enviados, adiados, repetir, falhas };
 }
-

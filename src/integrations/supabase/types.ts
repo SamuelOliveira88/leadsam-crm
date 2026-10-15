@@ -461,8 +461,11 @@ export type Database = {
           enviado_em: string | null
           id: string
           lead_id: string | null
+          proxima_tentativa: string
           status: string
+          tentativas: number
           tipo: string | null
+          ultimo_erro: string | null
         }
         Insert: {
           corretor_id?: string | null
@@ -471,8 +474,11 @@ export type Database = {
           enviado_em?: string | null
           id?: string
           lead_id?: string | null
+          proxima_tentativa?: string
           status?: string
+          tentativas?: number
           tipo?: string | null
+          ultimo_erro?: string | null
         }
         Update: {
           corretor_id?: string | null
@@ -481,8 +487,11 @@ export type Database = {
           enviado_em?: string | null
           id?: string
           lead_id?: string | null
+          proxima_tentativa?: string
           status?: string
+          tentativas?: number
           tipo?: string | null
+          ultimo_erro?: string | null
         }
         Relationships: [
           {
