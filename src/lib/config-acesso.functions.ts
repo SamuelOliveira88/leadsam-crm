@@ -19,7 +19,7 @@ export const getConfigAcesso = createServerFn({ method: "GET" })
       .eq("empresa_id", empresa_id)
       .maybeSingle();
     if (error) throw error;
-    return data ?? { restringir_horario: true, hora_inicio: "08:00:00", hora_fim: "09:30:00", liberado_ate: null };
+    return data ?? { restringir_horario: false, hora_inicio: "08:00:00", hora_fim: "09:30:00", liberado_ate: null };
   });
 
 export const salvarConfigAcesso = createServerFn({ method: "POST" })
