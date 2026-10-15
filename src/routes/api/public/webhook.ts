@@ -30,6 +30,8 @@ export const Route = createFileRoute("/api/public/webhook")({
           const token = tokenDoCabecalho(request);
           const acesso = await resolverEmpresaPorToken(supabaseAdmin, token, ["samuelimob", "webhook", "landing", "notificacoes"]);
           if (!acesso) return json({ error: "unauthorized" }, 401);
+          const { empresaLiberada, RESPOSTA_TESTE_ENCERRADO } = await import("@/lib/empresa-token.server");
+          if (!(await empresaLiberada(supabaseAdmin, acesso.empresa_id))) return json(RESPOSTA_TESTE_ENCERRADO, 403);
           const origemToken = acesso.origem;
 
 
