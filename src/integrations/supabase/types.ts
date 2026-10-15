@@ -601,6 +601,54 @@ export type Database = {
           },
         ]
       }
+      lead_historico: {
+        Row: {
+          created_at: string
+          empresa_id: string | null
+          etapa_anterior: string | null
+          etapa_nova: string
+          id: string
+          lead_id: string
+          usuario_id: string | null
+          usuario_nome: string | null
+        }
+        Insert: {
+          created_at?: string
+          empresa_id?: string | null
+          etapa_anterior?: string | null
+          etapa_nova: string
+          id?: string
+          lead_id: string
+          usuario_id?: string | null
+          usuario_nome?: string | null
+        }
+        Update: {
+          created_at?: string
+          empresa_id?: string | null
+          etapa_anterior?: string | null
+          etapa_nova?: string
+          id?: string
+          lead_id?: string
+          usuario_id?: string | null
+          usuario_nome?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_historico_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_historico_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_notas: {
         Row: {
           autor_id: string | null
@@ -657,7 +705,7 @@ export type Database = {
           email: string | null
           empreendimento_interesse: string | null
           empresa_id: string | null
-          etapa_funil: string | null
+          etapa_funil: string
           fonte: string | null
           grupo_id: string | null
           id: string

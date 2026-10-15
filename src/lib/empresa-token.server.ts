@@ -9,6 +9,29 @@ export async function sha256Hex(texto: string) {
 
 export type TokenEmpresa = { empresa_id: string; origem: string };
 
+/** Comparação em tempo constante (evita descobrir o token pelo tempo de resposta). */
+export function iguaisSeguro(a: string, b: string): boolean {
+  const ea = new TextEncoder().encode(a);
+  const eb = new TextEncoder().encode(b);
+  let diff = ea.length ^ eb.length;
+  const n = Math.max(ea.length, eb.length);
+  for (let i = 0; i < n; i++) diff |= (ea[i] ?? 0) ^ (eb[i] ?? 0);
+  return diff === 0;
+}
+
+/** O token só é aceito no cabeçalho x-webhook-token (nunca na URL). */
+export function tokenDoCabecalho(request: Request): string | null {
+  const t = request.headers.get("x-webhook-token");
+  return t && t.trim() ? t.trim() : null;
+}
+
+/** Gera um token novo (mostrado só uma vez) e o hash que vai para o banco. */
+export async function gerarTokenWebhook(): Promise<{ token: string; hash: string }> {
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  const token = "wh_" + Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return { token, hash: await sha256Hex(token) };
+}
+
 /** legado: lista de [env, origem, empresa] mantida enquanto os tokens antigos existirem. */
 async function legados(db: any): Promise<Array<{ token?: string; origem: string; empresa_id: string }>> {
   const { data: lavile } = await db.from("empresas").select("id").eq("nome", EMPRESA_EQUIPE_LAVILE_NOME).maybeSingle();
@@ -33,7 +56,7 @@ export async function resolverEmpresaPorToken(db: any, token: string | null | un
   const { data } = await db.from("webhook_tokens").select("empresa_id, nome").eq("token_hash", hash).eq("ativo", true).maybeSingle();
   if (data?.empresa_id) return { empresa_id: data.empresa_id, origem: "webhook" };
   for (const l of await legados(db)) {
-    if (l.token && l.token === token && (!usos || usos.includes(l.origem))) return { empresa_id: l.empresa_id, origem: l.origem };
+    if (l.token && iguaisSeguro(l.token, token) && (!usos || usos.includes(l.origem))) return { empresa_id: l.empresa_id, origem: l.origem };
   }
   return null;
 }

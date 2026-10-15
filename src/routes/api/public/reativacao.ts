@@ -4,18 +4,20 @@ import { z } from "zod";
 const cors = {
   "Content-Type": "application/json",
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "content-type, x-api-key",
+  "Access-Control-Allow-Headers": "content-type, x-api-key, x-webhook-token, authorization",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: cors });
 
-function tokenDaRequisicao(request: Request, url: URL) {
+// Token só em cabeçalho (nunca na URL). Mantém x-api-key e Bearer por compatibilidade.
+function tokenDaRequisicao(request: Request, _url: URL) {
   return (
+    request.headers.get("x-webhook-token") ||
     request.headers.get("x-api-key") ||
     (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "") ||
-    url.searchParams.get("key")
+    null
   );
 }
 

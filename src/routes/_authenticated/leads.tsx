@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Trash2, X, Search, Sparkles, MessageCircle, Eye, Download, ArrowRightLeft, Zap, RotateCcw, Plus, Pencil } from "lucide-react";
+import { Trash2, X, Search, Sparkles, MessageCircle, Eye, Download, ArrowRightLeft, Zap, RotateCcw, Plus, Pencil, LayoutList, Columns3 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { listarLeads, excluirLead, exportarLeads, transferirLead, transferirLeadParaOnline, descartarLead, criarLeadManual, atualizarLead } from "@/lib/leads.functions";
 import { listarCorretores } from "@/lib/corretores.functions";
@@ -17,6 +17,10 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { LeadsKanban } from "@/components/LeadsKanban";
+import { LeadEtapaPanel } from "@/components/LeadEtapaPanel";
+import { COR_ETAPA, ehEtapaFunil, type EtapaFunil } from "@/lib/funil";
+import { cn } from "@/lib/utils";
 
 
 export const Route = createFileRoute("/_authenticated/leads")({
@@ -78,6 +82,16 @@ function Leads() {
   const [novoAberto, setNovoAberto] = useState(false);
   const [filtroContato, setFiltroContato] = useState<"todos" | "contatados" | "nao">("todos");
   const [busca, setBusca] = useState("");
+  const [visao, setVisao] = useState<"lista" | "quadro">("lista");
+  useEffect(() => {
+    try {
+      if (localStorage.getItem("leads_visao") === "quadro") setVisao("quadro");
+    } catch { /* sem localStorage */ }
+  }, []);
+  function trocarVisao(v: "lista" | "quadro") {
+    setVisao(v);
+    try { localStorage.setItem("leads_visao", v); } catch { /* sem localStorage */ }
+  }
 
   const soDigitos = (s: string | null | undefined) => (s ?? "").replace(/\D/g, "");
   const bateBusca = (l: any) => {
@@ -90,7 +104,7 @@ function Leads() {
     return (l.nome ?? "").toLowerCase().includes(busca.trim().toLowerCase());
   };
   const leadsFiltrados = (data ?? []).filter((l: any) =>
-    (filtroContato === "todos" ? true : filtroContato === "contatados" ? l.etapa_funil === "Já contatado" : l.etapa_funil !== "Já contatado") && bateBusca(l),
+    (filtroContato === "todos" ? true : filtroContato === "contatados" ? (l.etapa_funil ?? "Novo") !== "Novo" : (l.etapa_funil ?? "Novo") === "Novo") && bateBusca(l),
   );
 
   return (
@@ -116,9 +130,17 @@ function Leads() {
       {isLoading && <div className="text-sm text-muted-foreground">Carregando…</div>}
 
       <div className="flex flex-wrap items-center gap-2">
-        {([["todos", "Todos"], ["contatados", "✓ Já contatados"], ["nao", "Ainda não contatados"]] as const).map(([k, t]) => (
+        <div className="flex rounded-md border p-0.5">
+          <Button size="sm" variant={visao === "lista" ? "default" : "ghost"} onClick={() => trocarVisao("lista")}>
+            <LayoutList className="mr-1 size-4" /> Lista
+          </Button>
+          <Button size="sm" variant={visao === "quadro" ? "default" : "ghost"} onClick={() => trocarVisao("quadro")}>
+            <Columns3 className="mr-1 size-4" /> Quadro
+          </Button>
+        </div>
+        {visao === "lista" && ([["todos", "Todos"], ["contatados", "✓ Já contatados"], ["nao", "Ainda não contatados"]] as const).map(([k, t]) => (
           <Button key={k} size="sm" variant={filtroContato === k ? "default" : "outline"} onClick={() => setFiltroContato(k)}>
-            {t} ({(data ?? []).filter((l: any) => k === "todos" ? true : k === "contatados" ? l.etapa_funil === "Já contatado" : l.etapa_funil !== "Já contatado").length})
+            {t} ({(data ?? []).filter((l: any) => k === "todos" ? true : k === "contatados" ? (l.etapa_funil ?? "Novo") !== "Novo" : (l.etapa_funil ?? "Novo") === "Novo").length})
           </Button>
         ))}
         <div className="relative min-w-[220px] flex-1 sm:max-w-xs">
@@ -143,7 +165,11 @@ function Leads() {
         </div>
       </div>
 
-      <div className="grid gap-3">
+      {visao === "quadro" && !isLoading && (
+        <LeadsKanban leads={(data ?? []).filter((l: any) => bateBusca(l))} aoAbrir={(l) => setOpenLead(l)} />
+      )}
+
+      <div className={cn("grid gap-3", visao === "quadro" && "hidden")}>
         {leadsFiltrados.map((l: any) => (
           <Card
             key={l.id}
@@ -154,9 +180,9 @@ function Leads() {
               <div className="flex items-center gap-2">
                 <div className="truncate font-semibold">{l.nome}</div>
                 <Badge variant={l.status === "represado" ? "secondary" : "default"}>{l.status}</Badge>
-                {l.etapa_funil === "Já contatado" ? (
-                  <Badge className="border-transparent bg-emerald-600 text-white">✓ Já contatado</Badge>
-                ) : l.etapa_funil ? <Badge variant="outline">{l.etapa_funil}</Badge> : null}
+                {ehEtapaFunil(l.etapa_funil) && l.etapa_funil !== "Novo" ? (
+                  <Badge className={cn("border-transparent text-white", COR_ETAPA[l.etapa_funil as EtapaFunil])}>{l.etapa_funil}</Badge>
+                ) : <Badge variant="outline">Novo</Badge>}
                 {!l.visualizado_em && l.corretor_id && (
                   <Badge variant="outline" className="border-orange-400 text-orange-600">novo</Badge>
                 )}
@@ -337,6 +363,8 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
             <div className="whitespace-pre-wrap text-sm">{lead.observacoes}</div>
           </div>
         )}
+
+        <LeadEtapaPanel lead={lead} />
 
         <div className="mb-4 flex flex-wrap gap-2">
           <Button size="sm" onClick={handleGerar} disabled={gerando}>

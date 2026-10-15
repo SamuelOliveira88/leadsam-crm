@@ -17,7 +17,7 @@ export const listarLeads = createServerFn({ method: "GET" })
     for (let inicio = 0; inicio < 20000; inicio += PAG) {
       let q = context.supabase
         .from("leads")
-        .select("id, nome, telefone, email, status, grupo_id, corretor_id, etapa_funil, fonte, cidade, observacoes, visualizado_em, created_at, corretores(nome), grupos(nome)");
+        .select("id, nome, telefone, email, status, grupo_id, corretor_id, etapa_funil, motivo_perda, valor_negociacao, fonte, cidade, observacoes, visualizado_em, created_at, corretores(nome), grupos(nome)");
       if (apenasMeus) q = q.eq("corretor_id", p.corretor_id);
       const { data, error } = await q
         .order("created_at", { ascending: false })
@@ -72,35 +72,56 @@ export const importarLeads = createServerFn({ method: "POST" })
     let sucesso = 0;
     let erros = 0;
     for (const lead of data.leads) {
-      const rpc = data.modo === "rodizio"
-        ? context.supabase.rpc("distribuir_lead_round_robin", {
-            p_nome: lead.nome, p_telefone: lead.telefone ?? "", p_email: lead.email ?? "", p_grupo_id: data.grupo_id,
-          })
-        : context.supabase.rpc("distribuir_lead_direcionado", {
-            p_nome: lead.nome, p_telefone: lead.telefone ?? "", p_email: lead.email ?? "",
-            p_grupo_id: data.grupo_id, p_corretores_ids: data.corretores_ids ?? [],
-          });
-      const { data: corretorId, error } = await rpc;
-      if (error) {
+      let leadId: string | null = null;
+      let corretorId: string | null = null;
+      let erroRpc: { message: string } | null = null;
+
+      if (data.modo === "rodizio") {
+        // distribuir_lead_rr devolve { lead_id, corretor_id }: o aviso usa o id do lead,
+        // sem procurar o lead pelo nome.
+        const { data: r, error } = await context.supabase.rpc("distribuir_lead_rr", {
+          p_nome: lead.nome, p_telefone: lead.telefone ?? "", p_email: lead.email ?? "", p_grupo_id: data.grupo_id,
+        });
+        erroRpc = error;
+        const res = (r ?? {}) as { lead_id?: string | null; corretor_id?: string | null };
+        leadId = res.lead_id ?? null;
+        corretorId = res.corretor_id ?? null;
+      } else {
+        const { data: cid, error } = await context.supabase.rpc("distribuir_lead_direcionado", {
+          p_nome: lead.nome, p_telefone: lead.telefone ?? "", p_email: lead.email ?? "",
+          p_grupo_id: data.grupo_id, p_corretores_ids: data.corretores_ids ?? [],
+        });
+        erroRpc = error;
+        corretorId = (cid as string | null) ?? null;
+      }
+
+      if (erroRpc) {
         erros++;
       } else {
         sucesso++;
         try {
-          const { data: novoLead } = await context.supabase
-            .from("leads")
-            .select("id, corretores(nome), grupos(nome)")
-            .eq("grupo_id", data.grupo_id)
-            .eq("nome", lead.nome)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
+          // Modo direcionado ainda não devolve o id do lead: localiza pelo último com esse nome no grupo.
+          if (!leadId) {
+            const { data: achado } = await context.supabase
+              .from("leads")
+              .select("id")
+              .eq("grupo_id", data.grupo_id)
+              .eq("nome", lead.nome)
+              .order("created_at", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            leadId = achado?.id ?? null;
+          }
+          const { data: novoLead } = leadId
+            ? await context.supabase.from("leads").select("id, corretores(nome), grupos(nome)").eq("id", leadId).maybeSingle()
+            : { data: null };
           const { notificarMonitor } = await import("./evolution.server");
           const grupoNome = (novoLead as any)?.grupos?.nome ?? null;
           const corretorNome = (novoLead as any)?.corretores?.nome ?? null;
-          
-          if (corretorId && novoLead?.id) {
+
+          if (corretorId && leadId) {
             const { notificarCorretorPorLead } = await import("./evolution.server");
-            await notificarCorretorPorLead(context.supabase, novoLead.id);
+            await notificarCorretorPorLead(context.supabase, leadId);
           }
           await notificarMonitor("entrega", { nome: lead.nome, telefone: lead.telefone, email: lead.email, grupo: grupoNome, fonte: "importacao" }, corretorNome);
         } catch (e) {
@@ -385,7 +406,7 @@ export const criarLeadManual = createServerFn({ method: "POST" })
     if (!grupoId) throw new Error("Nenhum grupo disponível na sua empresa");
 
 
-    const { data: corretorId, error } = await context.supabase.rpc("distribuir_lead_round_robin", {
+    const { data: resultado, error } = await context.supabase.rpc("distribuir_lead_rr", {
       p_nome: data.nome,
       p_telefone: data.telefone,
       p_email: "",
@@ -393,27 +414,24 @@ export const criarLeadManual = createServerFn({ method: "POST" })
     });
     if (error) throw new Error(error.message);
 
+    // O RPC devolve o id do lead criado: nada de procurar pelo nome.
+    const { lead_id: leadId, corretor_id: corretorId } = (resultado ?? {}) as { lead_id?: string | null; corretor_id?: string | null };
 
     try {
-      const { data: novoLead } = await context.supabase
-        .from("leads")
-        .select("id, corretores(nome), grupos(nome)")
-        .eq("grupo_id", grupoId as string)
-        .eq("nome", data.nome)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      if (data.privado && novoLead?.id) {
+      if (data.privado && leadId) {
         await context.supabase
           .from("leads")
           .update({ visibilidade: "privado", criado_por: context.userId })
-          .eq("id", novoLead.id);
+          .eq("id", leadId);
       }
+      const { data: novoLead } = leadId
+        ? await context.supabase.from("leads").select("id, corretores(nome), grupos(nome)").eq("id", leadId).maybeSingle()
+        : { data: null };
       const grupoNome = (novoLead as any)?.grupos?.nome ?? null;
       const corretorNome = (novoLead as any)?.corretores?.nome ?? null;
       const { notificarMonitor, notificarCorretorPorLead } = await import("./evolution.server");
-      
-      if (corretorId && novoLead?.id) await notificarCorretorPorLead(context.supabase, novoLead.id);
+
+      if (corretorId && leadId) await notificarCorretorPorLead(context.supabase, leadId);
       await notificarMonitor("entrega", { nome: data.nome, telefone: data.telefone, grupo: grupoNome, fonte: "manual" }, corretorNome);
 
     } catch (e) {

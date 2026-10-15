@@ -23,9 +23,11 @@ export const Route = createFileRoute("/api/public/webhook")({
       POST: async ({ request }) => {
         try {
           const url = new URL(request.url);
-          const token = request.headers.get("x-webhook-token") || url.searchParams.get("token");
+          // O token só vale no cabeçalho x-webhook-token. Token na URL não é mais aceito
+          // (URLs ficam gravadas em logs e históricos).
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-          const { resolverEmpresaPorToken } = await import("@/lib/empresa-token.server");
+          const { resolverEmpresaPorToken, tokenDoCabecalho } = await import("@/lib/empresa-token.server");
+          const token = tokenDoCabecalho(request);
           const acesso = await resolverEmpresaPorToken(supabaseAdmin, token, ["samuelimob", "webhook", "landing", "notificacoes"]);
           if (!acesso) return json({ error: "unauthorized" }, 401);
           const origemToken = acesso.origem;
@@ -94,19 +96,25 @@ export const Route = createFileRoute("/api/public/webhook")({
             return json({ error: "grupo_id não pertence à empresa deste token" }, 403);
           }
 
-          // Deduplicação: mesmo telefone no mesmo grupo nos últimos 10 minutos -> ignora
+          // Deduplicação: mesmo telefone na mesma empresa nos últimos 30 dias não cria outro lead.
+          // Atualiza o existente, registra a entrada nas notas e avisa o corretor que já o atende.
           if (telefone) {
-            const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-            const { data: dup } = await supabaseAdmin
-              .from("leads")
-              .select("id")
-              .eq("grupo_id", grupo_id)
-              .eq("telefone", telefone)
-              .gte("created_at", since)
-              .limit(1)
-              .maybeSingle();
-            if (dup?.id) {
-              return json({ ok: true, deduped: true, lead_id: dup.id });
+            const { buscarLeadDuplicado, registrarReentrada } = await import("@/lib/lead-dedup.server");
+            const existente = await buscarLeadDuplicado(supabaseAdmin, acesso.empresa_id, telefone);
+            if (existente) {
+              await registrarReentrada(supabaseAdmin, existente, acesso.empresa_id, {
+                nome, email, observacoes, fonte: origemToken,
+              });
+              let notificado = false;
+              if (existente.corretor_id) {
+                try {
+                  const { notificarCorretorLeadRepetido } = await import("@/lib/evolution.server");
+                  const envio = await notificarCorretorLeadRepetido(supabaseAdmin, existente.id, observacoes);
+                  notificado = envio.ok;
+                  if (!envio.ok) console.error("[webhook] aviso de lead repetido não enviado:", envio.error);
+                } catch (e) { console.error("[webhook] falha avisando corretor do lead repetido", e); }
+              }
+              return json({ ok: true, deduped: true, lead_id: existente.id, corretor_id: existente.corretor_id, notificado });
             }
           }
 
@@ -142,10 +150,27 @@ export const Route = createFileRoute("/api/public/webhook")({
         }
       },
       GET: async ({ request }) => {
-        // Facebook webhook verification
+        // Verificação do webhook do Facebook: só devolve o challenge se o verify_token conferir.
         const url = new URL(request.url);
+        const mode = url.searchParams.get("hub.mode");
         const challenge = url.searchParams.get("hub.challenge");
-        if (challenge) return new Response(challenge, { headers: CORS });
+        const verifyToken = url.searchParams.get("hub.verify_token");
+
+        if (mode || challenge || verifyToken) {
+          const negado = () => new Response("forbidden", { status: 403, headers: CORS });
+          if (mode !== "subscribe" || !challenge || !verifyToken) return negado();
+
+          const { iguaisSeguro, resolverEmpresaPorToken } = await import("@/lib/empresa-token.server");
+          const esperado = process.env.FACEBOOK_VERIFY_TOKEN;
+          let ok = !!esperado && iguaisSeguro(verifyToken, esperado);
+          if (!ok) {
+            // Também aceita um token ativo da tabela webhook_tokens como verify_token.
+            const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+            ok = !!(await resolverEmpresaPorToken(supabaseAdmin, verifyToken, ["samuelimob", "webhook", "landing", "notificacoes"]));
+          }
+          if (!ok) return negado();
+          return new Response(challenge, { headers: CORS });
+        }
         return new Response("ok", { headers: CORS });
       },
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),

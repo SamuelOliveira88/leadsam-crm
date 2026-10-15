@@ -22,6 +22,7 @@ import { Route as AuthenticatedEspelhoRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedGruposRouteImport } from './routes/_authenticated/grupos'
 import { Route as AuthenticatedHorariosRouteImport } from './routes/_authenticated/horarios'
 import { Route as AuthenticatedImportarRouteImport } from './routes/_authenticated/importar'
+import { Route as AuthenticatedIntegracoesRouteImport } from './routes/_authenticated/integracoes'
 import { Route as AuthenticatedLeadsRouteImport } from './routes/_authenticated/leads'
 import { Route as AuthenticatedNotasRouteImport } from './routes/_authenticated/notas'
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
@@ -98,6 +99,12 @@ const AuthenticatedImportarRoute = AuthenticatedImportarRouteImport.update({
   path: '/importar',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedIntegracoesRoute =
+  AuthenticatedIntegracoesRouteImport.update({
+    id: '/integracoes',
+    path: '/integracoes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLeadsRoute = AuthenticatedLeadsRouteImport.update({
   id: '/leads',
   path: '/leads',
@@ -170,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/grupos': typeof AuthenticatedGruposRoute
   '/horarios': typeof AuthenticatedHorariosRoute
   '/importar': typeof AuthenticatedImportarRoute
+  '/integracoes': typeof AuthenticatedIntegracoesRoute
   '/leads': typeof AuthenticatedLeadsRoute
   '/notas': typeof AuthenticatedNotasRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
@@ -195,6 +203,7 @@ export interface FileRoutesByTo {
   '/grupos': typeof AuthenticatedGruposRoute
   '/horarios': typeof AuthenticatedHorariosRoute
   '/importar': typeof AuthenticatedImportarRoute
+  '/integracoes': typeof AuthenticatedIntegracoesRoute
   '/leads': typeof AuthenticatedLeadsRoute
   '/notas': typeof AuthenticatedNotasRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
@@ -222,6 +231,7 @@ export interface FileRoutesById {
   '/_authenticated/grupos': typeof AuthenticatedGruposRoute
   '/_authenticated/horarios': typeof AuthenticatedHorariosRoute
   '/_authenticated/importar': typeof AuthenticatedImportarRoute
+  '/_authenticated/integracoes': typeof AuthenticatedIntegracoesRoute
   '/_authenticated/leads': typeof AuthenticatedLeadsRoute
   '/_authenticated/notas': typeof AuthenticatedNotasRoute
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
@@ -249,6 +259,7 @@ export interface FileRouteTypes {
     | '/grupos'
     | '/horarios'
     | '/importar'
+    | '/integracoes'
     | '/leads'
     | '/notas'
     | '/notificacoes'
@@ -274,6 +285,7 @@ export interface FileRouteTypes {
     | '/grupos'
     | '/horarios'
     | '/importar'
+    | '/integracoes'
     | '/leads'
     | '/notas'
     | '/notificacoes'
@@ -300,6 +312,7 @@ export interface FileRouteTypes {
     | '/_authenticated/grupos'
     | '/_authenticated/horarios'
     | '/_authenticated/importar'
+    | '/_authenticated/integracoes'
     | '/_authenticated/leads'
     | '/_authenticated/notas'
     | '/_authenticated/notificacoes'
@@ -421,6 +434,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedImportarRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/integracoes': {
+      id: '/_authenticated/integracoes'
+      path: '/integracoes'
+      fullPath: '/integracoes'
+      preLoaderRoute: typeof AuthenticatedIntegracoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/leads': {
       id: '/_authenticated/leads'
       path: '/leads'
@@ -510,6 +530,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGruposRoute: typeof AuthenticatedGruposRoute
   AuthenticatedHorariosRoute: typeof AuthenticatedHorariosRoute
   AuthenticatedImportarRoute: typeof AuthenticatedImportarRoute
+  AuthenticatedIntegracoesRoute: typeof AuthenticatedIntegracoesRoute
   AuthenticatedLeadsRoute: typeof AuthenticatedLeadsRoute
   AuthenticatedNotasRoute: typeof AuthenticatedNotasRoute
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
@@ -525,6 +546,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGruposRoute: AuthenticatedGruposRoute,
   AuthenticatedHorariosRoute: AuthenticatedHorariosRoute,
   AuthenticatedImportarRoute: AuthenticatedImportarRoute,
+  AuthenticatedIntegracoesRoute: AuthenticatedIntegracoesRoute,
   AuthenticatedLeadsRoute: AuthenticatedLeadsRoute,
   AuthenticatedNotasRoute: AuthenticatedNotasRoute,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
