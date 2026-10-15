@@ -151,6 +151,55 @@ export async function notificarCorretorPorLead(
   return { ok: true };
 }
 
+export function mensagemLeadRepetido(lead: { nome: string; telefone?: string | null }, mensagem?: string | null) {
+  const resumo = mensagem ? String(mensagem).trim().slice(0, 300) : "";
+  const linhas = [
+    "🔁 *Cliente voltou a entrar em contato — Alexandria Leds*",
+    `Nome: ${lead.nome}`,
+    lead.telefone ? `Telefone: ${lead.telefone}` : null,
+    resumo ? `Mensagem: ${resumo}` : null,
+    "",
+    "Este cliente já é seu lead. Retome o atendimento agora.",
+  ].filter(Boolean);
+  return linhas.join("\n");
+}
+
+/**
+ * Avisa o corretor que JÁ atende o lead quando o mesmo cliente entra de novo.
+ * Respeita a pausa global e o horário de atendimento, como o aviso de lead novo.
+ */
+export async function notificarCorretorLeadRepetido(
+  supabaseClient: any,
+  leadId: string,
+  mensagem?: string | null,
+): Promise<{ ok: boolean; error?: string }> {
+  const { data: lead, error } = await supabaseClient
+    .from("leads")
+    .select("id, nome, telefone, corretor_id, grupo_id")
+    .eq("id", leadId)
+    .maybeSingle();
+  if (error) return { ok: false, error: error.message };
+  if (!lead) return { ok: false, error: "Lead não encontrado" };
+  if (!lead.corretor_id) return { ok: false, error: "Lead sem corretor" };
+
+  if (await notificacoesPausadas(supabaseClient)) return { ok: false, error: "Notificações pausadas" };
+
+  if (lead.grupo_id) {
+    const { data: dentro } = await supabaseClient.rpc("dentro_do_horario", { p_grupo_id: lead.grupo_id });
+    if (dentro === false) return { ok: false, error: "Fora do horário de atendimento" };
+  }
+
+  const { data: corretor, error: corretorError } = await supabaseClient
+    .from("corretores")
+    .select("id, telefone")
+    .eq("id", lead.corretor_id)
+    .maybeSingle();
+  if (corretorError) return { ok: false, error: corretorError.message };
+  if (!corretor?.telefone) return { ok: false, error: "Corretor sem telefone cadastrado" };
+
+  return sendWhatsAppNotification(corretor.telefone, mensagemLeadRepetido(lead, mensagem));
+}
+
 export async function processarNotificacoesWhatsAppPendentes(
   supabaseClient: any,
   limit = 20,
