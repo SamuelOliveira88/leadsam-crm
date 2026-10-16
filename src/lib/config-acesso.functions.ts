@@ -14,11 +14,21 @@ export const getConfigAcesso = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const empresa_id = await minhaEmpresaId(context);
-    const { data, error } = await context.supabase
+    let { data, error } = await context.supabase
       .from("config_acesso")
       .select("restringir_horario, hora_inicio, hora_fim, liberado_ate, restringir_ip, ips_permitidos, restringir_local")
       .eq("empresa_id", empresa_id)
       .maybeSingle();
+    if (error) {
+      // Colunas novas ainda não existem no banco: continua só com o horário.
+      const velho = await context.supabase
+        .from("config_acesso")
+        .select("restringir_horario, hora_inicio, hora_fim, liberado_ate")
+        .eq("empresa_id", empresa_id)
+        .maybeSingle();
+      data = velho.data ? ({ ...velho.data, restringir_ip: false, ips_permitidos: [], restringir_local: false } as any) : null;
+      error = velho.error;
+    }
     if (error) throw error;
     return data ?? { restringir_horario: false, hora_inicio: "08:00:00", hora_fim: "09:30:00", liberado_ate: null, restringir_ip: false, ips_permitidos: [] as string[], restringir_local: false };
   });
