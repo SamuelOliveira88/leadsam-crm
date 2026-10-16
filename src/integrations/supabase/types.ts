@@ -69,6 +69,9 @@ export type Database = {
           hora_inicio: string
           liberado_ate: string | null
           restringir_horario: boolean
+          restringir_ip: boolean
+          ips_permitidos: string[]
+          restringir_local: boolean
           updated_at: string
         }
         Insert: {
@@ -77,6 +80,9 @@ export type Database = {
           hora_inicio?: string
           liberado_ate?: string | null
           restringir_horario?: boolean
+          restringir_ip?: boolean
+          ips_permitidos?: string[]
+          restringir_local?: boolean
           updated_at?: string
         }
         Update: {
@@ -85,6 +91,9 @@ export type Database = {
           hora_inicio?: string
           liberado_ate?: string | null
           restringir_horario?: boolean
+          restringir_ip?: boolean
+          ips_permitidos?: string[]
+          restringir_local?: boolean
           updated_at?: string
         }
         Relationships: [
