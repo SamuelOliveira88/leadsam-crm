@@ -190,7 +190,7 @@ export const importarLeadsPlanilha = createServerFn({ method: "POST" })
         fonte: l.fonte ?? null,
         canal: l.canal ?? null,
         cidade: l.cidade ?? null,
-        etapa_funil: l.etapa_funil ?? null,
+        etapa_funil: l.etapa_funil ?? undefined,
         motivo_perda: l.motivo_perda ?? null,
         observacoes: l.observacoes ?? null,
         ultima_atividade: l.ultima_atividade ?? null,

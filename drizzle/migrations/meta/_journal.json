@@ -15,6 +15,13 @@
       "when": 1792072158973,
       "tag": "0001_etapa1_isolamento_multiempresa",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792324005103,
+      "tag": "0002_elo_whatsapp_etapas",
+      "breakpoints": true
     }
   ]
 }
