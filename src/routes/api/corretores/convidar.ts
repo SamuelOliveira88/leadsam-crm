@@ -191,27 +191,6 @@ export const Route = createFileRoute("/api/corretores/convidar")({
           return json({ message: getFriendlyInviteError(inviteError.message) }, 400);
         }
 
-        // Também manda o link de criar a senha pelo WhatsApp (se tiver telefone).
-        if (data.telefone) {
-          try {
-            const { data: link } = await supabaseAdmin.auth.admin.generateLink({
-              type: "recovery",
-              email: data.email,
-              options: { redirectTo: data.redirect_to },
-            });
-            const url = link?.properties?.action_link;
-            if (url) {
-              const { sendWhatsAppNotification } = await import("@/lib/evolution.server");
-              await sendWhatsAppNotification(
-                data.telefone,
-                `👋 Olá, ${data.nome}! Você foi cadastrado(a) no *Alexandria Leds*.\n\nToque no link para criar sua senha e entrar:\n${url}\n\nO link vale por pouco tempo. Se expirar, peça um novo ao administrador.`,
-              );
-            }
-          } catch (e) {
-            console.error("[convite whatsapp] falha", e);
-          }
-        }
-
         return json({ ok: true, role: data.role });
       },
     },

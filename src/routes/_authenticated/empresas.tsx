@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Building2, Plus, Loader2 } from "lucide-react";
-import { listarEmpresas, cadastrarEmpresa, atualizarEmpresa, acaoTesteEmpresa } from "@/lib/empresas.functions";
+import { listarEmpresas, cadastrarEmpresa, atualizarEmpresa } from "@/lib/empresas.functions";
 import { meuPerfil } from "@/lib/perfis.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,23 +23,12 @@ export const Route = createFileRoute("/_authenticated/empresas")({
   component: Empresas,
 });
 
-const STATUS_LABEL: Record<string, string> = { teste: "Teste", ativa: "Ativa", em_atraso: "Em atraso", suspensa: "Suspensa" };
-
-function textoStatus(e: any) {
-  if (e.status === "teste" && e.teste_ate) {
-    const dias = Math.ceil((new Date(e.teste_ate).getTime() - Date.now()) / 86400000);
-    return dias > 0 ? `Teste: ${dias} ${dias === 1 ? "dia restante" : "dias restantes"}` : "Teste encerrado";
-  }
-  return STATUS_LABEL[e.status] ?? e.status;
-}
-
 function Empresas() {
   const qc = useQueryClient();
   const fetchPerfil = useServerFn(meuPerfil);
   const fetchEmpresas = useServerFn(listarEmpresas);
   const criarFn = useServerFn(cadastrarEmpresa);
   const atualizarFn = useServerFn(atualizarEmpresa);
-  const testeFn = useServerFn(acaoTesteEmpresa);
 
   const { data: perfil, isLoading: carregandoPerfil } = useQuery({ queryKey: ["meuPerfil"], queryFn: () => fetchPerfil() });
   const { data: empresas, isLoading } = useQuery({
@@ -49,14 +38,6 @@ function Empresas() {
   });
 
   const [novaOpen, setNovaOpen] = useState(false);
-
-  async function acao(id: string, a: "iniciar" | "prorrogar" | "ativar") {
-    try {
-      await testeFn({ data: { id, acao: a } });
-      toast.success(a === "ativar" ? "Plano ativado." : a === "iniciar" ? "Teste de 7 dias iniciado." : "Teste prorrogado em 7 dias.");
-      qc.invalidateQueries({ queryKey: ["empresas"] });
-    } catch (err: any) { toast.error(err.message ?? "Erro"); }
-  }
 
   if (!carregandoPerfil && !perfil?.super_admin) {
     return (
@@ -89,7 +70,6 @@ function Empresas() {
                   <Building2 className="size-4 text-muted-foreground" />
                   <span className="font-semibold">{e.nome}</span>
                   <Badge variant={e.ativo ? "default" : "secondary"}>{e.ativo ? "ativa" : "inativa"}</Badge>
-                  <Badge variant={e.status === "suspensa" || e.status === "em_atraso" ? "destructive" : e.status === "teste" ? "secondary" : "outline"}>{textoStatus(e)}</Badge>
                   <Badge variant="outline">{e.plano}</Badge>
                 </div>
                 <div className="mt-1 text-xs text-muted-foreground">
@@ -97,19 +77,7 @@ function Empresas() {
                   {e.leads_em_uso} lead(s){e.limite_leads_mes ? ` / limite ${e.limite_leads_mes}/mês` : ""} · slug: {e.slug}
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <Select value={e.status ?? "ativa"} onValueChange={(v) => atualizarFn({ data: { id: e.id, status: v as any } }).then(() => qc.invalidateQueries({ queryKey: ["empresas"] })).catch((err: any) => toast.error(err.message ?? "Erro"))}>
-                  <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="teste">Teste</SelectItem>
-                    <SelectItem value="ativa">Ativa</SelectItem>
-                    <SelectItem value="em_atraso">Em atraso</SelectItem>
-                    <SelectItem value="suspensa">Suspensa</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button size="sm" variant="outline" onClick={() => acao(e.id, "iniciar")}>Iniciar teste de 7 dias</Button>
-                <Button size="sm" variant="outline" onClick={() => acao(e.id, "prorrogar")}>Prorrogar +7 dias</Button>
-                <Button size="sm" onClick={() => acao(e.id, "ativar")}>Ativar plano</Button>
+              <div className="flex gap-2">
                 <Select value={e.plano} onValueChange={(v) => atualizarFn({ data: { id: e.id, plano: v as any } }).then(() => qc.invalidateQueries({ queryKey: ["empresas"] }))}>
                   <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -153,11 +121,10 @@ function Empresas() {
   );
 }
 
-function NovaEmpresaForm({ onSubmit }: { onSubmit: (d: { nome_empresa: string; nome_usuario: string; email: string; iniciar_teste: boolean }) => Promise<void> }) {
+function NovaEmpresaForm({ onSubmit }: { onSubmit: (d: { nome_empresa: string; nome_usuario: string; email: string }) => Promise<void> }) {
   const [nomeEmpresa, setNomeEmpresa] = useState("");
   const [nomeUsuario, setNomeUsuario] = useState("");
   const [email, setEmail] = useState("");
-  const [teste, setTeste] = useState(true);
   const [enviando, setEnviando] = useState(false);
 
   return (
@@ -169,15 +136,11 @@ function NovaEmpresaForm({ onSubmit }: { onSubmit: (d: { nome_empresa: string; n
         <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@imobiliaria.com" />
         <p className="mt-1 text-xs text-muted-foreground">Um convite será enviado por e-mail. O usuário define a própria senha ao entrar pela primeira vez.</p>
       </div>
-      <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={teste} onChange={(e) => setTeste(e.target.checked)} />
-        Iniciar com teste de 7 dias
-      </label>
       <DialogFooter>
         <Button disabled={!nomeEmpresa || !nomeUsuario || !email || enviando} onClick={async () => {
           setEnviando(true);
           try {
-            await onSubmit({ nome_empresa: nomeEmpresa, nome_usuario: nomeUsuario, email, iniciar_teste: teste });
+            await onSubmit({ nome_empresa: nomeEmpresa, nome_usuario: nomeUsuario, email });
           } finally { setEnviando(false); }
         }}>
           {enviando ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Plus className="mr-2 size-4" />}

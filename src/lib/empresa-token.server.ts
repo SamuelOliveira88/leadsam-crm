@@ -60,19 +60,3 @@ export async function resolverEmpresaPorToken(db: any, token: string | null | un
   }
   return null;
 }
-
-/**
- * Teste de 7 dias: false quando a empresa está suspensa ou o teste venceu.
- * Se a função ainda não existir no banco (migration pendente), libera — nada quebra.
- */
-export async function empresaLiberada(db: any, empresaId: string): Promise<boolean> {
-  try {
-    const { data, error } = await db.rpc("empresa_liberada", { p_empresa_id: empresaId });
-    if (error) return true;
-    return data !== false;
-  } catch {
-    return true;
-  }
-}
-
-export const RESPOSTA_TESTE_ENCERRADO = { erro: "teste encerrado ou empresa suspensa" };

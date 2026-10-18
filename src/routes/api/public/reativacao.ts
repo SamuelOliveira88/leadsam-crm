@@ -47,10 +47,6 @@ export const Route = createFileRoute("/api/public/reativacao")({
         const db = await admin();
         const EMPRESA_ID = await empresaDoToken(db, request, url);
         if (!EMPRESA_ID) return json({ error: "unauthorized" }, 401);
-        {
-          const { empresaLiberada, RESPOSTA_TESTE_ENCERRADO } = await import("@/lib/empresa-token.server");
-          if (!(await empresaLiberada(db, EMPRESA_ID))) return json(RESPOSTA_TESTE_ENCERRADO, 403);
-        }
 
         const limit = Math.min(Number(url.searchParams.get("limit") ?? "100"), 500);
         const offset = Math.max(Number(url.searchParams.get("offset") ?? "0"), 0);
@@ -75,10 +71,6 @@ export const Route = createFileRoute("/api/public/reativacao")({
         const db = await admin();
         const EMPRESA_ID = await empresaDoToken(db, request, url);
         if (!EMPRESA_ID) return json({ error: "unauthorized" }, 401);
-        {
-          const { empresaLiberada, RESPOSTA_TESTE_ENCERRADO } = await import("@/lib/empresa-token.server");
-          if (!(await empresaLiberada(db, EMPRESA_ID))) return json(RESPOSTA_TESTE_ENCERRADO, 403);
-        }
 
         let body: unknown;
 

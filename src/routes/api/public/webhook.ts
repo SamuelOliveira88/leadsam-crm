@@ -30,8 +30,6 @@ export const Route = createFileRoute("/api/public/webhook")({
           const token = tokenDoCabecalho(request);
           const acesso = await resolverEmpresaPorToken(supabaseAdmin, token, ["samuelimob", "webhook", "landing", "notificacoes"]);
           if (!acesso) return json({ error: "unauthorized" }, 401);
-          const { empresaLiberada, RESPOSTA_TESTE_ENCERRADO } = await import("@/lib/empresa-token.server");
-          if (!(await empresaLiberada(supabaseAdmin, acesso.empresa_id))) return json(RESPOSTA_TESTE_ENCERRADO, 403);
           const origemToken = acesso.origem;
 
 
@@ -87,27 +85,8 @@ export const Route = createFileRoute("/api/public/webhook")({
             }
           }
 
-          // Sem grupo no aviso: usa o grupo principal (ou o primeiro) da empresa dona do token;
-          // se a empresa ainda não tem grupo, cria um chamado "Site".
-          if (nome && !grupo_id) {
-            const { data: gs } = await supabaseAdmin
-              .from("grupos").select("id, is_principal")
-              .eq("empresa_id", acesso.empresa_id)
-              .order("is_principal", { ascending: false })
-              .order("created_at", { ascending: true })
-              .limit(1);
-            if (gs && gs.length) {
-              grupo_id = gs[0].id;
-            } else {
-              const { data: novo } = await supabaseAdmin
-                .from("grupos").insert({ nome: "Site", empresa_id: acesso.empresa_id, is_principal: true })
-                .select("id").single();
-              grupo_id = novo?.id;
-            }
-          }
-
           if (!nome || !grupo_id) {
-            return json({ error: "nome é obrigatório" }, 400);
+            return json({ error: "nome e grupo_id são obrigatórios" }, 400);
           }
 
           // O grupo precisa pertencer à empresa dona do token.
