@@ -1,5 +1,6 @@
 // Evolution API helper — server-only.
 import { decidirAposFalha, type MotivoFalha } from "@/lib/fila-notificacao";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 // Envia mensagens de WhatsApp via instância Evolution configurada em secrets.
 
 function normalizePhone(raw: string): string {
@@ -26,11 +27,41 @@ export async function notificacoesPausadas(supabaseClient: any): Promise<boolean
 }
 
 
+// Modo "relé": em vez de bater no Evolution pela internet, grava a mensagem na caixa de saída
+// (envios_whatsapp) e o n8n do computador do dono busca e envia pelo Evolution local.
+// Liga/desliga em relay_config.ativo. O resultado é guardado por 10 s para não consultar o
+// banco a cada mensagem.
+let releCache: { ativo: boolean; ate: number } | null = null;
+
+async function releAtivo(): Promise<boolean> {
+  if (releCache && releCache.ate > Date.now()) return releCache.ativo;
+  try {
+    const { data } = await (supabaseAdmin as any).from("relay_config").select("ativo").eq("id", 1).maybeSingle();
+    const ativo = data?.ativo === true;
+    releCache = { ativo, ate: Date.now() + 10_000 };
+    return ativo;
+  } catch {
+    return false; // se não der para consultar, segue o caminho direto de sempre
+  }
+}
+
 export async function sendWhatsAppText(
   numero: string,
   mensagem: string,
   instanceName?: string,
 ): Promise<{ ok: boolean; error?: string; permanente?: boolean }> {
+  if (await releAtivo()) {
+    const phone = normalizePhone(numero);
+    if (!phone) return { ok: false, error: "Telefone inválido" };
+    const { error } = await (supabaseAdmin as any).from("envios_whatsapp").insert({
+      instancia: instanceName || process.env.EVOLUTION_INSTANCE || null,
+      numero: phone,
+      mensagem,
+    });
+    if (error) return { ok: false, error: `Caixa de saída: ${error.message}` };
+    return { ok: true };
+  }
+
   const url = process.env.EVOLUTION_API_URL;
   const key = process.env.EVOLUTION_API_KEY;
   const instance = instanceName || process.env.EVOLUTION_INSTANCE;

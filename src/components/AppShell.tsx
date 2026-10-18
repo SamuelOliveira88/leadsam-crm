@@ -7,8 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { meuPerfil } from "@/lib/perfis.functions";
 import { heartbeatCorretor } from "@/lib/corretores.functions";
 import { listarNotificacoes, notificarLoginMonitor } from "@/lib/notificacoes.functions";
-import { getConfigAcesso } from "@/lib/config-acesso.functions";
+import { getConfigAcesso, verificarAcessoRemoto } from "@/lib/config-acesso.functions";
 import { listarEmpresasContexto, trocarEmpresaContexto } from "@/lib/empresa-contexto.functions";
+import { statusMinhaEmpresa } from "@/lib/empresas.functions";
 import { useGeolocalizacao } from "@/hooks/use-geolocalizacao";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -62,6 +63,13 @@ export function AppShell({ user, children }: { user: User; children: React.React
   const fetchNotif = useServerFn(listarNotificacoes);
   const fetchConfig = useServerFn(getConfigAcesso);
   const { data: perfil } = useQuery({ queryKey: ["meuPerfil"], queryFn: () => fetchPerfil() });
+  const fetchStatusEmpresa = useServerFn(statusMinhaEmpresa);
+  const { data: statusEmpresa } = useQuery({
+    queryKey: ["statusMinhaEmpresa"],
+    queryFn: () => fetchStatusEmpresa(),
+    refetchInterval: 5 * 60 * 1000,
+    enabled: !!perfil,
+  });
   const { data: notifs } = useQuery({
     queryKey: ["notificacoes"],
     queryFn: () => fetchNotif(),
@@ -133,6 +141,26 @@ export function AppShell({ user, children }: { user: User; children: React.React
     } catch { /* sessionStorage indisponível */ }
   }, [perfil?.id]);
 
+  // Trava de login por IP e/ou por local (opcionais, escolhidas pela empresa).
+  const verificarRemoto = useServerFn(verificarAcessoRemoto);
+  const travaRemota = !!(config as any)?.restringir_ip || !!(config as any)?.restringir_local;
+  const { data: acessoRemoto } = useQuery({
+    queryKey: ["acesso_remoto", (config as any)?.restringir_ip, (config as any)?.restringir_local],
+    enabled: !!perfil && !isMaster && !isSuperAdmin && travaRemota,
+    refetchInterval: 5 * 60 * 1000,
+    retry: false,
+    queryFn: async () => {
+      let posicao: { latitude: number; longitude: number; precisaoMetros: number } | null = null;
+      if ((config as any)?.restringir_local) {
+        try {
+          const p = await obterPosicao();
+          posicao = { latitude: p.latitude, longitude: p.longitude, precisaoMetros: p.precisaoMetros };
+        } catch { posicao = null; }
+      }
+      return verificarRemoto({ data: { posicao } });
+    },
+  });
+
   // Auto-logout após 2h sem atividade do usuário.
   // Quem tem liberação permanente (liberado_ate muito no futuro) fica logado.
   const liberacaoPermanente = (() => {
@@ -176,6 +204,29 @@ export function AppShell({ user, children }: { user: User; children: React.React
   async function handleLogout() {
     await supabase.auth.signOut();
     router.navigate({ to: "/auth", replace: true });
+  }
+
+  if (perfil && !isMaster && !isSuperAdmin && travaRemota && acessoRemoto && !acessoRemoto.permitido) {
+    const msg =
+      acessoRemoto.motivo === "ip"
+        ? "Você está fora da rede autorizada pela sua imobiliária."
+        : acessoRemoto.motivo === "local_sem_gps"
+          ? "Ative a localização do aparelho e permita o acesso do site para entrar."
+          : "Você está fora do local de trabalho autorizado pela sua imobiliária.";
+    return (
+      <div className="grid min-h-screen place-items-center bg-background p-6">
+        <div className="max-w-md rounded-2xl border bg-card p-8 text-center shadow-soft">
+          <div className="mx-auto mb-4 grid size-12 place-items-center rounded-full bg-primary/10 text-primary">
+            <ShieldCheck className="size-6" />
+          </div>
+          <h1 className="mb-2 text-xl font-bold">Acesso bloqueado</h1>
+          <p className="text-sm text-muted-foreground">{msg}</p>
+          <p className="mt-2 text-xs text-muted-foreground">Peça ao administrador para liberar seu acesso, se necessário.</p>
+          <Button className="mt-4 w-full" variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ["acesso_remoto"] })}>Tentar de novo</Button>
+          <Button className="mt-2 w-full" onClick={handleLogout}>Sair</Button>
+        </div>
+      </div>
+    );
   }
 
   if (perfil && !isMaster && !permitido()) {
@@ -300,7 +351,21 @@ export function AppShell({ user, children }: { user: User; children: React.React
       </aside>
 
       <main className="pb-20 md:ml-64 md:pb-0">
-        <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">{children}</div>
+        {statusEmpresa?.status === "teste" && !statusEmpresa.bloqueada && statusEmpresa.dias_restantes !== null && (
+          <div className="border-b border-amber-300/50 bg-amber-50 px-4 py-1.5 text-center text-xs text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+            Período de teste: {statusEmpresa.dias_restantes} {statusEmpresa.dias_restantes === 1 ? "dia restante" : "dias restantes"}
+          </div>
+        )}
+        <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">
+          {statusEmpresa?.bloqueada && !statusEmpresa.super_admin ? (
+            <div className="mx-auto mt-16 max-w-md rounded-lg border border-border bg-card p-8 text-center">
+              <h1 className="text-xl font-bold">Teste encerrado</h1>
+              <p className="mt-2 text-sm text-muted-foreground">Fale com o administrador para ativar.</p>
+            </div>
+          ) : (
+            children
+          )}
+        </div>
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-card/95 backdrop-blur md:hidden">
