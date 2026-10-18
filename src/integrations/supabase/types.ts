@@ -62,158 +62,15 @@ export type Database = {
           },
         ]
       }
-      checkins: {
-        Row: {
-          corretor_id: string | null
-          created_at: string
-          dentro_do_raio: boolean | null
-          distancia_metros: number | null
-          empresa_id: string
-          grupo_id: string | null
-          id: string
-          latitude: number
-          local_id: string | null
-          local_nome: string | null
-          longitude: number
-          precisao_metros: number | null
-          tipo: string
-          usuario_id: string
-          usuario_nome: string | null
-        }
-        Insert: {
-          corretor_id?: string | null
-          created_at?: string
-          dentro_do_raio?: boolean | null
-          distancia_metros?: number | null
-          empresa_id: string
-          grupo_id?: string | null
-          id?: string
-          latitude: number
-          local_id?: string | null
-          local_nome?: string | null
-          longitude: number
-          precisao_metros?: number | null
-          tipo: string
-          usuario_id: string
-          usuario_nome?: string | null
-        }
-        Update: {
-          corretor_id?: string | null
-          created_at?: string
-          dentro_do_raio?: boolean | null
-          distancia_metros?: number | null
-          empresa_id?: string
-          grupo_id?: string | null
-          id?: string
-          latitude?: number
-          local_id?: string | null
-          local_nome?: string | null
-          longitude?: number
-          precisao_metros?: number | null
-          tipo?: string
-          usuario_id?: string
-          usuario_nome?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "checkins_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "empresas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "checkins_local_id_fkey"
-            columns: ["local_id"]
-            isOneToOne: false
-            referencedRelation: "locais_checkin"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      compromissos: {
-        Row: {
-          atualizado_em: string
-          corretor_id: string | null
-          created_at: string
-          criado_por: string | null
-          data_hora: string
-          empreendimento: string | null
-          empresa_id: string | null
-          id: string
-          lead_id: string | null
-          observacoes: string | null
-          status: string
-          tipo: string
-        }
-        Insert: {
-          atualizado_em?: string
-          corretor_id?: string | null
-          created_at?: string
-          criado_por?: string | null
-          data_hora: string
-          empreendimento?: string | null
-          empresa_id?: string | null
-          id?: string
-          lead_id?: string | null
-          observacoes?: string | null
-          status?: string
-          tipo?: string
-        }
-        Update: {
-          atualizado_em?: string
-          corretor_id?: string | null
-          created_at?: string
-          criado_por?: string | null
-          data_hora?: string
-          empreendimento?: string | null
-          empresa_id?: string | null
-          id?: string
-          lead_id?: string | null
-          observacoes?: string | null
-          status?: string
-          tipo?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "compromissos_corretor_id_fkey"
-            columns: ["corretor_id"]
-            isOneToOne: false
-            referencedRelation: "corretores"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "compromissos_corretor_id_fkey"
-            columns: ["corretor_id"]
-            isOneToOne: false
-            referencedRelation: "dashboard_corretores"
-            referencedColumns: ["corretor_id"]
-          },
-          {
-            foreignKeyName: "compromissos_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "empresas"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "compromissos_lead_id_fkey"
-            columns: ["lead_id"]
-            isOneToOne: false
-            referencedRelation: "leads"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       config_acesso: {
         Row: {
           empresa_id: string
           hora_fim: string
           hora_inicio: string
-          ips_permitidos: string[]
           liberado_ate: string | null
           restringir_horario: boolean
           restringir_ip: boolean
+          ips_permitidos: string[]
           restringir_local: boolean
           updated_at: string
         }
@@ -221,10 +78,10 @@ export type Database = {
           empresa_id: string
           hora_fim?: string
           hora_inicio?: string
-          ips_permitidos?: string[]
           liberado_ate?: string | null
           restringir_horario?: boolean
           restringir_ip?: boolean
+          ips_permitidos?: string[]
           restringir_local?: boolean
           updated_at?: string
         }
@@ -232,10 +89,10 @@ export type Database = {
           empresa_id?: string
           hora_fim?: string
           hora_inicio?: string
-          ips_permitidos?: string[]
           liberado_ate?: string | null
           restringir_horario?: boolean
           restringir_ip?: boolean
+          ips_permitidos?: string[]
           restringir_local?: boolean
           updated_at?: string
         }
@@ -611,45 +468,6 @@ export type Database = {
         }
         Relationships: []
       }
-      envios_whatsapp: {
-        Row: {
-          created_at: string
-          enviado_em: string | null
-          id: string
-          instancia: string | null
-          mensagem: string
-          numero: string
-          proxima_tentativa: string
-          status: string
-          tentativas: number
-          ultimo_erro: string | null
-        }
-        Insert: {
-          created_at?: string
-          enviado_em?: string | null
-          id?: string
-          instancia?: string | null
-          mensagem: string
-          numero: string
-          proxima_tentativa?: string
-          status?: string
-          tentativas?: number
-          ultimo_erro?: string | null
-        }
-        Update: {
-          created_at?: string
-          enviado_em?: string | null
-          id?: string
-          instancia?: string | null
-          mensagem?: string
-          numero?: string
-          proxima_tentativa?: string
-          status?: string
-          tentativas?: number
-          ultimo_erro?: string | null
-        }
-        Relationships: []
-      }
       fila_notificacoes: {
         Row: {
           compromisso_id: string | null
@@ -817,6 +635,183 @@ export type Database = {
           },
         ]
       }
+      compromissos: {
+        Row: {
+          atualizado_em: string
+          corretor_id: string | null
+          created_at: string
+          criado_por: string | null
+          data_hora: string
+          empreendimento: string | null
+          empresa_id: string | null
+          id: string
+          lead_id: string | null
+          observacoes: string | null
+          status: string
+          tipo: string
+        }
+        Insert: {
+          atualizado_em?: string
+          corretor_id?: string | null
+          created_at?: string
+          criado_por?: string | null
+          data_hora: string
+          empreendimento?: string | null
+          empresa_id?: string | null
+          id?: string
+          lead_id?: string | null
+          observacoes?: string | null
+          status?: string
+          tipo?: string
+        }
+        Update: {
+          atualizado_em?: string
+          corretor_id?: string | null
+          created_at?: string
+          criado_por?: string | null
+          data_hora?: string
+          empreendimento?: string | null
+          empresa_id?: string | null
+          id?: string
+          lead_id?: string | null
+          observacoes?: string | null
+          status?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compromissos_corretor_id_fkey"
+            columns: ["corretor_id"]
+            isOneToOne: false
+            referencedRelation: "corretores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compromissos_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compromissos_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checkins: {
+        Row: {
+          corretor_id: string | null
+          created_at: string
+          dentro_do_raio: boolean | null
+          distancia_metros: number | null
+          empresa_id: string
+          grupo_id: string | null
+          id: string
+          latitude: number
+          local_id: string | null
+          local_nome: string | null
+          longitude: number
+          precisao_metros: number | null
+          tipo: string
+          usuario_id: string
+          usuario_nome: string | null
+        }
+        Insert: {
+          corretor_id?: string | null
+          created_at?: string
+          dentro_do_raio?: boolean | null
+          distancia_metros?: number | null
+          empresa_id: string
+          grupo_id?: string | null
+          id?: string
+          latitude: number
+          local_id?: string | null
+          local_nome?: string | null
+          longitude: number
+          precisao_metros?: number | null
+          tipo: string
+          usuario_id: string
+          usuario_nome?: string | null
+        }
+        Update: {
+          corretor_id?: string | null
+          created_at?: string
+          dentro_do_raio?: boolean | null
+          distancia_metros?: number | null
+          empresa_id?: string
+          grupo_id?: string | null
+          id?: string
+          latitude?: number
+          local_id?: string | null
+          local_nome?: string | null
+          longitude?: number
+          precisao_metros?: number | null
+          tipo?: string
+          usuario_id?: string
+          usuario_nome?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkins_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkins_local_id_fkey"
+            columns: ["local_id"]
+            isOneToOne: false
+            referencedRelation: "locais_checkin"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      locais_checkin: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          empresa_id: string
+          id: string
+          latitude: number
+          longitude: number
+          nome: string
+          raio_metros: number
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          empresa_id?: string
+          id?: string
+          latitude: number
+          longitude: number
+          nome: string
+          raio_metros?: number
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          empresa_id?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+          nome?: string
+          raio_metros?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "locais_checkin_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_historico: {
         Row: {
           created_at: string
@@ -953,7 +948,7 @@ export type Database = {
           email?: string | null
           empreendimento_interesse?: string | null
           empresa_id?: string | null
-          etapa_funil?: string
+          etapa_funil?: string | null
           fonte?: string | null
           grupo_id?: string | null
           id?: string
@@ -985,7 +980,7 @@ export type Database = {
           email?: string | null
           empreendimento_interesse?: string | null
           empresa_id?: string | null
-          etapa_funil?: string
+          etapa_funil?: string | null
           fonte?: string | null
           grupo_id?: string | null
           id?: string
@@ -1031,47 +1026,6 @@ export type Database = {
             columns: ["grupo_id"]
             isOneToOne: false
             referencedRelation: "grupos"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      locais_checkin: {
-        Row: {
-          ativo: boolean
-          created_at: string
-          empresa_id: string
-          id: string
-          latitude: number
-          longitude: number
-          nome: string
-          raio_metros: number
-        }
-        Insert: {
-          ativo?: boolean
-          created_at?: string
-          empresa_id: string
-          id?: string
-          latitude: number
-          longitude: number
-          nome: string
-          raio_metros?: number
-        }
-        Update: {
-          ativo?: boolean
-          created_at?: string
-          empresa_id?: string
-          id?: string
-          latitude?: number
-          longitude?: number
-          nome?: string
-          raio_metros?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "locais_checkin_empresa_id_fkey"
-            columns: ["empresa_id"]
-            isOneToOne: false
-            referencedRelation: "empresas"
             referencedColumns: ["id"]
           },
         ]
@@ -1337,24 +1291,6 @@ export type Database = {
           },
         ]
       }
-      relay_config: {
-        Row: {
-          ativo: boolean
-          id: number
-          segredo_hash: string | null
-        }
-        Insert: {
-          ativo?: boolean
-          id?: number
-          segredo_hash?: string | null
-        }
-        Update: {
-          ativo?: boolean
-          id?: number
-          segredo_hash?: string | null
-        }
-        Relationships: []
-      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -1530,26 +1466,11 @@ export type Database = {
       }
     }
     Functions: {
-      agendar_compromisso: {
-        Args: {
-          p_corretor_id?: string
-          p_data_hora: string
-          p_empreendimento?: string
-          p_lead_id: string
-          p_observacoes?: string
-          p_tipo: string
-        }
-        Returns: Json
-      }
       corretor_heartbeat: { Args: never; Returns: undefined }
       dentro_do_horario: { Args: { p_grupo_id: string }; Returns: boolean }
       descartar_lead: {
         Args: { _lead_id: string; _motivo?: string }
         Returns: Json
-      }
-      distancia_metros: {
-        Args: { lat1: number; lat2: number; lng1: number; lng2: number }
-        Returns: number
       }
       distribuir_gota_planilha: { Args: never; Returns: Json }
       distribuir_lead_direcionado:
@@ -1594,8 +1515,6 @@ export type Database = {
         }
         Returns: Json
       }
-      empresa_liberada: { Args: { p_empresa_id: string }; Returns: boolean }
-      enfileirar_lembretes_visita: { Args: never; Returns: number }
       escolher_corretor_online: {
         Args: { p_grupo_id: string }
         Returns: string
@@ -1612,14 +1531,9 @@ export type Database = {
       liberar_leads_inativos_6d: { Args: never; Returns: undefined }
       liberar_leads_represados: { Args: never; Returns: undefined }
       liberar_unidade: { Args: { p_unidade_id: string }; Returns: undefined }
-      normalizar_etapa_funil: { Args: { p: string }; Returns: string }
       pode_dar_suporte: { Args: never; Returns: boolean }
       posso_acessar_proposta: {
         Args: { p_proposta_id: string }
-        Returns: boolean
-      }
-      posso_gerir_compromisso: {
-        Args: { p_corretor: string; p_empresa: string }
         Returns: boolean
       }
       posso_operar_grupo: { Args: { p_grupo_id: string }; Returns: boolean }
@@ -1628,6 +1542,18 @@ export type Database = {
         Returns: undefined
       }
       reatribuir_leads_sem_visualizacao: { Args: never; Returns: undefined }
+      agendar_compromisso: {
+        Args: {
+          p_corretor_id?: string
+          p_data_hora: string
+          p_empreendimento?: string
+          p_lead_id: string
+          p_observacoes?: string
+          p_tipo: string
+        }
+        Returns: Json
+      }
+      enfileirar_lembretes_visita: { Args: never; Returns: number }
       registrar_checkin: {
         Args: {
           p_latitude: number
@@ -1638,26 +1564,6 @@ export type Database = {
         Returns: Json
       }
       registrar_login_corretor: { Args: never; Returns: undefined }
-      relay_confirmar: {
-        Args: {
-          p_erro?: string
-          p_id: string
-          p_ok: boolean
-          p_permanente?: boolean
-          p_segredo: string
-        }
-        Returns: string
-      }
-      relay_pegar_envios: {
-        Args: { p_limite?: number; p_segredo: string }
-        Returns: {
-          id: string
-          instancia: string
-          mensagem: string
-          numero: string
-        }[]
-      }
-      relay_segredo_ok: { Args: { p_segredo: string }; Returns: boolean }
       reservar_unidade: {
         Args: {
           p_cliente_nome?: string
