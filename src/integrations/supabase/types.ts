@@ -1594,6 +1594,19 @@ export type Database = {
         }
         Returns: Json
       }
+      elo_aplicar_etapa: {
+        Args: { p_empresa_id: string; p_etapa: string; p_telefone: string }
+        Returns: Json
+      }
+      elo_chave: { Args: { p: string }; Returns: string }
+      elo_mudancas_etapa: {
+        Args: { p_desde: string; p_empresa_id: string; p_limite?: number }
+        Returns: {
+          em: string
+          etapa: string
+          telefone: string
+        }[]
+      }
       empresa_liberada: { Args: { p_empresa_id: string }; Returns: boolean }
       enfileirar_lembretes_visita: { Args: never; Returns: number }
       escolher_corretor_online: {
