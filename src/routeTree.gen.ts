@@ -30,6 +30,7 @@ import { Route as AuthenticatedNotasRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedPropostasRouteImport } from './routes/_authenticated/propostas'
 import { Route as ApiCorretoresConvidarRouteImport } from './routes/api/corretores/convidar'
+import { Route as ApiPublicEloWhatsappRouteImport } from './routes/api/public/elo-whatsapp'
 import { Route as ApiPublicReativacaoRouteImport } from './routes/api/public/reativacao'
 import { Route as ApiPublicWebhookRouteImport } from './routes/api/public/webhook'
 import { Route as ApiPublicAdminReenviarConvitesRouteImport } from './routes/api/public/admin/reenviar-convites'
@@ -143,6 +144,11 @@ const ApiCorretoresConvidarRoute = ApiCorretoresConvidarRouteImport.update({
   path: '/api/corretores/convidar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicEloWhatsappRoute = ApiPublicEloWhatsappRouteImport.update({
+  id: '/api/public/elo-whatsapp',
+  path: '/api/public/elo-whatsapp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicReativacaoRoute = ApiPublicReativacaoRouteImport.update({
   id: '/api/public/reativacao',
   path: '/api/public/reativacao',
@@ -197,6 +203,7 @@ export interface FileRoutesByFullPath {
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/propostas': typeof AuthenticatedPropostasRoute
   '/api/corretores/convidar': typeof ApiCorretoresConvidarRoute
+  '/api/public/elo-whatsapp': typeof ApiPublicEloWhatsappRoute
   '/api/public/reativacao': typeof ApiPublicReativacaoRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/api/public/admin/reenviar-convites': typeof ApiPublicAdminReenviarConvitesRoute
@@ -225,6 +232,7 @@ export interface FileRoutesByTo {
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/propostas': typeof AuthenticatedPropostasRoute
   '/api/corretores/convidar': typeof ApiCorretoresConvidarRoute
+  '/api/public/elo-whatsapp': typeof ApiPublicEloWhatsappRoute
   '/api/public/reativacao': typeof ApiPublicReativacaoRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/api/public/admin/reenviar-convites': typeof ApiPublicAdminReenviarConvitesRoute
@@ -255,6 +263,7 @@ export interface FileRoutesById {
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/propostas': typeof AuthenticatedPropostasRoute
   '/api/corretores/convidar': typeof ApiCorretoresConvidarRoute
+  '/api/public/elo-whatsapp': typeof ApiPublicEloWhatsappRoute
   '/api/public/reativacao': typeof ApiPublicReativacaoRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/api/public/admin/reenviar-convites': typeof ApiPublicAdminReenviarConvitesRoute
@@ -285,6 +294,7 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/propostas'
     | '/api/corretores/convidar'
+    | '/api/public/elo-whatsapp'
     | '/api/public/reativacao'
     | '/api/public/webhook'
     | '/api/public/admin/reenviar-convites'
@@ -313,6 +323,7 @@ export interface FileRouteTypes {
     | '/notificacoes'
     | '/propostas'
     | '/api/corretores/convidar'
+    | '/api/public/elo-whatsapp'
     | '/api/public/reativacao'
     | '/api/public/webhook'
     | '/api/public/admin/reenviar-convites'
@@ -342,6 +353,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notificacoes'
     | '/_authenticated/propostas'
     | '/api/corretores/convidar'
+    | '/api/public/elo-whatsapp'
     | '/api/public/reativacao'
     | '/api/public/webhook'
     | '/api/public/admin/reenviar-convites'
@@ -357,6 +369,7 @@ export interface RootRouteChildren {
   CadastroEmpresaRoute: typeof CadastroEmpresaRoute
   SetPasswordRoute: typeof SetPasswordRoute
   ApiCorretoresConvidarRoute: typeof ApiCorretoresConvidarRoute
+  ApiPublicEloWhatsappRoute: typeof ApiPublicEloWhatsappRoute
   ApiPublicReativacaoRoute: typeof ApiPublicReativacaoRoute
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
   ApiPublicAdminReenviarConvitesRoute: typeof ApiPublicAdminReenviarConvitesRoute
@@ -514,6 +527,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCorretoresConvidarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/elo-whatsapp': {
+      id: '/api/public/elo-whatsapp'
+      path: '/api/public/elo-whatsapp'
+      fullPath: '/api/public/elo-whatsapp'
+      preLoaderRoute: typeof ApiPublicEloWhatsappRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/reativacao': {
       id: '/api/public/reativacao'
       path: '/api/public/reativacao'
@@ -605,6 +625,7 @@ const rootRouteChildren: RootRouteChildren = {
   CadastroEmpresaRoute: CadastroEmpresaRoute,
   SetPasswordRoute: SetPasswordRoute,
   ApiCorretoresConvidarRoute: ApiCorretoresConvidarRoute,
+  ApiPublicEloWhatsappRoute: ApiPublicEloWhatsappRoute,
   ApiPublicReativacaoRoute: ApiPublicReativacaoRoute,
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
   ApiPublicAdminReenviarConvitesRoute: ApiPublicAdminReenviarConvitesRoute,
