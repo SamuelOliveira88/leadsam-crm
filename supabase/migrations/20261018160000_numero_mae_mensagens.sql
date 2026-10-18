@@ -118,6 +118,13 @@ BEGIN
     RAISE EXCEPTION 'mensagem vazia';
   END IF;
   SELECT l.empresa_id INTO NEW.empresa_id FROM public.leads l WHERE l.id = NEW.lead_id;
+  -- Só responde quem chamou: o lead precisa ter escrito antes no número mãe, e não pode ter pedido para sair.
+  IF EXISTS (SELECT 1 FROM public.leads l WHERE l.id = NEW.lead_id AND coalesce(l.opt_out, false)) THEN
+    RAISE EXCEPTION 'Este contato pediu para não receber mensagens.';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.lead_mensagens m WHERE m.lead_id = NEW.lead_id AND m.direcao = 'entrada') THEN
+    RAISE EXCEPTION 'Só é possível responder quem já escreveu para o número mãe.';
+  END IF;
   NEW.corretor_id := public.get_meu_corretor_id();   -- nulo se quem responde é gerente/master
   NEW.status      := 'pendente';
   NEW.wa_msg_id   := NULL;
@@ -130,7 +137,7 @@ END $$;
 CREATE OR REPLACE FUNCTION public.lead_mensagens_depois_insert()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
 AS $$
-DECLARE v_lead record; v_inst text; v_envio uuid;
+DECLARE v_lead record; v_inst text; v_envio uuid; v_quem text;
 BEGIN
   IF NEW.direcao <> 'saida' OR NEW.status <> 'pendente' THEN RETURN NEW; END IF;
   SELECT l.telefone, l.grupo_id, l.empresa_id INTO v_lead FROM public.leads l WHERE l.id = NEW.lead_id;
@@ -140,8 +147,13 @@ BEGIN
   IF v_inst IS NULL THEN
     RAISE EXCEPTION 'Este grupo não tem número de WhatsApp configurado.';
   END IF;
+  -- Assinatura: o cliente vê quem respondeu (corretor; se foi gerente/master, o nome do perfil).
+  SELECT coalesce((SELECT c.nome FROM public.corretores c WHERE c.id = NEW.corretor_id),
+                  (SELECT p.nome FROM public.perfis p WHERE p.id = auth.uid()))
+    INTO v_quem;
   INSERT INTO public.envios_whatsapp (instancia, numero, mensagem)
-  VALUES (v_inst, regexp_replace(coalesce(v_lead.telefone, ''), '[^0-9]', '', 'g'), NEW.texto)
+  VALUES (v_inst, regexp_replace(coalesce(v_lead.telefone, ''), '[^0-9]', '', 'g'),
+          CASE WHEN v_quem IS NOT NULL THEN '*' || v_quem || ':*' || E'\n' || NEW.texto ELSE NEW.texto END)
   RETURNING id INTO v_envio;
   UPDATE public.lead_mensagens SET envio_id = v_envio WHERE id = NEW.id;
   UPDATE public.leads SET ultimo_contato = now() WHERE id = NEW.lead_id;
@@ -181,12 +193,20 @@ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
 AS $$
 DECLARE
   v_inst record; v_lead record; v_lead_id uuid; v_corretor uuid; v_msg uuid; v_novo boolean := false;
+  v_tel text;
 BEGIN
   IF NOT public.numero_mae_segredo_ok(p_segredo) THEN RAISE EXCEPTION 'nao autorizado'; END IF;
 
   SELECT i.empresa_id, i.grupo_id INTO v_inst
     FROM public.instancias_whatsapp i WHERE i.instancia = p_instancia AND i.ativo;
   IF NOT FOUND THEN RAISE EXCEPTION 'instancia desconhecida'; END IF;
+
+  -- Telefone só com dígitos (a Evolution pode mandar '5511...@s.whatsapp.net').
+  v_tel := regexp_replace(split_part(coalesce(p_telefone, ''), '@', 1), '\D', '', 'g');
+  IF length(v_tel) < 10 THEN RAISE EXCEPTION 'telefone invalido'; END IF;
+
+  -- Duas mensagens seguidas de um cliente novo não podem criar dois leads.
+  PERFORM pg_advisory_xact_lock(hashtext(v_inst.empresa_id::text || coalesce(public.elo_chave(v_tel), v_tel)));
 
   -- Mensagem repetida (a Evolution reenvia): não duplica.
   IF p_wa_msg_id IS NOT NULL AND EXISTS (
@@ -196,7 +216,7 @@ BEGIN
   -- Cliente que volta: mesmo lead (DDD + 8 últimos dígitos, só dentro da empresa).
   SELECT l.id, l.corretor_id INTO v_lead
     FROM public.leads l
-   WHERE l.empresa_id = v_inst.empresa_id AND public.elo_chave(l.telefone) = public.elo_chave(p_telefone)
+   WHERE l.empresa_id = v_inst.empresa_id AND public.elo_chave(l.telefone) = public.elo_chave(v_tel)
    ORDER BY l.created_at DESC LIMIT 1;
 
   IF FOUND THEN
@@ -204,9 +224,14 @@ BEGIN
   ELSE
     v_novo := true;
     INSERT INTO public.leads (nome, telefone, grupo_id, empresa_id, status, fonte, canal)
-    VALUES (coalesce(nullif(btrim(p_nome), ''), p_telefone), p_telefone, v_inst.grupo_id, v_inst.empresa_id,
+    VALUES (coalesce(nullif(btrim(p_nome), ''), v_tel), v_tel, v_inst.grupo_id, v_inst.empresa_id,
             'represado', 'numero_mae', 'whatsapp')
     RETURNING id INTO v_lead_id;
+    -- Se algum gatilho de lead novo já distribuiu, respeita (o rodízio abaixo não roda de novo).
+    SELECT corretor_id INTO v_corretor FROM public.leads WHERE id = v_lead_id;
+    IF v_corretor IS NOT NULL THEN
+      UPDATE public.leads SET status = 'distribuido', represado_em = NULL WHERE id = v_lead_id;
+    END IF;
   END IF;
 
   -- Sem dono (lead novo, ou antigo que ficou sem corretor): rodízio entre quem está online.
