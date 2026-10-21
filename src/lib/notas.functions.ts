@@ -49,8 +49,8 @@ export const gerarMensagemAbertura = createServerFn({ method: "POST" })
     z.object({ lead_id: z.string().uuid(), interesse: z.string().optional() }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    const key = process.env.LOVABLE_API_KEY;
-    if (!key) throw new Error("Lovable AI não configurado");
+    const key = process.env.GEMINI_API_KEY;
+    if (!key) throw new Error("IA não configurada (falta GEMINI_API_KEY)");
 
     const { data: lead } = await context.supabase
       .from("leads")
@@ -61,11 +61,11 @@ export const gerarMensagemAbertura = createServerFn({ method: "POST" })
 
     const prompt = `Você é um corretor de imóveis brasileiro. Escreva uma mensagem CURTA (máx 4 linhas) e amigável para iniciar conversa no WhatsApp com o lead abaixo. Use o primeiro nome, seja natural e termine com uma pergunta aberta.\n\nLead: ${lead.nome}\nInteresse: ${data.interesse ?? "imóvel"}\n\nResponda APENAS com o texto da mensagem, sem aspas ou introduções.`;
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const res = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: process.env.GEMINI_MODEL || "gemini-2.5-flash",
         messages: [{ role: "user", content: prompt }],
       }),
     });
