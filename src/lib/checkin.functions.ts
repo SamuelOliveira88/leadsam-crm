@@ -223,7 +223,18 @@ export const registrarCheckinPonto = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!ponto) throw new Error("QR inválido ou de outra imobiliária.");
 
-    const { ipDaRequisicao } = await import("@/lib/config-acesso.functions");
+    // Lê o IP aqui dentro (import dinâmico) para o código de servidor não ir para o navegador.
+    const { getRequest } = await import("@tanstack/react-start/server");
+    const cab = getRequest()?.headers;
+    const ipDaRequisicao = (): string | null => {
+      if (!cab) return null;
+      const cf = cab.get("cf-connecting-ip");
+      if (cf) return cf.trim();
+      const real = cab.get("x-real-ip");
+      if (real) return real.trim();
+      const xff = cab.get("x-forwarded-for");
+      return xff ? xff.split(",")[0].trim() : null;
+    };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: r, error } = await (supabaseAdmin as any).rpc("registrar_checkin_ponto", {
       p_usuario_id: context.userId,

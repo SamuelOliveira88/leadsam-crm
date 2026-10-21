@@ -85,7 +85,7 @@ export const revogarLiberacao = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export function ipDaRequisicao(): string | null {
+function ipDaRequisicao(): string | null {
   const h = getRequest()?.headers;
   if (!h) return null;
   const cf = h.get("cf-connecting-ip");
