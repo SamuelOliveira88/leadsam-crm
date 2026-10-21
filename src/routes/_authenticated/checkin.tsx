@@ -1,26 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ExternalLink, LocateFixed, MapPin } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { meuPerfil } from "@/lib/perfis.functions";
-import {
-  definirLocalAtivo,
-  listarCheckins,
-  listarLocais,
-  registrarCheckin,
-  salvarLocal,
-  linkMapa,
-  textoDistancia,
-} from "@/lib/checkin.functions";
+import { listarCheckins, listarLocais, registrarCheckin, linkMapa, textoDistancia } from "@/lib/checkin.functions";
 import { CheckInButton } from "@/components/CheckInButton";
-import { useGeolocalizacao } from "@/hooks/use-geolocalizacao";
+import { PontosCard } from "@/components/PontosCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/_authenticated/checkin")({
   head: () => ({ meta: [{ title: "Check-in — Alexandria Leds" }] }),
@@ -43,7 +32,8 @@ function CheckinPage() {
 
   const ehMaster = !!(perfil && (perfil.role === "master" || perfil.super_admin));
   const ehEquipe = ehMaster || perfil?.role === "gerente";
-  const semLocal = !!locais && !locais.some((l) => l.ativo);
+  // O botão "Fazer check-in agora" usa o ponto mais próximo por GPS; pontos só de IP entram pelo QR.
+  const semLocal = !!locais && !locais.some((l) => l.ativo && l.usa_gps);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -73,7 +63,7 @@ function CheckinPage() {
         )}
       </Card>
 
-      {ehMaster && <LocaisCard locais={locais ?? []} />}
+      {ehMaster && <PontosCard pontos={locais ?? []} />}
 
       <Card className="p-5">
         <h2 className="mb-3 text-base font-semibold">{ehEquipe ? "Registros da equipe (7 dias)" : "Meus registros (7 dias)"}</h2>
@@ -82,137 +72,28 @@ function CheckinPage() {
             <div key={r.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border p-3 text-sm">
               <span className="font-medium">{r.usuario_nome ?? "—"}</span>
               <Badge variant="secondary">{r.tipo === "checkin" ? "Check-in" : "Login"}</Badge>
+              {r.metodo && <Badge variant="outline">{r.metodo === "gps+ip" ? "GPS + IP" : r.metodo.toUpperCase()}</Badge>}
               {r.dentro_do_raio === true && <Badge className="bg-emerald-600 text-white">No local</Badge>}
               {r.dentro_do_raio === false && <Badge variant="destructive">Fora do local</Badge>}
               <span className="text-muted-foreground">
                 {r.local_nome ? `${r.local_nome} · ${textoDistancia(r.distancia_metros)}` : "sem local cadastrado"}
               </span>
               <span className="ml-auto text-xs text-muted-foreground">{quando(r.created_at)}</span>
-              <a
-                href={linkMapa(r.latitude, r.longitude)}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-              >
-                mapa <ExternalLink className="size-3" />
-              </a>
+              {r.latitude != null && r.longitude != null && (
+                <a
+                  href={linkMapa(r.latitude, r.longitude)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                >
+                  mapa <ExternalLink className="size-3" />
+                </a>
+              )}
             </div>
           ))}
           {registros && registros.length === 0 && <p className="text-sm text-muted-foreground">Nenhum registro ainda.</p>}
         </div>
       </Card>
     </div>
-  );
-}
-
-type Local = { id: string; nome: string; latitude: number; longitude: number; raio_metros: number; ativo: boolean };
-
-function LocaisCard({ locais }: { locais: Local[] }) {
-  const qc = useQueryClient();
-  const salvarFn = useServerFn(salvarLocal);
-  const ativoFn = useServerFn(definirLocalAtivo);
-  const { obter, carregando } = useGeolocalizacao();
-  const [nome, setNome] = useState("");
-  const [raio, setRaio] = useState("150");
-  const [lat, setLat] = useState("");
-  const [lng, setLng] = useState("");
-
-  async function usarMinhaLocalizacao() {
-    try {
-      const p = await obter();
-      setLat(p.latitude.toFixed(6));
-      setLng(p.longitude.toFixed(6));
-      toast.success(`Localização capturada (erro de cerca de ${Math.round(p.precisaoMetros)} m).`);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Não consegui pegar a localização.");
-    }
-  }
-
-  const salvar = useMutation({
-    mutationFn: () =>
-      salvarFn({
-        data: {
-          nome,
-          latitude: Number(lat.replace(",", ".")),
-          longitude: Number(lng.replace(",", ".")),
-          raio_metros: Math.round(Number(raio)),
-        },
-      }),
-    onSuccess: () => {
-      toast.success("Local salvo.");
-      setNome("");
-      setLat("");
-      setLng("");
-      qc.invalidateQueries({ queryKey: ["locais_checkin"] });
-    },
-    onError: (e: any) => toast.error(e?.message ?? "Não foi possível salvar o local."),
-  });
-
-  const alternar = useMutation({
-    mutationFn: (v: { id: string; ativo: boolean }) => ativoFn({ data: v }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["locais_checkin"] }),
-    onError: (e: any) => toast.error(e?.message ?? "Não foi possível alterar."),
-  });
-
-  const pronto = nome.trim().length >= 2 && lat.trim() !== "" && lng.trim() !== "" && Number(raio) >= 20;
-
-  return (
-    <Card className="space-y-4 p-5">
-      <h2 className="text-base font-semibold">Locais de plantão</h2>
-
-      <div className="space-y-2">
-        {locais.map((l) => (
-          <div key={l.id} className="flex flex-wrap items-center gap-3 rounded-lg border p-3 text-sm">
-            <MapPin className="size-4 text-muted-foreground" />
-            <span className="font-medium">{l.nome}</span>
-            <span className="text-muted-foreground">raio {l.raio_metros} m</span>
-            {!l.ativo && <Badge variant="outline">desativado</Badge>}
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              className="ml-auto"
-              disabled={alternar.isPending}
-              onClick={() => alternar.mutate({ id: l.id, ativo: !l.ativo })}
-            >
-              {l.ativo ? "Desativar" : "Ativar"}
-            </Button>
-          </div>
-        ))}
-        {locais.length === 0 && <p className="text-sm text-muted-foreground">Nenhum local cadastrado ainda.</p>}
-      </div>
-
-      <div className="space-y-3 rounded-lg border border-dashed p-4">
-        <p className="text-sm font-medium">Novo local</p>
-        <p className="text-xs text-muted-foreground">Fique no ponto do plantão e toque em “Usar minha localização atual”.</p>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <Label htmlFor="loc-nome">Nome</Label>
-            <Input id="loc-nome" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex.: Stand Vista Plaza" />
-          </div>
-          <div>
-            <Label htmlFor="loc-lat">Latitude</Label>
-            <Input id="loc-lat" inputMode="decimal" value={lat} onChange={(e) => setLat(e.target.value)} placeholder="-23.6" />
-          </div>
-          <div>
-            <Label htmlFor="loc-lng">Longitude</Label>
-            <Input id="loc-lng" inputMode="decimal" value={lng} onChange={(e) => setLng(e.target.value)} placeholder="-46.7" />
-          </div>
-          <div>
-            <Label htmlFor="loc-raio">Raio permitido (metros)</Label>
-            <Input id="loc-raio" inputMode="numeric" value={raio} onChange={(e) => setRaio(e.target.value)} />
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" onClick={usarMinhaLocalizacao} disabled={carregando}>
-            <LocateFixed className="mr-2 size-4" />
-            {carregando ? "Pegando…" : "Usar minha localização atual"}
-          </Button>
-          <Button type="button" onClick={() => salvar.mutate()} disabled={!pronto || salvar.isPending}>
-            Salvar local
-          </Button>
-        </div>
-      </div>
-    </Card>
   );
 }

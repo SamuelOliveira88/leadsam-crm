@@ -71,10 +71,12 @@ export type Database = {
           empresa_id: string
           grupo_id: string | null
           id: string
-          latitude: number
+          ip: string | null
+          metodo: string | null
+          latitude: number | null
           local_id: string | null
           local_nome: string | null
-          longitude: number
+          longitude: number | null
           precisao_metros: number | null
           tipo: string
           usuario_id: string
@@ -88,10 +90,12 @@ export type Database = {
           empresa_id: string
           grupo_id?: string | null
           id?: string
-          latitude: number
+          ip?: string | null
+          metodo?: string | null
+          latitude?: number | null
           local_id?: string | null
           local_nome?: string | null
-          longitude: number
+          longitude?: number | null
           precisao_metros?: number | null
           tipo: string
           usuario_id: string
@@ -105,10 +109,12 @@ export type Database = {
           empresa_id?: string
           grupo_id?: string | null
           id?: string
-          latitude?: number
+          ip?: string | null
+          metodo?: string | null
+          latitude?: number | null
           local_id?: string | null
           local_nome?: string | null
-          longitude?: number
+          longitude?: number | null
           precisao_metros?: number | null
           tipo?: string
           usuario_id?: string
@@ -1041,30 +1047,42 @@ export type Database = {
           created_at: string
           empresa_id: string
           id: string
-          latitude: number
-          longitude: number
+          ip_fixo: string | null
+          latitude: number | null
+          longitude: number | null
           nome: string
+          qr_codigo: string
           raio_metros: number
+          usa_gps: boolean
+          usa_ip: boolean
         }
         Insert: {
           ativo?: boolean
           created_at?: string
           empresa_id: string
           id?: string
-          latitude: number
-          longitude: number
+          ip_fixo?: string | null
+          latitude?: number | null
+          longitude?: number | null
           nome: string
+          qr_codigo?: string
           raio_metros?: number
+          usa_gps?: boolean
+          usa_ip?: boolean
         }
         Update: {
           ativo?: boolean
           created_at?: string
           empresa_id?: string
           id?: string
-          latitude?: number
-          longitude?: number
+          ip_fixo?: string | null
+          latitude?: number | null
+          longitude?: number | null
           nome?: string
+          qr_codigo?: string
           raio_metros?: number
+          usa_gps?: boolean
+          usa_ip?: boolean
         }
         Relationships: [
           {
@@ -1650,6 +1668,18 @@ export type Database = {
         }
         Returns: Json
       }
+      registrar_checkin_ponto: {
+        Args: {
+          p_ip: string
+          p_latitude?: number
+          p_local_id: string
+          p_longitude?: number
+          p_precisao_metros?: number
+          p_usuario_id: string
+        }
+        Returns: Json
+      }
+      regerar_qr_local: { Args: { p_id: string }; Returns: string }
       registrar_login_corretor: { Args: never; Returns: undefined }
       relay_confirmar: {
         Args: {

@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -22,6 +22,16 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
+  // Depois de entrar, volta para o ponto de um QR escaneado (se houver); senão vai para o painel.
+  const irParaDestino = useCallback(() => {
+    let destino = "";
+    try {
+      destino = sessionStorage.getItem("pos_login_destino") ?? "";
+      sessionStorage.removeItem("pos_login_destino");
+    } catch {}
+    if (/^\/ponto\/[0-9a-f]{32}$/.test(destino)) navigate({ to: destino as any, replace: true });
+    else navigate({ to: "/dashboard", replace: true });
+  }, [navigate]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,16 +40,16 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      if (data.user) navigate({ to: "/dashboard", replace: true });
+      if (data.user) irParaDestino();
     });
-  }, [navigate]);
+  }, [irParaDestino]);
 
   async function handleGoogle() {
     setLoading(true);
     const res = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
     if (res.error) { toast.error("Erro no login com Google"); setLoading(false); return; }
     if (res.redirected) return;
-    navigate({ to: "/dashboard", replace: true });
+    irParaDestino();
   }
 
   async function handleEmail(e: React.FormEvent) {
@@ -49,7 +59,7 @@ function AuthPage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       registrarLoginCorretor().catch(() => {});
-      navigate({ to: "/dashboard", replace: true });
+      irParaDestino();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Falha na autenticação");
     } finally { setLoading(false); }
