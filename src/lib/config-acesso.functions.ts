@@ -85,7 +85,7 @@ export const revogarLiberacao = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-function ipDaRequisicao(): string | null {
+export function ipDaRequisicao(): string | null {
   const h = getRequest()?.headers;
   if (!h) return null;
   const cf = h.get("cf-connecting-ip");
@@ -130,12 +130,19 @@ export const verificarAcessoRemoto = createServerFn({ method: "POST" })
 
     if (cfg.restringir_ip) {
       const lista = (cfg.ips_permitidos ?? []).map((x: string) => x.trim().toLowerCase());
+      // O IP fixo de cada ponto de acesso ativo também vale para entrar.
+      const { data: pontosIp } = await (context.supabase as any)
+        .from("locais_checkin").select("ip_fixo")
+        .eq("empresa_id", perfil.empresa_id).eq("ativo", true).eq("usa_ip", true);
+      for (const x of (pontosIp ?? []) as { ip_fixo: string | null }[]) {
+        if (x.ip_fixo) lista.push(x.ip_fixo.trim().toLowerCase());
+      }
       if (!ok.ip || !lista.includes(ok.ip.toLowerCase())) return { ...ok, permitido: false, motivo: "ip" as const };
     }
     if (cfg.restringir_local) {
       const { data: locais } = await context.supabase
         .from("locais_checkin").select("latitude, longitude, raio_metros")
-        .eq("empresa_id", perfil.empresa_id).eq("ativo", true);
+        .eq("empresa_id", perfil.empresa_id).eq("ativo", true).eq("usa_gps", true);
       if (locais && locais.length > 0) {
         const p = data?.posicao;
         if (!p) return { ...ok, permitido: false, motivo: "local_sem_gps" as const };
