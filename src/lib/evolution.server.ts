@@ -1,5 +1,6 @@
 // Evolution API helper — server-only.
 import { decidirAposFalha, type MotivoFalha } from "@/lib/fila-notificacao";
+import { nomeSemNumero } from "@/lib/telefone-oculto";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 // Envia mensagens de WhatsApp via instância Evolution configurada em secrets.
 
@@ -96,11 +97,11 @@ export async function sendWhatsAppNotification(
   return sendWhatsAppText(numero, mensagem, process.env.EVOLUTION_INSTANCE_NOTIF);
 }
 
-export function mensagemNovoLead(lead: { nome: string; telefone?: string | null; email?: string | null }) {
+export function mensagemNovoLead(lead: { nome: string; telefone?: string | null; email?: string | null; fonte?: string | null }) {
   const linhas = [
     "🔔 *Novo lead recebido — Alexandria Leds*",
-    `Nome: ${lead.nome}`,
-    lead.telefone ? `Telefone: ${lead.telefone}` : null,
+    `Nome: ${lead.fonte === "numero_mae" ? nomeSemNumero(lead.nome) : lead.nome}`,
+    lead.telefone && lead.fonte !== "numero_mae" ? `Telefone: ${lead.telefone}` : null,
     lead.email ? `Email: ${lead.email}` : null,
     "",
     "Atenda em até 10 minutos para não perder a preferência.",
@@ -147,7 +148,7 @@ export async function notificarCorretorPorLead(
 ): Promise<{ ok: boolean; error?: string; motivo?: MotivoFalha }> {
   const { data: lead, error } = await supabaseClient
     .from("leads")
-    .select("id, nome, telefone, email, corretor_id, grupo_id")
+    .select("id, nome, telefone, email, fonte, corretor_id, grupo_id")
     .eq("id", leadId)
     .maybeSingle();
 
@@ -192,12 +193,12 @@ export async function notificarCorretorPorLead(
   return { ok: true };
 }
 
-export function mensagemLeadRepetido(lead: { nome: string; telefone?: string | null }, mensagem?: string | null) {
+export function mensagemLeadRepetido(lead: { nome: string; telefone?: string | null; fonte?: string | null }, mensagem?: string | null) {
   const resumo = mensagem ? String(mensagem).trim().slice(0, 300) : "";
   const linhas = [
     "🔁 *Cliente voltou a entrar em contato — Alexandria Leds*",
-    `Nome: ${lead.nome}`,
-    lead.telefone ? `Telefone: ${lead.telefone}` : null,
+    `Nome: ${lead.fonte === "numero_mae" ? nomeSemNumero(lead.nome) : lead.nome}`,
+    lead.telefone && lead.fonte !== "numero_mae" ? `Telefone: ${lead.telefone}` : null,
     resumo ? `Mensagem: ${resumo}` : null,
     "",
     "Este cliente já é seu lead. Retome o atendimento agora.",
@@ -216,7 +217,7 @@ export async function notificarCorretorLeadRepetido(
 ): Promise<{ ok: boolean; error?: string }> {
   const { data: lead, error } = await supabaseClient
     .from("leads")
-    .select("id, nome, telefone, corretor_id, grupo_id")
+    .select("id, nome, telefone, fonte, corretor_id, grupo_id")
     .eq("id", leadId)
     .maybeSingle();
   if (error) return { ok: false, error: error.message };
@@ -369,7 +370,7 @@ export async function processarLembretesDeCompromisso(
 
     const { data: comp } = await supabaseClient
       .from("compromissos")
-      .select("id, tipo, status, data_hora, empreendimento, observacoes, corretor_id, leads(nome, telefone)")
+      .select("id, tipo, status, data_hora, empreendimento, observacoes, corretor_id, leads(nome, telefone, fonte)")
       .eq("id", item.compromisso_id)
       .maybeSingle();
 
@@ -407,8 +408,8 @@ export async function processarLembretesDeCompromisso(
           corretor.telefone,
           mensagemLembrete({
             tipo: comp.tipo,
-            leadNome: comp.leads?.nome ?? null,
-            leadTelefone: comp.leads?.telefone ?? null,
+            leadNome: comp.leads?.fonte === "numero_mae" ? nomeSemNumero(comp.leads?.nome) : comp.leads?.nome ?? null,
+            leadTelefone: comp.leads?.fonte === "numero_mae" ? null : comp.leads?.telefone ?? null,
             empreendimento: comp.empreendimento,
             dataHora: comp.data_hora,
             observacoes: comp.observacoes,

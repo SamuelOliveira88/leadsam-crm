@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { ehNumeroMae, leadSemTelefone, perfilEhCorretor, souCorretorPuro } from "@/lib/telefone-oculto";
 
 export const listarLeads = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -27,7 +28,8 @@ export const listarLeads = createServerFn({ method: "GET" })
       todos.push(...(data ?? []));
       if (!data || data.length < PAG) break;
     }
-    return todos;
+    // Corretor não vê o telefone de quem chegou pelo número mãe (atende pela tela Conversas).
+    return perfilEhCorretor(p) ? todos.map((l) => (ehNumeroMae(l) ? leadSemTelefone(l) : l)) : todos;
   });
 
 export const dashboardStats = createServerFn({ method: "GET" })
@@ -225,6 +227,7 @@ export const importarLeadsPlanilha = createServerFn({ method: "POST" })
 export const exportarLeads = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    const oculta = await souCorretorPuro(context.supabase, context.userId);
     const PAGINA = 1000;
     const MAX = 10000;
     const todos: any[] = [];
@@ -243,7 +246,7 @@ export const exportarLeads = createServerFn({ method: "GET" })
       todos.push(...(data ?? []));
       if (!data || data.length < PAGINA) break;
     }
-    return todos;
+    return oculta ? todos.map((l) => (ehNumeroMae(l) ? leadSemTelefone(l) : l)) : todos;
   });
 
 
@@ -456,15 +459,22 @@ export const atualizarLead = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
+    // Lead do número mãe visto por corretor: o telefone e o nome estão escondidos na tela, então não
+    // podem ser regravados (senão o número seria apagado) e a origem não pode ser trocada (revelaria o número).
+    const { data: atual } = await context.supabase.from("leads").select("fonte").eq("id", data.id).maybeSingle();
+    const protegido = ehNumeroMae(atual as any) && (await souCorretorPuro(context.supabase, context.userId));
+    const campos: Record<string, any> = {
+      email: data.email || null,
+      observacoes: data.observacoes || null,
+    };
+    if (!protegido) {
+      campos.nome = data.nome;
+      campos.fonte = data.fonte || null;
+      campos.telefone = data.telefone || null;
+    }
     const { data: rows, error } = await context.supabase
       .from("leads")
-      .update({
-        nome: data.nome,
-        telefone: data.telefone || null,
-        email: data.email || null,
-        fonte: data.fonte || null,
-        observacoes: data.observacoes || null,
-      })
+      .update(campos)
       .eq("id", data.id)
       .select("id");
     if (error) throw new Error(error.message);
