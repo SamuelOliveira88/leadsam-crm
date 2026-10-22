@@ -6,6 +6,20 @@ import { z } from "zod";
 // Tudo roda com o cliente do próprio usuário: quem decide o que cada um vê é o banco (RLS),
 // a mesma regra dos leads. Aqui só listamos e enviamos.
 
+// Só master, gerente e super admin veem o telefone do cliente. Corretor vê só o nome.
+async function podeVerTelefone(sb: any, userId: string): Promise<boolean> {
+  const { data: perfil } = await sb.from("perfis").select("role").eq("id", userId).maybeSingle();
+  if (perfil?.role === "master" || perfil?.role === "gerente") return true;
+  const { data: sa } = await sb.rpc("sou_super_admin");
+  return sa === true;
+}
+
+// Quando o cliente não tem nome no WhatsApp o lead recebe o próprio número como nome: também esconde.
+function nomeSemNumero(nome: string | null): string {
+  const n = (nome ?? "").trim();
+  return n.replace(/\D/g, "").length >= 8 ? "Cliente sem nome" : n || "Cliente";
+}
+
 export type ConversaResumo = {
   lead_id: string;
   nome: string;
@@ -32,6 +46,7 @@ export const listarConversas = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }): Promise<ConversaResumo[]> => {
     const sb = context.supabase as any;
+    const verTel = await podeVerTelefone(sb, context.userId);
     const { data: msgs, error } = await sb
       .from("lead_mensagens")
       .select("lead_id, direcao, texto, midia_tipo, created_at")
@@ -63,8 +78,8 @@ export const listarConversas = createServerFn({ method: "GET" })
         const x = porLead.get(l.id)!;
         return {
           lead_id: l.id,
-          nome: l.nome,
-          telefone: l.telefone,
+          nome: verTel ? l.nome : nomeSemNumero(l.nome),
+          telefone: verTel ? l.telefone : null,
           corretor_id: l.corretor_id,
           corretor_nome: l.corretor_id ? nomes.get(l.corretor_id) ?? null : null,
           ultima_texto: x.ult.texto ?? (x.ult.midia_tipo ? `[${x.ult.midia_tipo}]` : null),
