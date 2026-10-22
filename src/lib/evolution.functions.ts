@@ -33,7 +33,7 @@ export const notificarCorretorDoLead = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: lead, error } = await context.supabase
       .from("leads")
-      .select("id, nome, telefone, email, corretor_id, corretores(nome, telefone)")
+      .select("id, nome, telefone, email, fonte, corretor_id, corretores(nome, telefone)")
       .eq("id", data.lead_id)
       .maybeSingle();
     if (error) throw new Error(error.message);

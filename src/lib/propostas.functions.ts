@@ -1,22 +1,24 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { ehNumeroMae, leadSemTelefone, souCorretorPuro } from "@/lib/telefone-oculto";
 
 export const listarPropostas = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    const oculta = await souCorretorPuro(context.supabase, context.userId);
     const { data, error } = await context.supabase
       .from("propostas")
       .select(`
         id, lead_id, unidade_id, corretor_id, valor_proposto, valor_entrada, parcelas,
         condicoes, status, motivo_recusa, observacoes, created_at, atualizado_em,
         status_credito, credito_observacoes, credito_analisado_em,
-        leads(nome, telefone), unidades(numero, torre), corretores(nome)
+        leads(nome, telefone, fonte), unidades(numero, torre), corretores(nome)
       `)
       .order("created_at", { ascending: false })
       .limit(500);
     if (error) throw new Error(error.message);
-    return data ?? [];
+    return ((data ?? []) as any[]).map((r) => (oculta && ehNumeroMae(r.leads) ? { ...r, leads: leadSemTelefone(r.leads) } : r));
   });
 
 const PropostaInput = z.object({

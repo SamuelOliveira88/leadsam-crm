@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { ehNumeroMae, leadSemTelefone, souCorretorPuro } from "@/lib/telefone-oculto";
 import { STATUS_COMPROMISSO, TIPOS_COMPROMISSO } from "@/lib/agenda";
 
 // ============ AGENDA ============
@@ -24,9 +25,10 @@ export const listarCompromissos = createServerFn({ method: "GET" })
   )
   .handler(async ({ data, context }) => {
     const empresaId = await empresaDoUsuario(context);
+    const oculta = await souCorretorPuro(context.supabase, context.userId);
     const { data: rows, error } = await context.supabase
       .from("compromissos")
-      .select("id, lead_id, corretor_id, empreendimento, data_hora, tipo, status, observacoes, leads(nome, telefone), corretores(nome)")
+      .select("id, lead_id, corretor_id, empreendimento, data_hora, tipo, status, observacoes, leads(nome, telefone, fonte), corretores(nome)")
       .eq("empresa_id", empresaId)
       .gte("data_hora", data.de)
       .lt("data_hora", data.ate)
@@ -42,8 +44,8 @@ export const listarCompromissos = createServerFn({ method: "GET" })
       tipo: r.tipo as string,
       status: r.status as string,
       observacoes: (r.observacoes as string | null) ?? null,
-      lead_nome: (r.leads?.nome as string | undefined) ?? null,
-      lead_telefone: (r.leads?.telefone as string | undefined) ?? null,
+      lead_nome: ((oculta && ehNumeroMae(r.leads) ? leadSemTelefone(r.leads) : r.leads)?.nome as string | undefined) ?? null,
+      lead_telefone: oculta && ehNumeroMae(r.leads) ? null : ((r.leads?.telefone as string | undefined) ?? null),
       corretor_nome: (r.corretores?.nome as string | undefined) ?? null,
     }));
   });
