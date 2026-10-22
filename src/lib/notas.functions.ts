@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { ehNumeroMae, souCorretorPuro } from "@/lib/telefone-oculto";
+import { ehNumeroMae, souCorretorPuro, listaEstaBlindada } from "@/lib/telefone-oculto";
 
 export const listarNotas = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -59,7 +59,7 @@ export const gerarMensagemAbertura = createServerFn({ method: "POST" })
       .eq("id", data.lead_id)
       .maybeSingle();
     if (!lead) throw new Error("Lead não encontrado");
-    const ocultarTel = ehNumeroMae(lead as any) && (await souCorretorPuro(context.supabase, context.userId));
+    const ocultarTel = (await souCorretorPuro(context.supabase, context.userId)) && ehNumeroMae(lead as any, await listaEstaBlindada(context.supabase));
 
     const prompt = `Você é um corretor de imóveis brasileiro. Escreva uma mensagem CURTA (máx 4 linhas) e amigável para iniciar conversa no WhatsApp com o lead abaixo. Use o primeiro nome, seja natural e termine com uma pergunta aberta.\n\nLead: ${lead.nome}\nInteresse: ${data.interesse ?? "imóvel"}\n\nResponda APENAS com o texto da mensagem, sem aspas ou introduções.`;
 

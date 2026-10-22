@@ -6,6 +6,7 @@ import { Trash2, Plus, Layers, X, Mail, UserCog, KeyRound, Copy } from "lucide-r
 import { listarCorretores, criarCorretor, atualizarCorretor, excluirCorretor, cadastrarCorretorComSenha, redefinirSenhaCorretor } from "@/lib/corretores.functions";
 import { listarGrupos, criarGrupo, excluirGrupo } from "@/lib/grupos.functions";
 import { meuPerfil } from "@/lib/perfis.functions";
+import { lerListaBlindada, definirListaBlindada } from "@/lib/lista-blindada.functions";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,17 @@ function Corretores() {
   const { data: grupos } = useQuery({ queryKey: ["grupos"], queryFn: () => gruposFn() });
   const { data: perfil } = useQuery({ queryKey: ["meuPerfil"], queryFn: () => perfilFn() });
   const isMaster = perfil?.role === "master";
+  const lerBlindFn = useServerFn(lerListaBlindada);
+  const defBlindFn = useServerFn(definirListaBlindada);
+  const { data: blindInfo } = useQuery({ queryKey: ["listaBlindada"], queryFn: () => lerBlindFn() });
+  const blindMut = useMutation({
+    mutationFn: (blindada: boolean) => defBlindFn({ data: { blindada } }),
+    onSuccess: (r) => {
+      qc.invalidateQueries({ queryKey: ["listaBlindada"] });
+      toast.success(r.blindada ? "Listas blindadas: corretor não vê o telefone." : "Listas abertas: corretor vê o telefone.");
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Não deu para mudar."),
+  });
   const [showGrupos, setShowGrupos] = useState(false);
 
   const [form, setForm] = useState({ nome: "", email: "", telefone: "", grupo_id: "", canal_notificacao: "whatsapp" as const, recebe_via_web: true, recebe_via_whatsapp: true, role: "corretor" as "corretor" | "gerente" });
@@ -220,6 +232,27 @@ function Corretores() {
       </Card>
 
 
+
+      <Card className="flex items-center justify-between gap-4 p-4">
+        <div>
+          <div className="font-medium">Telefone dos leads de lista (planilha)</div>
+          <div className="text-sm text-muted-foreground">
+            {blindInfo?.blindada !== false
+              ? "Blindado: o corretor vê só o nome e conversa pela tela Conversas."
+              : "Aberto: o corretor vê o telefone dos leads de lista."}
+            {" "}Leads do número mãe ficam sempre blindados.
+          </div>
+        </div>
+        {isMaster && (
+          <Button
+            variant="outline"
+            disabled={blindMut.isPending || !blindInfo}
+            onClick={() => blindMut.mutate(blindInfo?.blindada === false)}
+          >
+            {blindInfo?.blindada === false ? "Blindar" : "Abrir"}
+          </Button>
+        )}
+      </Card>
 
       <div className="grid gap-2">
         {(data ?? []).map((c: any) => (
