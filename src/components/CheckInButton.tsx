@@ -23,14 +23,32 @@ export function CheckInButton({ onConfirmar, alvo, rotulo = "Fazer check-in", cl
   const { obter, carregando, permissao } = useGeolocalizacao();
   const [enviando, setEnviando] = useState(false);
 
+  // Explica de onde veio a posição quando o sistema diz que a pessoa está longe do ponto.
+  function detalhePosicao(pos: PosicaoGeo | null): string {
+    if (!pos) return "";
+    const lat = pos.latitude.toFixed(5);
+    const lon = pos.longitude.toFixed(5);
+    const aprox = pos.precisaoMetros > 1000;
+    return (
+      ` O navegador informou sua posição em ${lat}, ${lon} (margem de erro de ${formatarDistancia(pos.precisaoMetros)}).` +
+      (aprox
+        ? " Essa posição é aproximada (computador sem GPS ou VPN ligada). Faça o check-in pelo celular ou pelo QR do ponto."
+        : "")
+    );
+  }
+
   async function handleClick() {
+    let pos: PosicaoGeo | null = null;
     try {
-      const pos = await obter();
+      pos = await obter();
 
       if (alvo) {
         const { dentro, distanciaMetros } = dentroDoRaio(pos, alvo);
         if (!dentro) {
-          toast.error(`Você está a ${formatarDistancia(distanciaMetros)} do local. Chegue mais perto para fazer o check-in.`);
+          toast.error(
+            `Você está a ${formatarDistancia(distanciaMetros)} do local. Chegue mais perto para fazer o check-in.` + detalhePosicao(pos),
+            { duration: 12000 },
+          );
           return;
         }
       }
@@ -41,7 +59,8 @@ export function CheckInButton({ onConfirmar, alvo, rotulo = "Fazer check-in", cl
       if (e instanceof ErroGeo && e.estado === "negada") {
         toast.error("Localização bloqueada. Toque no cadeado ao lado do endereço do site, permita a localização e tente de novo.");
       } else {
-        toast.error(e instanceof Error ? e.message : "Não foi possível fazer o check-in.");
+        const base = e instanceof Error ? e.message : "Não foi possível fazer o check-in.";
+        toast.error(/Chegue mais perto/.test(base) ? base + detalhePosicao(pos) : base, { duration: 12000 });
       }
     } finally {
       setEnviando(false);
