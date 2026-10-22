@@ -97,9 +97,10 @@ function Conversas() {
                 <div className="shrink-0 text-[11px] text-muted-foreground">{hora(c.ultima_em)}</div>
               </div>
               <div className="mt-0.5 truncate text-xs text-muted-foreground">
-                {c.ultima_direcao === "saida" ? "Você: " : ""}{c.ultima_texto}
+                {!c.nova && c.ultima_direcao === "saida" ? "Você: " : ""}{c.ultima_texto}
               </div>
-              <div className="mt-1.5">
+              <div className="mt-1.5 flex flex-wrap gap-1">
+                {c.nova && <Badge variant="outline" className="text-[10px]">Novo contato</Badge>}
                 {c.corretor_id
                   ? <Badge variant="secondary" className="text-[10px]">{c.corretor_nome ?? "Corretor"}</Badge>
                   : <Badge variant="destructive" className="text-[10px]">Sem corretor</Badge>}
@@ -146,6 +147,12 @@ function Conversas() {
                 <div ref={fim} />
               </div>
 
+              {atual.nova && (
+                <p className="border-t bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+                  Primeira mensagem para este contato. Ele ainda não escreveu para o número mãe, então só dá para mandar
+                  uma antes de ele responder (máximo de 20 por dia).
+                </p>
+              )}
               <div className="flex items-end gap-2 border-t p-3">
                 <Textarea
                   value={texto}
