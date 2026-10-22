@@ -149,8 +149,8 @@ function Conversas() {
 
               {atual.nova && (
                 <p className="border-t bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-                  Primeira mensagem para este contato. Ele ainda não escreveu para o número mãe, então só dá para mandar
-                  uma antes de ele responder (máximo de 20 por dia).
+                  Este contato ainda não escreveu para o número mãe. Você pode mandar até 5 mensagens antes de ele
+                  responder, e até 20 contatos novos por dia.
                 </p>
               )}
               <div className="flex items-end gap-2 border-t p-3">
