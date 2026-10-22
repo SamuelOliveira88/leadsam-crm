@@ -6,8 +6,17 @@ export const FONTE_LISTA = "planilha_samuelimob";
 // Origens em que o corretor conversa pela tela Conversas e não vê o telefone.
 const FONTES_SEM_TELEFONE = [FONTE_NUMERO_MAE, FONTE_LISTA];
 
-export function ehNumeroMae(l: { fonte?: string | null } | null | undefined): boolean {
-  return !!l?.fonte && FONTES_SEM_TELEFONE.includes(l.fonte);
+/** `listaBlindada`: escolha da imobiliária. Número mãe é sempre blindado; lead de lista só quando a chave está ligada. */
+export function ehNumeroMae(l: { fonte?: string | null } | null | undefined, listaBlindada = true): boolean {
+  if (!l?.fonte) return false;
+  if (l.fonte === FONTE_NUMERO_MAE) return true;
+  return l.fonte === FONTE_LISTA && listaBlindada;
+}
+
+/** Chave da imobiliária do usuário (padrão: blindado). */
+export async function listaEstaBlindada(supabase: any): Promise<boolean> {
+  const { data, error } = await supabase.rpc("minha_lista_blindada");
+  return error ? true : data !== false;
 }
 
 /** Corretor "comum": quem não é master, gerente nem super admin. */

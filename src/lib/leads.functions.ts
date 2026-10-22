@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
-import { ehNumeroMae, leadSemTelefone, perfilEhCorretor, souCorretorPuro } from "@/lib/telefone-oculto";
+import { ehNumeroMae, leadSemTelefone, perfilEhCorretor, souCorretorPuro, listaEstaBlindada } from "@/lib/telefone-oculto";
 
 export const listarLeads = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -29,7 +29,9 @@ export const listarLeads = createServerFn({ method: "GET" })
       if (!data || data.length < PAG) break;
     }
     // Corretor não vê o telefone de quem chegou pelo número mãe (atende pela tela Conversas).
-    return perfilEhCorretor(p) ? todos.map((l) => (ehNumeroMae(l) ? leadSemTelefone(l) : l)) : todos;
+    if (!perfilEhCorretor(p)) return todos;
+    const blind = await listaEstaBlindada(context.supabase);
+    return todos.map((l) => (ehNumeroMae(l, blind) ? leadSemTelefone(l) : l));
   });
 
 export const dashboardStats = createServerFn({ method: "GET" })
@@ -246,7 +248,9 @@ export const exportarLeads = createServerFn({ method: "GET" })
       todos.push(...(data ?? []));
       if (!data || data.length < PAGINA) break;
     }
-    return oculta ? todos.map((l) => (ehNumeroMae(l) ? leadSemTelefone(l) : l)) : todos;
+    if (!oculta) return todos;
+    const blind = await listaEstaBlindada(context.supabase);
+    return todos.map((l) => (ehNumeroMae(l, blind) ? leadSemTelefone(l) : l));
   });
 
 
@@ -462,7 +466,7 @@ export const atualizarLead = createServerFn({ method: "POST" })
     // Lead do número mãe visto por corretor: o telefone e o nome estão escondidos na tela, então não
     // podem ser regravados (senão o número seria apagado) e a origem não pode ser trocada (revelaria o número).
     const { data: atual } = await context.supabase.from("leads").select("fonte").eq("id", data.id).maybeSingle();
-    const protegido = ehNumeroMae(atual as any) && (await souCorretorPuro(context.supabase, context.userId));
+    const protegido = ehNumeroMae(atual as any, await listaEstaBlindada(context.supabase)) && (await souCorretorPuro(context.supabase, context.userId));
     const campos: Record<string, any> = {
       email: data.email || null,
       observacoes: data.observacoes || null,
