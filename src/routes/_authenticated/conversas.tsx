@@ -123,7 +123,7 @@ function Conversas() {
                 </Button>
                 <div className="min-w-0">
                   <div className="truncate text-sm font-semibold">{atual.nome}</div>
-                  <div className="truncate text-xs text-muted-foreground">{atual.telefone}</div>
+                  {atual.telefone && <div className="truncate text-xs text-muted-foreground">{atual.telefone}</div>}
                 </div>
               </div>
 
