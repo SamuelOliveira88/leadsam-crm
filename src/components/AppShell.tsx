@@ -117,12 +117,14 @@ export function AppShell({ user, children }: { user: User; children: React.React
 
   const hb = useServerFn(heartbeatCorretor);
   useEffect(() => {
-    if (perfil?.role !== "corretor") return;
+    // Qualquer perfil pode ter cadastro de corretor (ex.: master que atende o número mãe).
+    // Sem cadastro, o banco simplesmente ignora o sinal.
+    if (!perfil) return;
     const ping = () => { hb().catch(() => {}); };
     ping();
     const id = setInterval(ping, 60_000);
     return () => clearInterval(id);
-  }, [perfil?.role]);
+  }, [!!perfil]);
 
   // Notifica o monitor (WhatsApp) uma vez por sessão de login
   const notifLogin = useServerFn(notificarLoginMonitor);
