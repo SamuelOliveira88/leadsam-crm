@@ -2,9 +2,12 @@
 // Master, gerente e super admin continuam vendo. Estas funções são puras (sem código de servidor).
 
 export const FONTE_NUMERO_MAE = "numero_mae";
+export const FONTE_LISTA = "planilha_samuelimob";
+// Origens em que o corretor conversa pela tela Conversas e não vê o telefone.
+const FONTES_SEM_TELEFONE = [FONTE_NUMERO_MAE, FONTE_LISTA];
 
 export function ehNumeroMae(l: { fonte?: string | null } | null | undefined): boolean {
-  return l?.fonte === FONTE_NUMERO_MAE;
+  return !!l?.fonte && FONTES_SEM_TELEFONE.includes(l.fonte);
 }
 
 /** Corretor "comum": quem não é master, gerente nem super admin. */

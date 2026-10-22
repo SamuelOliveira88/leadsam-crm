@@ -27,6 +27,8 @@ export type ConversaResumo = {
   ultima_direcao: "entrada" | "saida";
   ultima_em: string;
   total: number;
+  /** Lead de lista que ainda não conversou: aparece para o corretor iniciar a conversa. */
+  nova?: boolean;
 };
 
 export type MensagemConversa = {
@@ -58,7 +60,6 @@ export const listarConversas = createServerFn({ method: "GET" })
       else porLead.set(m.lead_id, { ult: m, total: 1 });
     }
     const ids = [...porLead.keys()];
-    if (ids.length === 0) return [];
 
     const { data: leads, error: e2 } = await sb
       .from("leads").select("id, nome, telefone, corretor_id").in("id", ids);
@@ -70,7 +71,33 @@ export const listarConversas = createServerFn({ method: "GET" })
       for (const c of (cs ?? []) as any[]) nomes.set(c.id, c.nome);
     }
 
-    return ((leads ?? []) as any[])
+    // Leads de lista (planilha) que ainda não têm conversa: o corretor pode mandar a primeira mensagem.
+    const { data: novos } = await sb
+      .from("leads")
+      .select("id, nome, telefone, corretor_id, created_at")
+      .eq("fonte", "planilha_samuelimob")
+      .order("created_at", { ascending: false })
+      .limit(300);
+    const novosSemConversa = ((novos ?? []) as any[]).filter((l) => !porLead.has(l.id));
+    const corIdsNovos = [...new Set(novosSemConversa.map((l) => l.corretor_id).filter((i) => i && !nomes.has(i)))];
+    if (corIdsNovos.length) {
+      const { data: cs2 } = await sb.from("corretores").select("id, nome").in("id", corIdsNovos);
+      for (const c of (cs2 ?? []) as any[]) nomes.set(c.id, c.nome);
+    }
+    const resumoNovos: ConversaResumo[] = novosSemConversa.map((l) => ({
+      lead_id: l.id,
+      nome: verTel ? l.nome : nomeSemNumero(l.nome),
+      telefone: verTel ? l.telefone : null,
+      corretor_id: l.corretor_id,
+      corretor_nome: l.corretor_id ? nomes.get(l.corretor_id) ?? null : null,
+      ultima_texto: "Ainda sem conversa. Toque para mandar a primeira mensagem.",
+      ultima_direcao: "saida",
+      ultima_em: l.created_at,
+      total: 0,
+      nova: true,
+    }));
+
+    const comConversa = ((leads ?? []) as any[])
       .map((l) => {
         const x = porLead.get(l.id)!;
         return {
@@ -86,6 +113,7 @@ export const listarConversas = createServerFn({ method: "GET" })
         } as ConversaResumo;
       })
       .sort((a, b) => (a.ultima_em < b.ultima_em ? 1 : -1));
+    return [...comConversa, ...resumoNovos];
   });
 
 export const mensagensDoLead = createServerFn({ method: "GET" })

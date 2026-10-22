@@ -1,6 +1,6 @@
 // Evolution API helper — server-only.
 import { decidirAposFalha, type MotivoFalha } from "@/lib/fila-notificacao";
-import { nomeSemNumero } from "@/lib/telefone-oculto";
+import { ehNumeroMae, nomeSemNumero } from "@/lib/telefone-oculto";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 // Envia mensagens de WhatsApp via instância Evolution configurada em secrets.
 
@@ -100,8 +100,8 @@ export async function sendWhatsAppNotification(
 export function mensagemNovoLead(lead: { nome: string; telefone?: string | null; email?: string | null; fonte?: string | null }) {
   const linhas = [
     "🔔 *Novo lead recebido — Alexandria Leds*",
-    `Nome: ${lead.fonte === "numero_mae" ? nomeSemNumero(lead.nome) : lead.nome}`,
-    lead.telefone && lead.fonte !== "numero_mae" ? `Telefone: ${lead.telefone}` : null,
+    `Nome: ${ehNumeroMae(lead) ? nomeSemNumero(lead.nome) : lead.nome}`,
+    lead.telefone && !ehNumeroMae(lead) ? `Telefone: ${lead.telefone}` : null,
     lead.email ? `Email: ${lead.email}` : null,
     "",
     "Atenda em até 10 minutos para não perder a preferência.",
@@ -197,8 +197,8 @@ export function mensagemLeadRepetido(lead: { nome: string; telefone?: string | n
   const resumo = mensagem ? String(mensagem).trim().slice(0, 300) : "";
   const linhas = [
     "🔁 *Cliente voltou a entrar em contato — Alexandria Leds*",
-    `Nome: ${lead.fonte === "numero_mae" ? nomeSemNumero(lead.nome) : lead.nome}`,
-    lead.telefone && lead.fonte !== "numero_mae" ? `Telefone: ${lead.telefone}` : null,
+    `Nome: ${ehNumeroMae(lead) ? nomeSemNumero(lead.nome) : lead.nome}`,
+    lead.telefone && !ehNumeroMae(lead) ? `Telefone: ${lead.telefone}` : null,
     resumo ? `Mensagem: ${resumo}` : null,
     "",
     "Este cliente já é seu lead. Retome o atendimento agora.",
@@ -408,8 +408,8 @@ export async function processarLembretesDeCompromisso(
           corretor.telefone,
           mensagemLembrete({
             tipo: comp.tipo,
-            leadNome: comp.leads?.fonte === "numero_mae" ? nomeSemNumero(comp.leads?.nome) : comp.leads?.nome ?? null,
-            leadTelefone: comp.leads?.fonte === "numero_mae" ? null : comp.leads?.telefone ?? null,
+            leadNome: ehNumeroMae(comp.leads) ? nomeSemNumero(comp.leads?.nome) : comp.leads?.nome ?? null,
+            leadTelefone: ehNumeroMae(comp.leads) ? null : comp.leads?.telefone ?? null,
             empreendimento: comp.empreendimento,
             dataHora: comp.data_hora,
             observacoes: comp.observacoes,
