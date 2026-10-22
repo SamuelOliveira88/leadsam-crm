@@ -2,7 +2,7 @@ import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Building2, LayoutDashboard, Users, UserCog, Upload, Clock, Layers, LogOut, Bell, Grid3x3, ShieldCheck, FileText, NotebookPen, Plug, MapPin, CalendarDays } from "lucide-react";
+import { Building2, LayoutDashboard, Users, UserCog, Upload, Clock, Layers, LogOut, Bell, Grid3x3, ShieldCheck, FileText, NotebookPen, Plug, MapPin, CalendarDays, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { meuPerfil } from "@/lib/perfis.functions";
 import { heartbeatCorretor } from "@/lib/corretores.functions";
@@ -18,6 +18,7 @@ import type { User } from "@supabase/supabase-js";
 const NAV_CORRETOR = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/leads", label: "Leads", icon: Users },
+  { to: "/conversas", label: "Conversas", icon: MessageCircle },
   { to: "/espelho", label: "Espelho", icon: Grid3x3 },
   { to: "/propostas", label: "Propostas", icon: FileText },
   { to: "/agenda", label: "Agenda", icon: CalendarDays },
@@ -28,6 +29,7 @@ const NAV_CORRETOR = [
 const NAV_ADMIN = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/leads", label: "Leads", icon: Users },
+  { to: "/conversas", label: "Conversas", icon: MessageCircle },
   { to: "/espelho", label: "Espelho", icon: Grid3x3 },
   { to: "/propostas", label: "Propostas", icon: FileText },
   { to: "/agenda", label: "Agenda", icon: CalendarDays },
