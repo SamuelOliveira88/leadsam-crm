@@ -2,7 +2,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { registrarLoginCorretor } from "@/lib/notificacoes.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,10 +45,11 @@ function AuthPage() {
 
   async function handleGoogle() {
     setLoading(true);
-    const res = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-    if (res.error) { toast.error("Erro no login com Google"); setLoading(false); return; }
-    if (res.redirected) return;
-    irParaDestino();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth` },
+    });
+    if (error) { toast.error("Erro no login com Google"); setLoading(false); }
   }
 
   async function handleEmail(e: React.FormEvent) {
