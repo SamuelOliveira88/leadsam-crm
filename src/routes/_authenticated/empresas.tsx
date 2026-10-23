@@ -17,6 +17,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/empresas")({
   ssr: false,
@@ -49,6 +50,18 @@ function Empresas() {
   });
 
   const [novaOpen, setNovaOpen] = useState(false);
+  const [codigoGerado, setCodigoGerado] = useState<string | null>(null);
+  const [gerando, setGerando] = useState(false);
+
+  async function gerarCodigo() {
+    setGerando(true);
+    try {
+      const { data, error } = await (supabase as any).rpc("gerar_convite_imobiliaria", { p_validade_dias: 7 });
+      if (error) throw new Error(error.message);
+      setCodigoGerado(String(data));
+    } catch (err: any) { toast.error(err.message ?? "Não foi possível gerar o código."); }
+    finally { setGerando(false); }
+  }
 
   async function acao(id: string, a: "iniciar" | "prorrogar" | "ativar") {
     try {
@@ -73,10 +86,29 @@ function Empresas() {
           <h1 className="text-2xl font-bold tracking-tight">Empresas clientes</h1>
           <p className="text-sm text-muted-foreground">Painel do super-admin — visão de todas as imobiliárias</p>
         </div>
-        <Button size="sm" onClick={() => setNovaOpen(true)}>
-          <Plus className="mr-2 size-4" /> Nova empresa
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" onClick={gerarCodigo} disabled={gerando}>
+            {gerando ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}Gerar código de convite
+          </Button>
+          <Button size="sm" onClick={() => setNovaOpen(true)}>
+            <Plus className="mr-2 size-4" /> Nova empresa
+          </Button>
+        </div>
       </div>
+
+      {codigoGerado && (
+        <Card className="space-y-2 p-4">
+          <div className="text-sm text-muted-foreground">Código de convite (vale 7 dias, 1 uso):</div>
+          <div className="text-2xl font-bold tracking-widest">{codigoGerado}</div>
+          <div className="break-all text-xs text-muted-foreground">
+            {`${window.location.origin}/cadastro-empresa?codigo=${codigoGerado}`}
+          </div>
+          <Button size="sm" variant="outline" onClick={() => {
+            navigator.clipboard?.writeText(`${window.location.origin}/cadastro-empresa?codigo=${codigoGerado}`);
+            toast.success("Link copiado.");
+          }}>Copiar link</Button>
+        </Card>
+      )}
 
       {isLoading && <div className="text-sm text-muted-foreground">Carregando…</div>}
 
