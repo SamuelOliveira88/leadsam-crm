@@ -92,6 +92,7 @@ function CadastroPorCodigo() {
             <Input id="em" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required /></div>
           <div className="space-y-1"><Label htmlFor="pw">Senha (mínimo 8)</Label>
             <Input id="pw" type="password" value={senha} onChange={(e) => setSenha(e.target.value)} minLength={8} autoComplete="new-password" required /></div>
+          <p className="text-xs text-muted-foreground">Ao criar a conta, você concorda com os <a href="/termos" target="_blank" className="underline">Termos de Uso</a> e a <a href="/privacidade" target="_blank" className="underline">Política de Privacidade</a>.</p>
           <Button type="submit" className="w-full" disabled={carregando}>
             {carregando ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}Criar minha imobiliária
           </Button>
