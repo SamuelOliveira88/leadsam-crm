@@ -6,7 +6,7 @@ import { createFileRoute } from "@tanstack/react-router";
 const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { "content-type": "application/json", "cache-control": "no-store" } });
 
-const REF = /^alex\|([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\|(alexandria)$/i;
+const REF = /^alex\|([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\|(alexandria|alexandria_ia)$/i;
 
 export const Route = createFileRoute("/api/public/asaas-webhook")({
   server: {
@@ -40,7 +40,7 @@ export const Route = createFileRoute("/api/public/asaas-webhook")({
             const { sendWhatsAppNotification } = await import("@/lib/evolution.server");
             const { data: emp } = await (supabaseAdmin as any).from("empresas").select("nome").eq("id", empresaId).maybeSingle();
             await sendWhatsAppNotification("5511932368278",
-              `💰 *Pagamento confirmado no Alexandria*\nImobiliária: ${emp?.nome ?? empresaId}\nPlano: Alexandria (mensal)\nValor: R$ ${Number(pg.value ?? 0).toFixed(2).replace(".", ",")}`);
+              `💰 *Pagamento confirmado no Alexandria*\nImobiliária: ${emp?.nome ?? empresaId}\nPlano: ${plano === "alexandria_ia" ? "Alexandria + Mi.IA" : "Alexandria"} (mensal)\nValor: R$ ${Number(pg.value ?? 0).toFixed(2).replace(".", ",")}`);
           } catch { /* aviso é só conforto */ }
         }
         return json({ ok: true, ativado: data === true });

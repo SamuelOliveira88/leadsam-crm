@@ -1,8 +1,9 @@
 // Fala com o Asaas. A chave (ASAAS_API_KEY) fica só no servidor (Vercel). Nada de chave no código.
-export type PlanoPago = "alexandria";
+export type PlanoPago = "alexandria" | "alexandria_ia";
 
 export const PLANOS: Record<PlanoPago, { nome: string; valor: number; descricao: string }> = {
   alexandria: { nome: "Alexandria Leads — plano mensal", valor: 299, descricao: "Alexandria Leads para a imobiliária, com até 10 corretores. Cobrança mensal." },
+  alexandria_ia: { nome: "Alexandria Leads + Mi.IA — plano mensal", valor: 499, descricao: "Alexandria Leads com até 10 corretores e a Mi.IA atendendo os leads antes do corretor. Cobrança mensal." },
 };
 
 const base = () => (process.env.ASAAS_API_URL || "https://api.asaas.com/v3").replace(/\/$/, "");
