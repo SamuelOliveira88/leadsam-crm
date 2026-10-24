@@ -7,6 +7,19 @@ export type DadosContrato = {
   cidade: string;
 };
 
+export const VERSAO_CONTRATO = "2026-10-24";
+
+// Dados da Alexandria (contratada). Preencher uma vez aqui; aparecem em todos os contratos.
+export const CONTRATADA = {
+  a_nome: "",
+  a_doc: "",
+  a_endereco: "",
+  a_email: "",
+  a_rep: "",
+  a_suporte: "",
+  a_foro: "",
+};
+
 export const DADOS_VAZIOS: DadosContrato = {
   a_nome: "", a_doc: "", a_endereco: "", a_email: "", a_rep: "", a_suporte: "", a_foro: "",
   i_nome: "", i_cnpj: "", i_creci: "", i_endereco: "", i_email: "", i_whats: "", i_rep: "", i_cpf: "",
