@@ -1,7 +1,7 @@
 -- A Mi.IA atende o lead novo do número mãe ANTES do corretor (plano Alexandria + Mi.IA, dentro do horário escolhido).
 -- Quando bate a regra de passagem, o cliente pára de falar ou a Mi.IA falha, o lead segue o rodízio de sempre.
 
-CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;
+CREATE EXTENSION IF NOT EXISTS pg_net;
 
 ALTER TABLE public.leads
   ADD COLUMN IF NOT EXISTS mia_estado text CHECK (mia_estado IN ('atendendo','passada')),
