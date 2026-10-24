@@ -6,7 +6,7 @@ import { createFileRoute } from "@tanstack/react-router";
 const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { "content-type": "application/json", "cache-control": "no-store" } });
 
-const REF = /^alex\|([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\|(alexandria|alexandria_ia)$/i;
+const REF = /^alex\|([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\|(alexandria|alexandria_ia|extra[0-9]{1,2})$/i;
 
 export const Route = createFileRoute("/api/public/asaas-webhook")({
   server: {
@@ -25,6 +25,24 @@ export const Route = createFileRoute("/api/public/asaas-webhook")({
         const m = REF.exec(String(pg.externalReference ?? ""));
         if (!m) return json({ ok: true, ignorado: "sem referência do Alexandria" });
         const [, empresaId, plano] = m;
+
+        if (/^extra/i.test(plano)) {
+          const extras = Number(plano.slice(5));
+          const { supabaseAdmin: sa } = await import("@/integrations/supabase/client.server");
+          const { data: okx, error: ex } = await (sa as any).rpc("ativar_extras_corretores", {
+            p_empresa: empresaId.toLowerCase(), p_extras: extras, p_valor: Number(pg.value ?? 0), p_asaas_id: String(pg.id), p_evento: evento,
+          });
+          if (ex) { console.error("[asaas-webhook] extras", ex.message); return json({ error: "falha ao ativar extras" }, 500); }
+          if (okx === true) {
+            try {
+              const { sendWhatsAppNotification } = await import("@/lib/evolution.server");
+              const { data: emp } = await (sa as any).from("empresas").select("nome").eq("id", empresaId).maybeSingle();
+              await sendWhatsAppNotification("5511932368278",
+                `👥 *Corretores extras no Alexandria*\nImobiliária: ${emp?.nome ?? empresaId}\nExtras: ${extras} (limite agora ${10 + extras})\nValor: R$ ${Number(pg.value ?? 0).toFixed(2).replace(".", ",")}/mês\nSe ela já tinha extras antes, cancele a assinatura antiga no Asaas.`);
+            } catch { /* aviso é só conforto */ }
+          }
+          return json({ ok: true, extras: okx === true });
+        }
 
         const estender = true; // cada mensalidade paga estende 31 dias
 
