@@ -1,10 +1,10 @@
 -- Planos comerciais do Alexandria + pagamento pelo Asaas.
--- gratis | pago (R$ 199,90/ano) | pago_ia (R$ 49,90/mês). O teste de 7 dias libera tudo (conta pela data).
+-- gratis | alexandria (R$ 299/mês por imobiliária, até 10 corretores). O teste de 7 dias libera tudo (conta pela data).
 -- Quem muda o plano é o webhook do Asaas (service_role) ou o super admin. Master não consegue se promover.
 
 ALTER TABLE public.empresas
   ADD COLUMN IF NOT EXISTS plano_comercial text NOT NULL DEFAULT 'gratis'
-    CHECK (plano_comercial IN ('gratis','pago','pago_ia')),
+    CHECK (plano_comercial IN ('gratis','alexandria')),
   ADD COLUMN IF NOT EXISTS plano_ate timestamptz;
 
 CREATE TABLE IF NOT EXISTS public.cobrancas_asaas (
@@ -63,7 +63,7 @@ CREATE OR REPLACE FUNCTION public.ativar_plano(
 AS $$
 DECLARE v_n integer;
 BEGIN
-  IF p_plano NOT IN ('pago','pago_ia') THEN RAISE EXCEPTION 'plano inválido'; END IF;
+  IF p_plano <> 'alexandria' THEN RAISE EXCEPTION 'plano inválido'; END IF;
   INSERT INTO public.cobrancas_asaas (asaas_id, empresa_id, plano, valor, evento)
   VALUES (p_asaas_id, p_empresa, p_plano, p_valor, p_evento)
   ON CONFLICT (asaas_id) DO NOTHING;
@@ -72,7 +72,7 @@ BEGIN
   UPDATE public.empresas
      SET plano_comercial = p_plano,
          plano_ate = greatest(coalesce(plano_ate, now()), now())
-                     + CASE p_plano WHEN 'pago' THEN interval '365 days' ELSE interval '31 days' END
+                     + interval '31 days'
    WHERE id = p_empresa;
   RETURN true;
 END $$;

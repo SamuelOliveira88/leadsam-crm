@@ -16,16 +16,12 @@ export const Route = createFileRoute("/_authenticated/meu-plano")({
   component: () => <RequireAdmin><MeuPlano /></RequireAdmin>,
 });
 
-type Plano = { efetivo: "teste" | "gratis" | "pago" | "pago_ia"; plano: string; plano_ate: string | null; teste_ate: string | null };
+type Plano = { efetivo: "teste" | "gratis" | "alexandria"; plano: string; plano_ate: string | null; teste_ate: string | null };
 
-const NOMES: Record<string, string> = { teste: "Teste (tudo liberado)", gratis: "Grátis", pago: "Pago", pago_ia: "Pago com a Mi.IA" };
+const NOMES: Record<string, string> = { teste: "Teste (tudo liberado)", gratis: "Sem plano ativo", alexandria: "Alexandria Leads" };
 const dia = (d: string | null) => (d ? new Date(d).toLocaleDateString("pt-BR") : "");
 
-const CARDS: { id: "gratis" | "pago" | "pago_ia"; nome: string; preco: string; sub: string; itens: string[] }[] = [
-  { id: "gratis", nome: "Grátis", preco: "R$ 0", sub: "", itens: ["Etiquetas, notas e respostas rápidas", "Chatbot simples", "Outras funções com cadeado"] },
-  { id: "pago", nome: "Pago", preco: "R$ 199,90", sub: "por ano · até 6x no cartão", itens: ["Tudo do grátis", "Funil, planilha e lembretes", "Agendamento e disparo", "Equipe e rodízio de leads"] },
-  { id: "pago_ia", nome: "Pago com a Mi.IA", preco: "R$ 49,90", sub: "por mês", itens: ["Tudo do plano Pago", "Mi.IA atendendo no WhatsApp", "Pré-pago: pagou, usou"] },
-];
+const ITENS = ["Até 10 corretores incluídos", "Distribuição de leads em rodízio", "Conversas pelo WhatsApp da imobiliária", "Funil, planilha, agenda, espelho e propostas", "Importação de leads e integrações"];
 
 function MeuPlano() {
   const { pago } = Route.useSearch();
@@ -40,7 +36,7 @@ function MeuPlano() {
     refetchInterval: pago ? 4000 : false, // logo depois de pagar, espera o aviso do Asaas chegar
   });
   const assinar = useMutation({
-    mutationFn: (plano: "pago" | "pago_ia") => payFn({ data: { plano } }),
+    mutationFn: (plano: "alexandria") => payFn({ data: { plano } }),
     onSuccess: ({ url }) => { window.open(url, "_blank", "noopener"); },
     onError: (e: any) => toast.error(e?.message || "Não consegui abrir o pagamento."),
   });
@@ -65,29 +61,21 @@ function MeuPlano() {
             <span>Plano atual:</span>
             <Badge>{NOMES[atual ?? "gratis"]}</Badge>
             {atual === "teste" && data?.teste_ate && <span className="text-muted-foreground">até {dia(data.teste_ate)}</span>}
-            {(atual === "pago" || atual === "pago_ia") && data?.plano_ate && <span className="text-muted-foreground">válido até {dia(data.plano_ate)}</span>}
+            {atual === "alexandria" && data?.plano_ate && <span className="text-muted-foreground">válido até {dia(data.plano_ate)}</span>}
           </div>
         )}
       </Card>
 
-      <div className="grid gap-3 md:grid-cols-3">
-        {CARDS.map((c) => (
-          <Card key={c.id} className={`flex flex-col gap-3 p-5 ${c.id === "pago" ? "border-primary/50" : ""}`}>
-            <div className="text-lg font-semibold">{c.nome}</div>
-            <div><span className="text-3xl font-bold">{c.preco}</span> <span className="text-xs text-muted-foreground">{c.sub}</span></div>
-            <ul className="grid flex-1 gap-1.5 text-sm text-muted-foreground">
-              {c.itens.map((i) => <li key={i} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-primary" />{i}</li>)}
-            </ul>
-            {c.id === "gratis" ? (
-              <Button variant="outline" disabled>{atual === "gratis" ? "Seu plano" : "Plano básico"}</Button>
-            ) : (
-              <Button onClick={() => assinar.mutate(c.id as "pago" | "pago_ia")} disabled={assinar.isPending || atual === c.id}>
-                {atual === c.id ? "Seu plano" : assinar.isPending ? "Abrindo…" : "Assinar"}
-              </Button>
-            )}
-          </Card>
-        ))}
-      </div>
+      <Card className="flex max-w-md flex-col gap-3 border-primary/50 p-5">
+        <div className="text-lg font-semibold">Alexandria Leads</div>
+        <div><span className="text-3xl font-bold">R$ 299</span> <span className="text-xs text-muted-foreground">por mês, por imobiliária</span></div>
+        <ul className="grid gap-1.5 text-sm text-muted-foreground">
+          {ITENS.map((i) => <li key={i} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-primary" />{i}</li>)}
+        </ul>
+        <Button onClick={() => assinar.mutate("alexandria")} disabled={assinar.isPending || atual === "alexandria"}>
+          {atual === "alexandria" ? "Seu plano" : assinar.isPending ? "Abrindo…" : "Assinar"}
+        </Button>
+      </Card>
       <p className="text-xs text-muted-foreground">Pagamento processado pelo Asaas. Sem fidelidade. Dúvidas? Fale com a Mi.IA no WhatsApp.</p>
     </div>
   );

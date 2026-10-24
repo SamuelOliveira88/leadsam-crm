@@ -1,9 +1,8 @@
 // Fala com o Asaas. A chave (ASAAS_API_KEY) fica só no servidor (Vercel). Nada de chave no código.
-export type PlanoPago = "pago" | "pago_ia";
+export type PlanoPago = "alexandria";
 
 export const PLANOS: Record<PlanoPago, { nome: string; valor: number; descricao: string }> = {
-  pago: { nome: "Alexandria Leads — Plano Pago (1 ano)", valor: 199.9, descricao: "Funil, planilha, lembretes, agendamento, disparo e equipe. 12 meses." },
-  pago_ia: { nome: "Alexandria Leads — Pago com a Mi.IA (mensal)", valor: 49.9, descricao: "Tudo do plano Pago, mais a Mi.IA atendendo no WhatsApp. Cobrança mensal." },
+  alexandria: { nome: "Alexandria Leads — plano mensal", valor: 299, descricao: "Alexandria Leads para a imobiliária, com até 10 corretores. Cobrança mensal." },
 };
 
 const base = () => (process.env.ASAAS_API_URL || "https://api.asaas.com/v3").replace(/\/$/, "");
@@ -22,8 +21,8 @@ export async function criarLinkPagamento(empresaId: string, plano: PlanoPago): P
     notificationEnabled: true,
     callback: { successUrl: "https://www.alexandrialeads.app/meu-plano?pago=1", autoRedirect: true },
   };
-  if (plano === "pago") { corpo.chargeType = "INSTALLMENT"; corpo.maxInstallmentCount = 6; }
-  else { corpo.chargeType = "RECURRENT"; corpo.subscriptionCycle = "MONTHLY"; }
+  corpo.chargeType = "RECURRENT";
+  corpo.subscriptionCycle = "MONTHLY";
 
   const r = await fetch(`${base()}/paymentLinks`, {
     method: "POST",
