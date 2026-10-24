@@ -65,7 +65,7 @@ function Manual() {
       <Secao id="planos" titulo="4. Planos e pagamento">
         <ul>
           <li><b>Alexandria Leads — R$ 299 por mês</b> por imobiliária, até 10 corretores, com rodízio, conversas, funil, agenda, espelho, propostas e importação.</li>
-          <li><b>Alexandria + Mi.IA — R$ 499 por mês</b>: tudo do plano acima e a Mi.IA atendendo o lead antes do corretor.</li>
+          <li><b>Alexandria + Mi.IA — R$ 499 por mês</b>, também até 10 corretores: tudo do plano acima e a Mi.IA atendendo o lead antes do corretor.</li>
         </ul>
         <p>Para assinar, o master abre <b>Meu plano</b> e clica em <b>Assinar</b>. O pagamento é por Pix, boleto ou cartão, pelo Asaas, sem fidelidade. O plano é liberado sozinho quando o pagamento é confirmado (boleto pode levar até 1 dia útil) e cada mensalidade paga vale por mais 31 dias.</p>
         <p>Corretores além de 10: fale com a equipe do Alexandria.</p>

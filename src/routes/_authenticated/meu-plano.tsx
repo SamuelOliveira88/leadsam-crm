@@ -81,6 +81,7 @@ function MeuPlano() {
           <div className="flex items-center gap-2 text-lg font-semibold">Alexandria + Mi.IA <Badge>Mais completo</Badge></div>
           <div><span className="text-3xl font-bold">R$ 499</span> <span className="text-xs text-muted-foreground">por mês, por imobiliária</span></div>
           <ul className="grid gap-1.5 text-sm text-muted-foreground">
+            <li className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-primary" />Até 10 corretores incluídos</li>
             <li className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-primary" />Tudo do plano Alexandria</li>
             <li className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-primary" />Mi.IA atende o lead antes do corretor, no horário que você escolher</li>
             <li className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-primary" />Você ensina o jeito de falar da sua imobiliária</li>
