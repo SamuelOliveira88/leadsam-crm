@@ -161,7 +161,7 @@ function MeuPlano() {
             <div className="pb-2 text-sm">Total dos extras: <b>R$ {extras * precoExtra},00</b> por mês</div>
             <Button onClick={() => comprarExtras.mutate()} disabled={comprarExtras.isPending}>{comprarExtras.isPending ? "Abrindo…" : "Contratar extras"}</Button>
           </div>
-          <p className="text-xs text-muted-foreground">Informe o total de extras que você quer (não soma com compras antigas). O limite sobe assim que o pagamento é confirmado.</p>
+          <p className="text-xs text-muted-foreground">Informe o total de extras que você quer (não soma com compras antigas). Os extras valem enquanto o pagamento estiver em dia e sobem assim que o pagamento é confirmado.</p>
         </Card>
       )}
       <p className="text-xs text-muted-foreground">Pagamento processado pelo Asaas. Sem fidelidade. Dúvidas? Fale com a Mi.IA no WhatsApp.</p>

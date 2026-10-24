@@ -38,7 +38,7 @@ export const Route = createFileRoute("/api/public/asaas-webhook")({
               const { sendWhatsAppNotification } = await import("@/lib/evolution.server");
               const { data: emp } = await (sa as any).from("empresas").select("nome").eq("id", empresaId).maybeSingle();
               await sendWhatsAppNotification("5511932368278",
-                `👥 *Corretores extras no Alexandria*\nImobiliária: ${emp?.nome ?? empresaId}\nExtras: ${extras} (limite agora ${10 + extras})\nValor: R$ ${Number(pg.value ?? 0).toFixed(2).replace(".", ",")}/mês\nSe ela já tinha extras antes, cancele a assinatura antiga no Asaas.`);
+                `👥 *Corretores extras no Alexandria*\nImobiliária: ${emp?.nome ?? empresaId}\nExtras: ${extras} (valem enquanto o pagamento estiver em dia)\nValor: R$ ${Number(pg.value ?? 0).toFixed(2).replace(".", ",")}/mês\nSe ela já tinha extras antes, cancele a assinatura antiga no Asaas.`);
             } catch { /* aviso é só conforto */ }
           }
           return json({ ok: true, extras: okx === true });
