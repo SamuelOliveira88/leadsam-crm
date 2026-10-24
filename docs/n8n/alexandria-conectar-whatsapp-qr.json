@@ -1,0 +1,52 @@
+{
+ "name": "Alexandria - Conectar WhatsApp por QR (imobiliarias)",
+ "nodes": [
+  {
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "seconds",
+       "secondsInterval": 5
+      }
+     ]
+    }
+   },
+   "name": "A cada 5 segundos",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ]
+  },
+  {
+   "parameters": {
+    "jsCode": "\n// Alexandria — conectar WhatsApp por QR (uma instância por imobiliária)\nconst ALEX_URL = 'https://yiufxfckyqjrmkkiibfl.supabase.co';\nconst ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpdWZ4ZmNreXFqcm1ra2lpYmZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNDIzMjUsImV4cCI6MjEwNzkxODMyNX0.Nv8kHqpgVmniGJxUmny58Itwxxf_ABI6lUhxzyclbas';\nconst SEGREDO = 'COLE_AQUI_O_SEGREDO_DO_RELE';            // o mesmo do fluxo que pega a caixa de saída\nconst WEBHOOK_ENTRADA = 'COLE_AQUI_A_URL_DO_WEBHOOK_DO_NUMERO_MAE'; // a mesma do número mãe (messages.upsert)\nconst EVO = 'http://evolution-api:8080';\nconst EVO_KEY = $env.EVOLUTION_API_KEY;\n\nconst h = this.helpers;\nconst rpc = (fn, body) => h.httpRequest({ method: 'POST', url: `${ALEX_URL}/rest/v1/rpc/${fn}`,\n  headers: { apikey: ANON, Authorization: `Bearer ${ANON}`, 'Content-Type': 'application/json' }, body, json: true });\nconst evo = (method, path, body) => h.httpRequest({ method, url: `${EVO}${path}`,\n  headers: { apikey: EVO_KEY, 'Content-Type': 'application/json' }, body, json: true });\nconst atualizar = (empresa, status, extra = {}) => rpc('whatsapp_atualizar',\n  { p_segredo: SEGREDO, p_empresa: empresa, p_status: status, p_qr: extra.qr ?? null, p_numero: extra.numero ?? null, p_erro: extra.erro ?? null });\n\nconst pendentes = await rpc('whatsapp_pendentes', { p_segredo: SEGREDO });\nconst saida = [];\nfor (const p of pendentes) {\n  const nome = p.instancia;\n  try {\n    if (p.status === 'desconectar') {\n      try { await evo('DELETE', `/instance/logout/${nome}`); } catch (e) {}\n      await atualizar(p.empresa_id, 'desconectado');\n      saida.push({ json: { nome, feito: 'desconectado' } });\n      continue;\n    }\n    if (p.status === 'qr') {\n      // já tem QR na tela: confere se o cliente leu\n      const st = await evo('GET', `/instance/connectionState/${nome}`);\n      if ((st.instance?.state || st.state) === 'open') {\n        let numero = null;\n        try {\n          const lista = await evo('GET', `/instance/fetchInstances?instanceName=${nome}`);\n          const i = Array.isArray(lista) ? lista[0] : lista;\n          numero = (i?.ownerJid || i?.instance?.owner || '').split('@')[0] || null;\n        } catch (e) {}\n        await atualizar(p.empresa_id, 'conectado', { numero });\n        saida.push({ json: { nome, feito: 'conectado' } });\n        continue;\n      }\n    }\n    if (p.status === 'pedido') {\n      try {\n        await evo('POST', '/instance/create', { instanceName: nome, qrcode: true, integration: 'WHATSAPP-BAILEYS',\n          webhook: { url: WEBHOOK_ENTRADA, byEvents: false, base64: false, events: ['MESSAGES_UPSERT'] } });\n      } catch (e) { /* já existe: só pede o QR de novo */ }\n    }\n    const c = await evo('GET', `/instance/connect/${nome}`);\n    const qr = c.base64 || c.qrcode?.base64 || null;\n    if (qr) { await atualizar(p.empresa_id, 'qr', { qr }); saida.push({ json: { nome, feito: 'qr' } }); }\n    else if (c.instance?.state === 'open') { await atualizar(p.empresa_id, 'conectado'); saida.push({ json: { nome, feito: 'ja-conectado' } }); }\n  } catch (e) {\n    try { await atualizar(p.empresa_id, 'erro', { erro: String(e.message || e).slice(0, 200) }); } catch (_) {}\n    saida.push({ json: { nome, erro: String(e.message || e) } });\n  }\n}\nreturn saida;\n"
+   },
+   "name": "Conectar WhatsApp",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    260,
+    0
+   ]
+  }
+ ],
+ "connections": {
+  "A cada 5 segundos": {
+   "main": [
+    [
+     {
+      "node": "Conectar WhatsApp",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {
+  "executionOrder": "v1"
+ }
+}
