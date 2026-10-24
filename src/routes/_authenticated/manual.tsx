@@ -46,7 +46,7 @@ function Manual() {
           <li>Cada corretor responde pelo Alexandria, em <b>Conversas</b>, e acompanha o lead no funil.</li>
         </ol>
         <p>Os <b>7 dias de teste</b> liberam tudo, inclusive a Mi.IA.</p>
-      </Card>
+      </Secao>
 
       <Secao id="leads" titulo="2. Como o lead chega ao corretor">
         <ul>
@@ -55,12 +55,12 @@ function Manual() {
           <li>Cliente que volta a escrever continua com o mesmo corretor.</li>
           <li>O corretor vê só os leads dele. Master e gerente veem os da equipe.</li>
         </ul>
-      </Card>
+      </Secao>
 
       <Secao id="whatsapp" titulo="3. WhatsApp da imobiliária">
         <p>Em <b>WhatsApp</b> (menu Master), clique em <b>Conectar WhatsApp</b> e leia o QR code: no celular da imobiliária, abra <b>Aparelhos conectados</b> e depois <b>Conectar um aparelho</b>.</p>
         <p>Depois de conectado, as mensagens dos clientes chegam à equipe e os corretores respondem por texto ou áudio. A Mi.IA liga e desliga nessa mesma tela.</p>
-      </Card>
+      </Secao>
 
       <Secao id="planos" titulo="4. Planos e pagamento">
         <ul>
@@ -69,7 +69,7 @@ function Manual() {
         </ul>
         <p>Para assinar, o master abre <b>Meu plano</b> e clica em <b>Assinar</b>. O pagamento é por Pix, boleto ou cartão, pelo Asaas, sem fidelidade. O plano é liberado sozinho quando o pagamento é confirmado (boleto pode levar até 1 dia útil) e cada mensalidade paga vale por mais 31 dias.</p>
         <p>Corretores além de 10: fale com a equipe do Alexandria.</p>
-      </Card>
+      </Secao>
 
       <Secao id="mia" titulo="5. Minha Mi.IA (as 8 perguntas)">
         <p>Em <b>Minha Mi.IA</b> (menu Master) você ensina a Mi.IA a falar pela sua imobiliária. Quanto mais específico, melhor. Escreva só o que é verdade: ela repete o que você escrever.</p>
@@ -80,7 +80,7 @@ function Manual() {
         </ol>
         <p><b>Horário:</b> escolha os dias e as horas em que a Mi.IA atende (horário de Brasília). Fora dele, o lead vai direto para os corretores.</p>
         <p><b>Teste:</b> na mesma tela, converse com a Mi.IA como se fosse um cliente. Ajuste as respostas até ficar como você quer e só então ligue.</p>
-      </Card>
+      </Secao>
 
       <Secao id="mia-atende" titulo="6. Como a Mi.IA atende">
         <ol>
@@ -91,7 +91,7 @@ function Manual() {
         </ol>
         <p>Para ninguém ficar sem resposta, o lead também vai para o corretor se a Mi.IA falhar, se passar de 6 respostas dela ou se o cliente ficar 20 minutos sem responder.</p>
         <p>A Mi.IA <b>nunca inventa</b> preço, desconto, prazo ou aprovação de crédito: se não souber, ela diz que o corretor confirma.</p>
-      </Card>
+      </Secao>
 
       <Secao id="duvidas" titulo="7. Dúvidas comuns">
         <p><b>Não aparece Minha Mi.IA para ligar.</b> Ela faz parte do plano Alexandria + Mi.IA ou dos 7 dias de teste. Veja em <Link to="/meu-plano" className="underline">Meu plano</Link>.</p>
@@ -99,7 +99,7 @@ function Manual() {
         <p><b>A Mi.IA respondeu algo errado.</b> Corrija a resposta correspondente em Minha Mi.IA e teste de novo. Use a pergunta 8 (Limites) para proibir o que ela não deve prometer.</p>
         <p><b>Quero que a Mi.IA atenda só à noite.</b> Em Minha Mi.IA, desmarque "o dia todo" e escolha as horas (pode virar a noite, por exemplo das 18:00 às 08:00).</p>
         <p><b>Discador / ligações pelo sistema.</b> Ainda não existe.</p>
-      </Card>
+      </Secao>
     </div>
   );
 }
