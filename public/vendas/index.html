@@ -102,6 +102,23 @@ footer a{color:#fff}
   section{padding:56px 0}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+#mia-btn{position:fixed;right:16px;bottom:16px;z-index:50;border:0;border-radius:999px;padding:14px 20px;background:#16a34a;color:#fff;font:600 15px/1 inherit;font-family:inherit;box-shadow:0 6px 20px rgba(0,0,0,.25);cursor:pointer}
+#mia-box{position:fixed;right:16px;bottom:16px;z-index:51;width:min(380px,calc(100vw - 32px));height:min(560px,calc(100vh - 32px));background:#fff;color:#111;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.3);display:none;flex-direction:column;overflow:hidden;font-family:inherit}
+#mia-box.on{display:flex}
+#mia-box header{background:#16a34a;color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;font-weight:600}
+#mia-box header button{background:none;border:0;color:#fff;font-size:22px;cursor:pointer}
+#mia-msgs{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#f4f5f7}
+.mia-m{max-width:85%;padding:9px 12px;border-radius:12px;font-size:14px;line-height:1.4;white-space:pre-wrap}
+.mia-m.v{align-self:flex-end;background:#dcf8c6}
+.mia-m.m{align-self:flex-start;background:#fff}
+#mia-lead{display:none;padding:8px 12px;border-top:1px solid #e5e7eb;gap:6px;flex-direction:column;background:#fff}
+#mia-lead.on{display:flex}
+#mia-box input{border:1px solid #d1d5db;border-radius:8px;padding:9px;font:inherit;font-size:14px}
+#mia-form{display:flex;gap:6px;padding:10px 12px;border-top:1px solid #e5e7eb;background:#fff}
+#mia-form input{flex:1}
+#mia-box .mb{border:0;border-radius:8px;padding:9px 14px;background:#16a34a;color:#fff;font:600 14px inherit;font-family:inherit;cursor:pointer}
+#mia-box a.mb{text-decoration:none;text-align:center}
 </style>
 </head>
 <body>
@@ -219,6 +236,30 @@ footer a{color:#fff}
     },400);
   }
   if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches){ setInterval(passo,3200); }
+})();
+</script>
+
+<button id="mia-btn" type="button">💬 Tire suas dúvidas com a Mi.IA</button>
+<div id="mia-box" role="dialog" aria-label="Chat com a Mi.IA">
+<header><span>Mi.IA · Alexandria Leads</span><button type="button" id="mia-x" aria-label="Fechar">×</button></header>
+<div id="mia-msgs"></div>
+<div id="mia-lead"><small>Quer testar 7 dias? Deixe seu contato que a equipe chama:</small>
+<input id="mia-nome" placeholder="Seu nome" maxlength="80"><input id="mia-tel" placeholder="Seu WhatsApp com DDD" inputmode="tel" maxlength="20">
+<button class="mb" type="button" id="mia-enviar">Quero testar</button>
+<a class="mb" id="mia-wa" href="https://wa.me/5511920036576?text=Oi!%20Quero%20conhecer%20e%20testar%20o%20Alexandria%207%20dias%20gr%C3%A1tis%20(ALEXANDRIA-SITE)" target="_blank" rel="noopener">Ou fale no WhatsApp</a></div>
+<form id="mia-form"><input id="mia-in" placeholder="Digite sua dúvida…" maxlength="500" autocomplete="off"><button class="mb">Enviar</button></form>
+</div>
+<script>
+(function(){
+var box=document.getElementById('mia-box'),btn=document.getElementById('mia-btn'),msgs=document.getElementById('mia-msgs'),inp=document.getElementById('mia-in'),lead=document.getElementById('mia-lead');
+var hist=[],busy=false,n=0;
+function add(t,v){var d=document.createElement('div');d.className='mia-m '+(v?'v':'m');d.textContent=t;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;return d}
+function abrir(){box.classList.add('on');btn.style.display='none';if(!msgs.children.length)add('Oi! Eu sou a Mi.IA 👋 Posso tirar suas dúvidas sobre o Alexandria. O que você quer saber?',false);inp.focus()}
+btn.onclick=abrir;document.getElementById('mia-x').onclick=function(){box.classList.remove('on');btn.style.display=''};
+document.getElementById('mia-form').onsubmit=function(e){e.preventDefault();var t=inp.value.trim();if(!t||busy)return;inp.value='';add(t,true);hist.push({papel:'visitante',texto:t});busy=true;var w=add('…',false);n++;
+fetch('/api/public/chat-mia',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({mensagens:hist})}).then(function(r){return r.json()}).then(function(j){var r=j.resposta||'Não consegui responder agora. Fale com a equipe pelo WhatsApp abaixo.';w.textContent=r;if(j.resposta)hist.push({papel:'mia',texto:r});if(n>=2||!j.resposta)lead.classList.add('on')}).catch(function(){w.textContent='Sem conexão agora. Tente de novo ou fale pelo WhatsApp.';lead.classList.add('on')}).then(function(){busy=false;msgs.scrollTop=msgs.scrollHeight})};
+document.getElementById('mia-enviar').onclick=function(){var nome=document.getElementById('mia-nome').value.trim(),tel=document.getElementById('mia-tel').value.trim();if(nome.length<2||tel.replace(/\D/g,'').length<10){add('Preencha nome e WhatsApp com DDD, por favor.',false);return}
+fetch('/api/public/chat-mia',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({acao:'lead',nome:nome,whatsapp:tel})}).then(function(r){return r.json()}).then(function(j){if(j.ok){lead.classList.remove('on');add('Pronto! A equipe vai te chamar no WhatsApp em breve 🙌',false)}else add('Não consegui avisar a equipe agora. Use o botão "Ou fale no WhatsApp".',false)}).catch(function(){add('Sem conexão. Use o botão "Ou fale no WhatsApp".',false)})};
 })();
 </script>
 </body>
