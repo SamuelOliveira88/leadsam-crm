@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Alexandria Leads: lead novo, corretor certo, na hora</title>
+<meta name="description" content="CRM para imobiliárias: recebe os leads, divide entre os corretores, conecta o WhatsApp da imobiliária e acompanha cada cliente até a venda. Teste por 7 dias.">
+<meta property="og:title" content="Alexandria Leads: lead novo, corretor certo, na hora">
+<meta property="og:description" content="Receba, divida e atenda os leads da sua imobiliária pelo WhatsApp. Teste por 7 dias.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0b3c49">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --petroleo:#0b3c49; --verde:#0f5b6b; --placa:#f5c518; --papel:#f6f9f9; --tinta:#10252b; --suave:#4a636b; --linha:#d5e2e5; --menta:#d9f2e6; --menta-i:#0d5a3b;
+  --titulo:"Bricolage Grotesque",system-ui,sans-serif; --texto:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font:18px/1.6 var(--texto);color:var(--tinta);background:var(--papel);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--placa);outline-offset:3px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+h1,h2,h3{font-family:var(--titulo);line-height:1.08;letter-spacing:-.02em}
+.btn{display:inline-block;background:var(--placa);color:var(--petroleo);font:700 1.05rem var(--titulo);padding:15px 26px;border-radius:10px;text-decoration:none;border:2px solid var(--petroleo);box-shadow:4px 4px 0 var(--petroleo);transition:transform .12s,box-shadow .12s}
+.btn:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--petroleo)}
+.btn.sec{background:transparent;color:#fff;border-color:#fff;box-shadow:none}
+header.topo{background:var(--petroleo);color:#fff}
+.topo .wrap{display:flex;align-items:center;justify-content:space-between;padding-top:16px;padding-bottom:16px}
+.marca{font:800 1.25rem var(--titulo);letter-spacing:-.01em;text-decoration:none}
+.topo nav{display:flex;gap:22px;align-items:center;font-size:.98rem}
+.topo nav a{text-decoration:none;opacity:.9}
+.topo nav a.entrar{border:1px solid #ffffff66;padding:7px 14px;border-radius:8px}
+/* hero */
+.hero{background:var(--petroleo);color:#fff;padding:36px 0 72px}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+.hero h1{font-size:clamp(2.2rem,5.2vw,3.7rem);font-weight:800}
+.hero p.lead{margin:20px 0 28px;font-size:1.2rem;max-width:34ch;color:#cfe3e7}
+.hero .acoes{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.hero small{display:block;margin-top:16px;color:#9fc0c7;font-size:.95rem}
+/* demo */
+.demo{background:#fff;color:var(--tinta);border-radius:16px;padding:20px;box-shadow:0 20px 50px #00000040}
+.demo h2{font:600 .95rem var(--texto);color:var(--suave);margin-bottom:14px;letter-spacing:0}
+.chega{border:2px dashed var(--verde);border-radius:12px;padding:12px 14px;background:#eef7f9;min-height:74px;transition:opacity .4s}
+.chega b{display:block;font:700 1.05rem var(--titulo)}
+.chega span{font-size:.92rem;color:var(--suave)}
+.seta{text-align:center;color:var(--verde);font:700 .9rem var(--texto);margin:10px 0}
+.fila{list-style:none;display:grid;gap:8px}
+.fila li{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--linha);border-radius:10px;padding:11px 14px;transition:background .35s,border-color .35s,transform .35s}
+.fila li em{font-style:normal;font-size:.88rem;color:var(--suave)}
+.fila li.vez{background:var(--menta);border-color:var(--menta-i);transform:translateX(6px)}
+.fila li.vez em{color:var(--menta-i);font-weight:600}
+.demo p.nota{margin-top:14px;font-size:.85rem;color:var(--suave)}
+/* seções */
+section{padding:72px 0}
+section h2{font-size:clamp(1.8rem,3.6vw,2.6rem);font-weight:800;max-width:20ch}
+section p.intro{margin-top:14px;color:var(--suave);max-width:56ch}
+.dores{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:36px;border-top:2px solid var(--tinta)}
+.dores div{padding:22px 22px 0 0}
+.dores div+div{padding-left:22px;border-left:1px solid var(--linha)}
+.dores h3{font-size:1.3rem;margin-bottom:8px}
+.dores p{color:var(--suave)}
+.passos{list-style:none;margin-top:36px;counter-reset:p;display:grid;gap:0;border-top:2px solid var(--tinta)}
+.passos li{counter-increment:p;display:grid;grid-template-columns:56px 1fr;gap:6px 14px;padding:22px 0;border-bottom:1px solid var(--linha)}
+.passos li::before{content:counter(p);font:800 2rem var(--titulo);color:var(--verde);grid-row:span 2}
+.passos h3{font-size:1.35rem}
+.passos p{color:var(--suave);max-width:60ch}
+.faixa{background:var(--petroleo);color:#fff}
+.faixa h2{max-width:22ch}
+.faixa p.intro{color:#cfe3e7}
+.grupos{display:grid;grid-template-columns:repeat(2,1fr);gap:40px 48px;margin-top:36px}
+.grupos h3{font-size:1.25rem;margin-bottom:10px;color:var(--placa)}
+.grupos ul{list-style:none;display:grid;gap:8px}
+.grupos li{padding-left:20px;position:relative;color:#e3eef0}
+.grupos li::before{content:"";position:absolute;left:0;top:.65em;width:9px;height:9px;background:var(--placa);border-radius:2px}
+.dois{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.celular{border:2px solid var(--tinta);border-radius:22px;padding:22px;background:#fff;max-width:340px;justify-self:center;box-shadow:8px 8px 0 var(--linha)}
+.celular b{font:700 1.1rem var(--titulo)}
+.celular .qr{margin:14px 0;aspect-ratio:1;border-radius:10px;background:
+ conic-gradient(var(--tinta) 25%,#fff 0 50%,var(--tinta) 0 75%,#fff 0) 0 0/28px 28px;opacity:.9}
+.celular span{display:inline-block;background:var(--menta);color:var(--menta-i);font-weight:600;padding:5px 12px;border-radius:99px;font-size:.92rem}
+.teste{background:var(--placa);color:var(--petroleo)}
+.teste h2{max-width:18ch}
+.teste p{margin:14px 0 24px;max-width:50ch;font-size:1.1rem}
+.teste .btn{background:var(--petroleo);color:#fff;border-color:var(--petroleo);box-shadow:4px 4px 0 #00000055}
+details{border-bottom:1px solid var(--linha);padding:16px 0}
+summary{cursor:pointer;font:700 1.12rem var(--titulo)}
+details p{margin-top:8px;color:var(--suave);max-width:62ch}
+.faq{margin-top:28px;border-top:2px solid var(--tinta)}
+footer{background:var(--petroleo);color:#9fc0c7;padding:34px 0;font-size:.95rem}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+footer a{color:#fff}
+@media(max-width:860px){
+  .hero .wrap,.dois{grid-template-columns:1fr}
+  .dores{grid-template-columns:1fr}
+  .dores div+div{padding-left:0;border-left:0;border-top:1px solid var(--linha);margin-top:18px}
+  .dores div{padding-right:0}
+  .grupos{grid-template-columns:1fr}
+  .topo nav a:not(.entrar){display:none}
+  section{padding:56px 0}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+#mia-btn{position:fixed;right:16px;bottom:16px;z-index:50;border:0;border-radius:999px;padding:14px 20px;background:#16a34a;color:#fff;font:600 15px/1 inherit;font-family:inherit;box-shadow:0 6px 20px rgba(0,0,0,.25);cursor:pointer}
+#mia-box{position:fixed;right:16px;bottom:16px;z-index:51;width:min(380px,calc(100vw - 32px));height:min(560px,calc(100vh - 32px));background:#fff;color:#111;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.3);display:none;flex-direction:column;overflow:hidden;font-family:inherit}
+#mia-box.on{display:flex}
+#mia-box header{background:#16a34a;color:#fff;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;font-weight:600}
+#mia-box header button{background:none;border:0;color:#fff;font-size:22px;cursor:pointer}
+#mia-msgs{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#f4f5f7}
+.mia-m{max-width:85%;padding:9px 12px;border-radius:12px;font-size:14px;line-height:1.4;white-space:pre-wrap}
+.mia-m.v{align-self:flex-end;background:#dcf8c6}
+.mia-m.m{align-self:flex-start;background:#fff}
+#mia-lead{display:none;padding:8px 12px;border-top:1px solid #e5e7eb;gap:6px;flex-direction:column;background:#fff}
+#mia-lead.on{display:flex}
+#mia-box input{border:1px solid #d1d5db;border-radius:8px;padding:9px;font:inherit;font-size:14px}
+#mia-form{display:flex;gap:6px;padding:10px 12px;border-top:1px solid #e5e7eb;background:#fff}
+#mia-form input{flex:1}
+#mia-box .mb{border:0;border-radius:8px;padding:9px 14px;background:#16a34a;color:#fff;font:600 14px inherit;font-family:inherit;cursor:pointer}
+#mia-box a.mb{text-decoration:none;text-align:center}
+</style>
+</head>
+<body>
+<header class="topo"><div class="wrap">
+  <a class="marca" href="#topo">Alexandria Leads</a>
+  <nav><a href="#como">Como funciona</a><a href="#recursos">O que tem</a><a href="#duvidas">Dúvidas</a><a class="entrar" href="/auth">Entrar</a></nav>
+</div></header>
+
+<main id="topo">
+<div class="hero"><div class="wrap">
+  <div>
+    <h1>Lead novo na mão do corretor certo, na hora.</h1>
+    <p class="lead">O Alexandria recebe os contatos da sua imobiliária, divide entre os corretores e deixa o atendimento no WhatsApp da própria imobiliária.</p>
+    <div class="acoes">
+      <a class="btn" href="https://wa.me/5511920036576?text=Oi!%20Quero%20conhecer%20e%20testar%20o%20Alexandria%207%20dias%20gr%C3%A1tis%20(ALEXANDRIA-SITE)">Pedir teste de 7 dias</a>
+      <a class="btn sec" href="#como">Ver como funciona</a>
+    </div>
+    <small>O teste é feito com a sua equipe, no seu WhatsApp.</small>
+  </div>
+  <div class="demo" aria-label="Exemplo de como o Alexandria divide os leads">
+    <h2>Exemplo: um lead chega e o Alexandria escolhe quem atende</h2>
+    <div class="chega" id="chega"><b id="lead-nome">Maria Souza</b><span id="lead-info">Quer apartamento de 2 quartos</span></div>
+    <div class="seta">dividido em rodízio entre quem está online</div>
+    <ul class="fila" id="fila">
+      <li class="vez"><span>Corretor 1</span><em>atendendo este lead</em></li>
+      <li><span>Corretor 2</span><em>próximo da vez</em></li>
+      <li><span>Corretor 3</span><em>online</em></li>
+    </ul>
+    <p class="nota">Dados de exemplo.</p>
+  </div>
+</div></div>
+
+<section><div class="wrap">
+  <h2>Onde o lead costuma se perder</h2>
+  <div class="dores">
+    <div><h3>Chegou fora do horário</h3><p>O cliente escreve à noite e ninguém vê. No Alexandria o lead fica guardado e é liberado sozinho quando o atendimento volta.</p></div>
+    <div><h3>Ninguém sabe de quem é</h3><p>Dois corretores respondem o mesmo cliente, ou nenhum responde. Aqui cada lead tem um dono e cada corretor vê só os seus.</p></div>
+    <div><h3>O cliente some no meio</h3><p>Sem funil, ninguém sabe quem está em visita, em proposta ou parado. O funil mostra isso em uma tela.</p></div>
+  </div>
+</div></section>
+
+<section id="como" style="padding-top:0"><div class="wrap">
+  <h2>Como funciona no dia a dia</h2>
+  <ol class="passos">
+    <li><h3>O lead entra</h3><p>Por site, anúncio, planilha ou mensagem no WhatsApp da imobiliária.</p></li>
+    <li><h3>O Alexandria divide</h3><p>Respeita o horário de atendimento e manda para o corretor que está online, em rodízio.</p></li>
+    <li><h3>O corretor atende</h3><p>Conversa com o cliente pela tela de Conversas. Uma IA pode escrever a mensagem de abertura, e o corretor lê e envia.</p></li>
+    <li><h3>O funil acompanha</h3><p>Novo, em atendimento, visita agendada, proposta, vendido ou perdido. A visita vai para a agenda e o cliente recebe o lembrete.</p></li>
+  </ol>
+</div></section>
+
+<section class="faixa" id="recursos"><div class="wrap">
+  <h2>Tudo o que a imobiliária usa já está dentro</h2>
+  <p class="intro">Sem juntar cinco ferramentas. O que está aqui já funciona hoje.</p>
+  <div class="grupos">
+    <div><h3>Leads e funil</h3><ul><li>Funil de vendas com seis etapas</li><li>Importação de planilha (CSV)</li><li>Histórico e notas em cada lead</li><li>Mensagem de abertura escrita por IA</li></ul></div>
+    <div><h3>Atendimento no WhatsApp</h3><ul><li>WhatsApp da imobiliária conectado por QR code</li><li>Conversas dentro do Alexandria</li><li>Cada corretor vê só as conversas dos seus leads</li><li>Aviso de lead novo no WhatsApp do corretor</li></ul></div>
+    <div><h3>Equipe</h3><ul><li>Rodízio entre corretores online</li><li>Horário de atendimento por grupo</li><li>Check-in de plantão com localização</li><li>Grupos e equipes dentro da mesma imobiliária</li></ul></div>
+    <div><h3>Gestão e vendas</h3><ul><li>Dashboard com leads por corretor</li><li>Agenda de visitas com lembrete</li><li>Espelho de vendas com unidades em tempo real</li><li>Propostas do rascunho à aprovação</li><li>Controle de acesso por horário e internet</li></ul></div>
+  </div>
+</div></section>
+
+<section><div class="wrap dois">
+  <div>
+    <h2>O WhatsApp é da sua imobiliária</h2>
+    <p class="intro">Você conecta o número da imobiliária lendo um QR code, igual ao WhatsApp Web. As mensagens dos seus clientes ficam só com a sua equipe. Outra imobiliária no Alexandria nunca vê a sua conversa.</p>
+  </div>
+  <div class="celular" aria-hidden="true">
+    <b>WhatsApp da imobiliária</b>
+    <div class="qr"></div>
+    <span>Conectado</span>
+  </div>
+</div></section>
+
+<section class="teste"><div class="wrap">
+  <h2>Teste por 7 dias com a sua equipe</h2>
+  <p>Você conecta o WhatsApp, cadastra os corretores e vê os leads chegando. Para tirar dúvidas, saber valores e começar, fale com a Mi.IA no WhatsApp.</p>
+  <a class="btn" href="https://wa.me/5511920036576?text=Oi!%20Quero%20conhecer%20e%20testar%20o%20Alexandria%207%20dias%20gr%C3%A1tis%20(ALEXANDRIA-SITE)">Falar com a Mi.IA no WhatsApp</a>
+</div></section>
+
+<section id="duvidas"><div class="wrap">
+  <h2>Dúvidas comuns</h2>
+  <div class="faq">
+    <details><summary>Preciso instalar algum programa?</summary><p>Não. O Alexandria funciona no navegador, no computador ou no celular.</p></details>
+    <details><summary>Quanto custa?</summary><p>Os valores são combinados no teste, de acordo com o tamanho da equipe. Pergunte para a Mi.IA no WhatsApp.</p></details>
+    <details><summary>Qual WhatsApp eu uso?</summary><p>O da sua imobiliária. Você conecta lendo um QR code e pode desconectar quando quiser.</p></details>
+    <details><summary>O corretor vê todos os leads?</summary><p>Não. Cada corretor vê só os leads dele. Quem vê tudo é o master e o gerente.</p></details>
+    <details><summary>E se o lead chegar de madrugada?</summary><p>Ele fica guardado e é liberado para a equipe quando o horário de atendimento começa.</p></details>
+    <details><summary>Posso levar minha lista de contatos?</summary><p>Sim. Você importa uma planilha CSV com nome, telefone e e-mail.</p></details>
+  </div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <span>Alexandria Leads</span>
+  <span><a href="/curso/">Curso do sistema</a> &nbsp;·&nbsp; <a href="/auth">Entrar</a></span>
+</div></footer>
+
+<script>
+(function(){
+  var leads=[["Maria Souza","Quer apartamento de 2 quartos"],["João Lima","Pediu valores do empreendimento"],["Ana Prado","Quer agendar uma visita"]];
+  var fila=document.querySelectorAll("#fila li"), nome=document.getElementById("lead-nome"), info=document.getElementById("lead-info"), chega=document.getElementById("chega");
+  var rotulos=["atendendo este lead","próximo da vez","online"], i=0;
+  function passo(){
+    i++;
+    chega.style.opacity=0;
+    setTimeout(function(){
+      var l=leads[i%leads.length]; nome.textContent=l[0]; info.textContent=l[1];
+      fila.forEach(function(li,k){
+        var ativo=(k===i%3);
+        li.classList.toggle("vez",ativo);
+        li.querySelector("em").textContent=ativo?"atendendo este lead":(k===(i+1)%3?"próximo da vez":"online");
+      });
+      chega.style.opacity=1;
+    },400);
+  }
+  if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches){ setInterval(passo,3200); }
+})();
+</script>
+
+<button id="mia-btn" type="button">💬 Tire suas dúvidas com a Mi.IA</button>
+<div id="mia-box" role="dialog" aria-label="Chat com a Mi.IA">
+<header><span>Mi.IA · Alexandria Leads</span><button type="button" id="mia-x" aria-label="Fechar">×</button></header>
+<div id="mia-msgs"></div>
+<div id="mia-lead"><small>Quer testar 7 dias? Deixe seu contato que a equipe chama:</small>
+<input id="mia-nome" placeholder="Seu nome" maxlength="80"><input id="mia-tel" placeholder="Seu WhatsApp com DDD" inputmode="tel" maxlength="20">
+<button class="mb" type="button" id="mia-enviar">Quero testar</button>
+<a class="mb" id="mia-wa" href="https://wa.me/5511920036576?text=Oi!%20Quero%20conhecer%20e%20testar%20o%20Alexandria%207%20dias%20gr%C3%A1tis%20(ALEXANDRIA-SITE)" target="_blank" rel="noopener">Ou fale no WhatsApp</a></div>
+<form id="mia-form"><input id="mia-in" placeholder="Digite sua dúvida…" maxlength="500" autocomplete="off"><button class="mb">Enviar</button></form>
+</div>
+<script>
+(function(){
+var box=document.getElementById('mia-box'),btn=document.getElementById('mia-btn'),msgs=document.getElementById('mia-msgs'),inp=document.getElementById('mia-in'),lead=document.getElementById('mia-lead');
+var hist=[],busy=false,n=0;
+function add(t,v){var d=document.createElement('div');d.className='mia-m '+(v?'v':'m');d.textContent=t;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;return d}
+function abrir(){box.classList.add('on');btn.style.display='none';if(!msgs.children.length)add('Oi! Eu sou a Mi.IA 👋 Posso tirar suas dúvidas sobre o Alexandria. O que você quer saber?',false);inp.focus()}
+btn.onclick=abrir;document.getElementById('mia-x').onclick=function(){box.classList.remove('on');btn.style.display=''};
+document.getElementById('mia-form').onsubmit=function(e){e.preventDefault();var t=inp.value.trim();if(!t||busy)return;inp.value='';add(t,true);hist.push({papel:'visitante',texto:t});busy=true;var w=add('…',false);n++;
+fetch('/api/public/chat-mia',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({mensagens:hist})}).then(function(r){return r.json()}).then(function(j){var r=j.resposta||'Não consegui responder agora. Fale com a equipe pelo WhatsApp abaixo.';w.textContent=r;if(j.resposta)hist.push({papel:'mia',texto:r});if(n>=2||!j.resposta)lead.classList.add('on')}).catch(function(){w.textContent='Sem conexão agora. Tente de novo ou fale pelo WhatsApp.';lead.classList.add('on')}).then(function(){busy=false;msgs.scrollTop=msgs.scrollHeight})};
+document.getElementById('mia-enviar').onclick=function(){var nome=document.getElementById('mia-nome').value.trim(),tel=document.getElementById('mia-tel').value.trim();if(nome.length<2||tel.replace(/\D/g,'').length<10){add('Preencha nome e WhatsApp com DDD, por favor.',false);return}
+fetch('/api/public/chat-mia',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({acao:'lead',nome:nome,whatsapp:tel})}).then(function(r){return r.json()}).then(function(j){if(j.ok){lead.classList.remove('on');add('Pronto! A equipe vai te chamar no WhatsApp em breve 🙌',false)}else add('Não consegui avisar a equipe agora. Use o botão "Ou fale no WhatsApp".',false)}).catch(function(){add('Sem conexão. Use o botão "Ou fale no WhatsApp".',false)})};
+})();
+</script>
+</body>
+</html>
