@@ -33,4 +33,4 @@ details{background:#fff;border-radius:14px;padding:14px 18px;margin:8px 0;box-sh
 function draw(){var n=0;document.querySelectorAll(".aula").forEach(function(a){var ok=!!s[a.dataset.n];a.classList.toggle("ok",ok);a.querySelector("button").textContent=ok?"Aula concluída":"Marcar aula como concluída";if(ok)n++});
 document.getElementById("pt").textContent=n+" de 12";document.getElementById("pb").style.width=(n/12*100)+"%"}
 document.querySelectorAll("button.feita").forEach(function(b){b.onclick=function(){s[b.dataset.n]=!s[b.dataset.n];try{localStorage.setItem(K,JSON.stringify(s))}catch(e){}draw()}});draw()})();
-</script></body></html>
+window.addEventListener("beforeprint",function(){document.querySelectorAll("details").forEach(function(d){d.open=true})});</script></body></html>
