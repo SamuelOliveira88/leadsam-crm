@@ -147,3 +147,12 @@ export async function enviarMensagemCore(sb: any, leadId: string, texto: string)
     if (error) throw new Error(error.message);
     return { ok: true };
 }
+
+export async function enviarAudioCore(sb: any, leadId: string, mimetype: string, base64: string) {
+  // O banco confere tudo (lead visível, cliente já escreveu, tamanho, formato) e enfileira o envio.
+  const { error } = await sb
+    .from("lead_mensagens")
+    .insert({ lead_id: leadId, direcao: "saida", midia_tipo: "audio", audio_dados: base64, audio_mimetype: mimetype });
+  if (error) throw new Error(error.message);
+  return { ok: true };
+}
