@@ -48,13 +48,44 @@ export const Route = createFileRoute("/api/public/chat-mia")({
           if (!passou("lead:" + ip, 3, 3_600_000)) return json({ error: "muitas tentativas" }, 429);
           const digitos = lead.data.whatsapp.replace(/\D/g, "");
           if (digitos.length < 10 || digitos.length > 13) return json({ error: "WhatsApp inválido" }, 400);
+          if (!passou("tel:" + digitos, 2, 86_400_000)) return json({ error: "este número já recebeu convite hoje" }, 429);
           const { sendWhatsAppNotification } = await import("@/lib/evolution.server");
-          const r = await sendWhatsAppNotification(
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+          // Convite do teste de 7 dias. Teto de 30 convites automáticos por dia para ninguém encher o banco.
+          let codigo: string | null = null;
+          const desde = new Date(Date.now() - 86_400_000).toISOString();
+          const { count } = await (supabaseAdmin as any)
+            .from("convites_codigo").select("codigo", { count: "exact", head: true })
+            .is("criado_por", null).gte("created_at", desde);
+          if ((count ?? 0) < 30) {
+            const letras = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+            for (let i = 0; i < 5 && !codigo; i++) {
+              const bytes = crypto.getRandomValues(new Uint8Array(8));
+              const c = Array.from(bytes, (b) => letras[b % letras.length]).join("");
+              const { error } = await (supabaseAdmin as any).from("convites_codigo").insert({
+                codigo: c, criado_por: null, expira_em: new Date(Date.now() + 7 * 86_400_000).toISOString(),
+              });
+              if (!error) codigo = c;
+            }
+          }
+          const link = codigo ? `https://www.alexandrialeads.app/cadastro-empresa?codigo=${codigo}` : null;
+
+          const avisoDono = await sendWhatsAppNotification(
             DONO_WHATSAPP,
-            `🔔 *Interesse no Alexandria (página de vendas)*\nNome: ${lead.data.nome}\nWhatsApp: ${digitos}\n\nChamar para o teste de 7 dias.`,
+            `🔔 *Interesse no Alexandria (página de vendas)*\nNome: ${lead.data.nome}\nWhatsApp: ${digitos}\n${codigo ? `Convite enviado: ${codigo}` : "Convite NÃO gerado (limite do dia). Chamar manualmente."}`,
           );
-          if (!r.ok) return json({ error: "não consegui avisar a equipe agora" }, 502);
-          return json({ ok: true });
+          let enviado = false;
+          if (link) {
+            const primeiro = lead.data.nome.split(/\s+/)[0];
+            const r = await sendWhatsAppNotification(
+              digitos.length <= 11 ? "55" + digitos : digitos,
+              `Oi, ${primeiro}! Aqui é a Mi.IA do Alexandria Leads 👋\n\nSeu convite para testar *7 dias grátis*:\n${link}\n\nÉ só abrir, criar sua conta e dar o nome da sua imobiliária. O código do convite é *${codigo}* (vale por 7 dias). Qualquer dúvida, é só responder aqui.`,
+            );
+            enviado = r.ok;
+          }
+          if (!avisoDono.ok && !enviado && !link) return json({ error: "não consegui avisar a equipe agora" }, 502);
+          return json({ ok: true, link, enviado });
         }
 
         const chat = chatSchema.safeParse(corpo);
