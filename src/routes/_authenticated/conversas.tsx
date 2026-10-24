@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowLeft, Check, CheckCheck, Clock, MessageCircle, Send, TriangleAlert } from "lucide-react";
+import { ArrowLeft, Check, CheckCheck, Clock, MessageCircle, Mic, Send, Square, TriangleAlert, X } from "lucide-react";
 import { toast } from "sonner";
-import { listarConversas, mensagensDoLead, enviarMensagem, type MensagemConversa } from "@/lib/conversas.functions";
+import { listarConversas, mensagensDoLead, enviarMensagem, enviarAudio, type MensagemConversa } from "@/lib/conversas.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +35,10 @@ function Conversas() {
   const listFn = useServerFn(listarConversas);
   const msgsFn = useServerFn(mensagensDoLead);
   const envFn = useServerFn(enviarMensagem);
+  const audioFn = useServerFn(enviarAudio);
+  const [gravando, setGravando] = useState(false);
+  const [seg, setSeg] = useState(0);
+  const rec = useRef<{ mr: MediaRecorder; partes: Blob[]; cancelar: boolean; timer: number } | null>(null);
   const [leadId, setLeadId] = useState<string | null>(null);
   const [texto, setTexto] = useState("");
   const fim = useRef<HTMLDivElement>(null);
@@ -65,6 +69,50 @@ function Conversas() {
     },
     onError: (e: any) => toast.error(e?.message || "Não consegui enviar."),
   });
+
+  const mandarAudio = useMutation({
+    mutationFn: (v: { mimetype: string; base64: string }) => audioFn({ data: { lead_id: leadId!, ...v } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["conversa", leadId] });
+      qc.invalidateQueries({ queryKey: ["conversas"] });
+    },
+    onError: (e: any) => toast.error(e?.message || "Não consegui enviar o áudio."),
+  });
+
+  const comecarGravacao = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const tipos = ["audio/ogg;codecs=opus", "audio/webm;codecs=opus", "audio/mp4"];
+      const tipo = tipos.find((t) => MediaRecorder.isTypeSupported(t));
+      const mr = tipo ? new MediaRecorder(stream, { mimeType: tipo }) : new MediaRecorder(stream);
+      const partes: Blob[] = [];
+      mr.ondataavailable = (e) => { if (e.data.size) partes.push(e.data); };
+      mr.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const r = rec.current; window.clearInterval(r?.timer);
+        setGravando(false); setSeg(0);
+        if (!r || r.cancelar || !partes.length) return;
+        const blob = new Blob(partes, { type: mr.mimeType || "audio/webm" });
+        if (blob.size > 900_000) { toast.error("Áudio muito longo. Grave até 2 minutos."); return; }
+        const dataUrl: string = await new Promise((ok) => { const fr = new FileReader(); fr.onload = () => ok(String(fr.result)); fr.readAsDataURL(blob); });
+        mandarAudio.mutate({ mimetype: (blob.type || "audio/webm").split(";")[0], base64: dataUrl.split(",")[1] ?? "" });
+      };
+      const timer = window.setInterval(() => setSeg((x) => {
+        if (x + 1 >= 120) mr.state === "recording" && mr.stop();
+        return x + 1;
+      }), 1000);
+      rec.current = { mr, partes, cancelar: false, timer };
+      mr.start();
+      setGravando(true);
+    } catch {
+      toast.error("Não consegui usar o microfone. Libere o microfone no navegador.");
+    }
+  };
+  const pararGravacao = (cancelar: boolean) => {
+    const r = rec.current; if (!r) return;
+    r.cancelar = cancelar;
+    if (r.mr.state === "recording") r.mr.stop();
+  };
 
   const podeEnviar = texto.trim().length > 0 && !enviar.isPending;
   const mandar = () => { if (podeEnviar) enviar.mutate(texto.trim()); };
@@ -153,7 +201,19 @@ function Conversas() {
                   responder, e até 20 contatos novos por dia.
                 </p>
               )}
+              {gravando ? (
+                <div className="flex items-center gap-2 border-t p-3">
+                  <span className="size-2.5 animate-pulse rounded-full bg-destructive" />
+                  <span className="flex-1 text-sm">Gravando… {Math.floor(seg / 60)}:{String(seg % 60).padStart(2, "0")}</span>
+                  <Button variant="ghost" size="icon" onClick={() => pararGravacao(true)} aria-label="Cancelar gravação"><X className="size-4" /></Button>
+                  <Button size="icon" onClick={() => pararGravacao(false)} aria-label="Enviar áudio"><Square className="size-4" /></Button>
+                </div>
+              ) : (
               <div className="flex items-end gap-2 border-t p-3">
+                <Button variant="outline" size="icon" onClick={comecarGravacao} disabled={atual.nova || mandarAudio.isPending}
+                  aria-label="Gravar áudio" title={atual.nova ? "Só dá para mandar áudio a quem já respondeu" : "Gravar áudio"}>
+                  <Mic className="size-4" />
+                </Button>
                 <Textarea
                   value={texto}
                   onChange={(e) => setTexto(e.target.value)}
@@ -166,6 +226,7 @@ function Conversas() {
                   {enviar.isPending ? <Check className="size-4" /> : <Send className="size-4" />}
                 </Button>
               </div>
+              )}
             </>
           )}
         </Card>
