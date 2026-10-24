@@ -19,7 +19,7 @@ O QUE TEM DENTRO:
 - Gestão: dashboard com total de leads, represados, recebidos hoje e leads por corretor; agenda de visitas com lembrete no WhatsApp; espelho de vendas com unidades em tempo real; propostas do rascunho à aprovação; alertas; controle de acesso por horário e internet (o master nunca é barrado); tokens de integração para sites e anúncios enviarem leads.
 - Proteções: o master decide se o corretor vê o telefone dos leads de lista. Primeira mensagem para lead de lista tem limite diário por corretor (20) para proteger o número contra bloqueio do WhatsApp.
 
-PLANOS: Grátis (R$ 0): etiquetas, notas, respostas rápidas e chatbot simples; as outras funções ficam com cadeado. Pago: R$ 199 por ano, com tudo do grátis mais funil, planilha, lembretes, agendamento, disparo e equipe. Pago com a Mi.IA: R$ 50 por mês, com tudo do Pago mais a Mi.IA vendedora com IA atendendo no WhatsApp (pré-pago: pagou, usou). Pagamento por Pix, boleto ou cartão, pelo Asaas. Sem fidelidade. Os 7 dias de teste liberam tudo.
+PLANOS: Grátis (R$ 0): etiquetas, notas, respostas rápidas e chatbot simples; as outras funções ficam com cadeado. Pago: R$ 199,90 por ano (parcelável em até 6x no cartão), com tudo do grátis mais funil, planilha, lembretes, agendamento, disparo e equipe. Pago com a Mi.IA: R$ 49,90 por mês, com tudo do Pago mais a Mi.IA vendedora com IA atendendo no WhatsApp (pré-pago: pagou, usou). Pagamento por Pix, boleto ou cartão, pelo Asaas. Sem fidelidade. Os 7 dias de teste liberam tudo.
 
 TESTE: 7 dias, com a equipe da imobiliária. A imobiliária nova recebe um convite, cria a conta e entra como master. Entrar com Google ainda não está disponível: a entrada é por e-mail e senha.
 
