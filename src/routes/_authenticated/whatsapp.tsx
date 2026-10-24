@@ -1,10 +1,14 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useServerFn } from "@tanstack/react-start";
+import { Bot } from "lucide-react";
 import { RequireAdmin } from "@/components/RequireAdmin";
+import { meuPerfil } from "@/lib/perfis.functions";
+import { DIAS_SEMANA, HORARIO_PADRAO, type HorarioMia } from "@/lib/mia-empresa";
 
 export const Route = createFileRoute("/_authenticated/whatsapp")({
   head: () => ({ meta: [{ title: "WhatsApp — Alexandria Leds" }] }),
@@ -12,6 +16,60 @@ export const Route = createFileRoute("/_authenticated/whatsapp")({
 });
 
 type Conexao = { status: string; qr: string | null; numero: string | null; erro: string | null; updated_at: string };
+
+function MiaCard() {
+  const qc = useQueryClient();
+  const perfilFn = useServerFn(meuPerfil);
+  const { data: perfil } = useQuery({ queryKey: ["meuPerfil"], queryFn: () => perfilFn() });
+  const empresaId = perfil?.empresa_id ?? null;
+  const { data: plano } = useQuery({
+    queryKey: ["meu-plano"],
+    queryFn: async () => { const { data, error } = await (supabase as any).rpc("meu_plano"); if (error) throw new Error(error.message); return data as { mia: boolean } | null; },
+  });
+  const { data: cfg } = useQuery({
+    enabled: !!empresaId,
+    queryKey: ["mia-config", empresaId],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any).from("mia_config").select("respostas, ativa, horario").eq("empresa_id", empresaId).maybeSingle();
+      if (error) throw new Error(error.message);
+      return data as { respostas: Record<string, string>; ativa: boolean; horario: HorarioMia } | null;
+    },
+  });
+  const alterna = useMutation({
+    mutationFn: async (ativa: boolean) => {
+      const { error } = await (supabase as any).from("mia_config").upsert({ empresa_id: empresaId, ativa }, { onConflict: "empresa_id" });
+      if (error) throw new Error(error.message);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["mia-config"] }),
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const liberada = !!plano?.mia;
+  const h = { ...HORARIO_PADRAO, ...(cfg?.horario ?? {}) };
+  const quando = h.sempre ? "o dia todo, todos os dias" : `${h.dias.map((d) => DIAS_SEMANA[d]).join(", ")}, das ${h.inicio} às ${h.fim}`;
+  const preenchida = Object.values(cfg?.respostas ?? {}).some((v) => (v ?? "").trim());
+  return (
+    <Card className="space-y-3 p-5">
+      <div className="flex items-center gap-2 text-lg font-semibold"><Bot className="size-5" /> Mi.IA atendendo seus clientes</div>
+      <p className="text-sm text-muted-foreground">
+        Com a Mi.IA ligada, o cliente novo que escreve para este número é atendido por ela primeiro. Quando chega a hora certa, ela passa para um corretor.
+      </p>
+      {!liberada ? (
+        <p className="text-sm">Faz parte do plano <b>Alexandria + Mi.IA</b>. <Link to="/meu-plano" className="font-medium underline">Ver planos</Link></p>
+      ) : (
+        <>
+          <label className="flex items-center gap-2 text-sm font-medium">
+            <input type="checkbox" checked={!!cfg?.ativa} disabled={alterna.isPending || !empresaId || !preenchida}
+              onChange={(e) => alterna.mutate(e.target.checked)} />
+            Mi.IA ligada {cfg?.ativa ? "— atendendo " + quando : ""}
+          </label>
+          {!preenchida && <p className="text-xs text-muted-foreground">Antes de ligar, responda as 8 perguntas em Minha Mi.IA.</p>}
+        </>
+      )}
+      <Link to="/minha-mia"><Button variant="outline" size="sm">Ensinar e testar a Mi.IA</Button></Link>
+    </Card>
+  );
+}
 
 function WhatsAppPagina() {
   const qc = useQueryClient();
@@ -95,6 +153,8 @@ function WhatsAppPagina() {
           </>
         )}
       </Card>
+
+      <MiaCard />
     </div>
   );
 }

@@ -2,7 +2,7 @@ import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Building2, LayoutDashboard, Users, UserCog, Upload, Clock, Layers, LogOut, Bell, Grid3x3, ShieldCheck, FileText, NotebookPen, Plug, MapPin, CalendarDays, MessageCircle, Smartphone, CreditCard, Bot } from "lucide-react";
+import { Building2, LayoutDashboard, Users, UserCog, Upload, Clock, Layers, LogOut, Bell, Grid3x3, ShieldCheck, FileText, NotebookPen, Plug, MapPin, CalendarDays, MessageCircle, Smartphone, CreditCard, Bot, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { meuPerfil } from "@/lib/perfis.functions";
 import { heartbeatCorretor } from "@/lib/corretores.functions";
@@ -313,6 +313,12 @@ export function AppShell({ user, children }: { user: User; children: React.React
               <ShieldCheck className="size-4" /> Acesso
             </Link>
           )}
+          <Link to="/manual" className={cn(
+            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
+            pathname.startsWith("/manual") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground hover:bg-sidebar-accent/60",
+          )}>
+            <BookOpen className="size-4" /> Manual
+          </Link>
           {isSuperAdmin && (
             <>
               <div className="mt-4 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Super-admin</div>
