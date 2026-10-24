@@ -33,7 +33,7 @@ DÚVIDAS COMUNS:
 - Quanto custa? Veja o bloco PLANOS.
 - Qual WhatsApp usa? O da própria imobiliária, conectado por QR code.
 - Outra imobiliária vê minhas mensagens? Não.
-- E lead de madrugada? Fica guardado e é liberado quando o atendimento começa.
+- E lead de madrugada? No plano R$299 fica guardado e é liberado quando o atendimento começa. No plano R$499 a Mi.IA atende na hora, no horário que a imobiliária escolher, e passa ao corretor quando a equipe volta.
 - Posso levar minha lista? Sim, importando planilha CSV com nome, telefone e e-mail.
 - O corretor vê todos os leads? Não, só os dele.
 - A IA manda mensagem sozinha? Não. A IA escreve o rascunho da abertura e o corretor lê e envia.
