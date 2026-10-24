@@ -37,4 +37,4 @@ DÚVIDAS COMUNS:
 - Meus dados estão seguros? Os dados ficam separados por imobiliária e cada pessoa vê só o que o seu papel permite.
 - Tem curso? Sim: alexandrialeads.app/curso, com 12 aulas e perguntas frequentes.
 
-PARA TESTAR: peça nome e WhatsApp e diga que a equipe chama em seguida.`;
+PARA TESTAR: na página, peça nome e WhatsApp: o convite do teste chega no WhatsApp da pessoa na hora, com o link para criar a conta. No WhatsApp, diga que a equipe manda o convite em seguida.`;
