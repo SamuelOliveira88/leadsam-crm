@@ -112,7 +112,7 @@ function MeuPlano() {
         </details>
         <label className="flex items-start gap-2 text-sm">
           <input type="checkbox" className="mt-1" checked={aceito} onChange={(e) => setAceito(e.target.checked)} />
-          Li e aceito o contrato de prestação de serviços do plano que vou assinar.
+          <span>Li e aceito o contrato de prestação de serviços do plano que vou assinar, os <a href="/termos" target="_blank" className="underline">Termos de Uso</a> e a <a href="/privacidade" target="_blank" className="underline">Política de Privacidade</a>.</span>
         </label>
       </Card>
 
