@@ -357,6 +357,12 @@ export function AppShell({ user, children }: { user: User; children: React.React
               )}>
                 <CreditCard className="size-4" /> Meu plano
               </Link>
+          <Link to="/contrato" className={cn(
+            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
+            pathname.startsWith("/contrato") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground hover:bg-sidebar-accent/60",
+          )}>
+            <FileText className="size-4" /> Contrato
+          </Link>
               <Link to="/integracoes" className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
                 pathname.startsWith("/integracoes") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground hover:bg-sidebar-accent/60",
