@@ -6,19 +6,24 @@ export const PLANOS: Record<PlanoPago, { nome: string; valor: number; descricao:
   alexandria_ia: { nome: "Alexandria Leads + Mi.IA — plano mensal", valor: 499, descricao: "Alexandria Leads com até 10 corretores e a Mi.IA atendendo os leads antes do corretor. Cobrança mensal." },
 };
 
+// Corretor ativo além dos 10 incluídos (preço por corretor, por mês).
+export const PRECO_EXTRA: Record<PlanoPago, number> = { alexandria: 30, alexandria_ia: 50 };
+
 const base = () => (process.env.ASAAS_API_URL || "https://api.asaas.com/v3").replace(/\/$/, "");
 
-export async function criarLinkPagamento(empresaId: string, plano: PlanoPago): Promise<{ url: string; id: string }> {
+export async function criarLinkPagamento(empresaId: string, plano: PlanoPago, extras = 0): Promise<{ url: string; id: string }> {
   const key = process.env.ASAAS_API_KEY;
   if (!key) throw new Error("Pagamento ainda não configurado (falta a chave do Asaas no servidor).");
-  const p = PLANOS[plano];
+  const p = extras > 0
+    ? { nome: `Alexandria Leads — ${extras} corretor(es) extra(s)`, valor: extras * PRECO_EXTRA[plano], descricao: `${extras} corretor(es) ativo(s) além dos 10 incluídos no plano. Cobrança mensal.` }
+    : PLANOS[plano];
   const corpo: Record<string, unknown> = {
     name: p.nome,
     description: p.descricao,
     billingType: "UNDEFINED", // o cliente escolhe Pix, boleto ou cartão
     value: p.valor,
     dueDateLimitDays: 3,
-    externalReference: `alex|${empresaId}|${plano}`,
+    externalReference: extras > 0 ? `alex|${empresaId}|extra${extras}` : `alex|${empresaId}|${plano}`,
     notificationEnabled: true,
     callback: { successUrl: "https://www.alexandrialeads.app/meu-plano?pago=1", autoRedirect: true },
   };

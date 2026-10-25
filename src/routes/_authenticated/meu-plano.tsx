@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { RequireAdmin } from "@/components/RequireAdmin";
 import { Input } from "@/components/ui/input";
-import { criarPagamento } from "@/lib/planos.functions";
+import { criarPagamento, criarPagamentoExtras } from "@/lib/planos.functions";
 import { ContratoTexto } from "@/components/ContratoTexto";
 import { CONTRATADA, DADOS_VAZIOS, type DadosContrato } from "@/lib/contrato";
 import { meuPerfil } from "@/lib/perfis.functions";
@@ -31,6 +31,8 @@ const ITENS = ["Até 10 corretores incluídos", "Distribuição de leads em rod�
 function MeuPlano() {
   const { pago } = Route.useSearch();
   const payFn = useServerFn(criarPagamento);
+  const extrasFn = useServerFn(criarPagamentoExtras);
+  const [extras, setExtras] = useState(1);
   const { data, isLoading } = useQuery({
     queryKey: ["meu-plano"],
     queryFn: async () => {
@@ -63,7 +65,13 @@ function MeuPlano() {
     onError: (e: any) => toast.error(e?.message || "Não consegui abrir o pagamento."),
   });
 
+  const comprarExtras = useMutation({
+    mutationFn: () => extrasFn({ data: { extras } }),
+    onSuccess: ({ url }) => { window.open(url, "_blank", "noopener"); },
+    onError: (e: any) => toast.error(e?.message || "Não consegui abrir o pagamento."),
+  });
   const atual = data?.efetivo;
+  const precoExtra = atual === "alexandria_ia" ? 50 : 30;
   return (
     <div className="space-y-4">
       <div>
@@ -142,6 +150,20 @@ function MeuPlano() {
           </Button>
         </Card>
       </div>
+      {(atual === "alexandria" || atual === "alexandria_ia") && (
+        <Card className="space-y-3 p-5">
+          <div className="text-lg font-semibold">Mais corretores</div>
+          <p className="text-sm text-muted-foreground">O plano inclui 10 corretores ativos. Corretor inativo não conta, pode ter quantos quiser. Precisa de mais ativos? Cada corretor extra custa R$ {precoExtra} por mês.</p>
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="space-y-1 text-xs font-medium">Quantos extras?
+              <Input type="number" min={1} max={90} className="w-24" value={extras} onChange={(e) => setExtras(Math.max(1, Math.min(90, Number(e.target.value) || 1)))} />
+            </label>
+            <div className="pb-2 text-sm">Total dos extras: <b>R$ {extras * precoExtra},00</b> por mês</div>
+            <Button onClick={() => comprarExtras.mutate()} disabled={comprarExtras.isPending}>{comprarExtras.isPending ? "Abrindo…" : "Contratar extras"}</Button>
+          </div>
+          <p className="text-xs text-muted-foreground">Informe o total de extras que você quer (não soma com compras antigas). Os extras valem enquanto o pagamento estiver em dia e sobem assim que o pagamento é confirmado.</p>
+        </Card>
+      )}
       <p className="text-xs text-muted-foreground">Pagamento processado pelo Asaas. Sem fidelidade. Dúvidas? Fale com a Mi.IA no WhatsApp.</p>
     </div>
   );
