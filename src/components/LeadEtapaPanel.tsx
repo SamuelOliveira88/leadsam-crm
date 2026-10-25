@@ -8,6 +8,7 @@ import { AgendarVisitaDialog } from "@/components/AgendarVisitaDialog";
 import { Button } from "@/components/ui/button";
 import { ETAPAS_FUNIL, ehEtapaFunil, formatarReais, type EtapaFunil } from "@/lib/funil";
 
+import { tr, localeAtual } from "@/i18n";
 type LeadEtapa = {
   id: string;
   nome?: string | null;
@@ -45,12 +46,12 @@ export function LeadEtapaPanel({ lead }: { lead: LeadEtapa }) {
   });
 
   const quando = (iso: string) =>
-    new Date(iso).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" });
+    new Date(iso).toLocaleString(localeAtual(), { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" });
 
   return (
     <div className="mb-4 rounded-lg border p-3">
       <div className="flex flex-wrap items-center gap-3">
-        <label htmlFor="etapa-lead" className="text-xs font-semibold uppercase text-muted-foreground">Etapa do funil</label>
+        <label htmlFor="etapa-lead" className="text-xs font-semibold uppercase text-muted-foreground">{tr("Etapa do funil")}</label>
         <select
           id="etapa-lead"
           className="rounded-md border bg-background p-2 text-sm"
@@ -63,36 +64,34 @@ export function LeadEtapaPanel({ lead }: { lead: LeadEtapa }) {
           }
         >
           {ETAPAS_FUNIL.map((e) => (
-            <option key={e} value={e}>{e}</option>
+            <option key={e} value={e}>{tr(e)}</option>
           ))}
         </select>
         <Button type="button" size="sm" variant="outline" className="ml-auto" onClick={() => setAgendando(true)}>
-          <CalendarPlus className="mr-2 size-4" /> Agendar visita
-        </Button>
+          <CalendarPlus className="mr-2 size-4" /> {tr("Agendar visita")}</Button>
       </div>
 
       {atual.etapa === "Perdido" && atual.motivo && (
-        <div className="mt-2 text-sm text-rose-600">Motivo da perda: {atual.motivo}</div>
+        <div className="mt-2 text-sm text-rose-600">{tr("Motivo da perda: {motivo}", { motivo: atual.motivo })}</div>
       )}
       {atual.etapa === "Vendido" && atual.valor != null && (
-        <div className="mt-2 text-sm font-semibold text-emerald-600">Valor da venda: {formatarReais(atual.valor)}</div>
+        <div className="mt-2 text-sm font-semibold text-emerald-600">{tr("Valor da venda: {formatarReais}", { formatarReais: formatarReais(atual.valor) })}</div>
       )}
 
       <details className="mt-3">
-        <summary className="cursor-pointer text-xs font-semibold text-muted-foreground">
-          Histórico de etapas ({historico?.length ?? 0})
+        <summary className="cursor-pointer text-xs font-semibold text-muted-foreground">{tr("Histórico de etapas ({n})", { n: historico?.length ?? 0 })}
         </summary>
         <ul className="mt-2 space-y-1 text-xs">
           {(historico ?? []).map((h) => (
             <li key={h.id} className="flex flex-wrap gap-x-2 text-muted-foreground">
               <span>{quando(h.created_at)}</span>
               <span>·</span>
-              <span>{h.usuario_nome ?? "Sistema"}</span>
+              <span>{h.usuario_nome ?? tr("Sistema")}</span>
               <span>·</span>
               <span className="text-foreground">{h.etapa_anterior ?? "—"} → {h.etapa_nova}</span>
             </li>
           ))}
-          {(historico?.length ?? 0) === 0 && <li className="text-muted-foreground">Nenhuma mudança registrada.</li>}
+          {(historico?.length ?? 0) === 0 && <li className="text-muted-foreground">{tr("Nenhuma mudança registrada.")}</li>}
         </ul>
       </details>
 

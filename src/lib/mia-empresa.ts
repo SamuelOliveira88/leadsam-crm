@@ -1,14 +1,15 @@
 // Mi.IA de cada imobiliária: as 8 perguntas ("Minha Mi.IA") e a montagem das instruções que a IA recebe.
+import { mark } from "@/i18n";
 
 export const PERGUNTAS_MIA = [
-  { id: "apresentacao", titulo: "1. Apresentação", ajuda: "Como ela deve se apresentar.", exemplo: "Sou a Mi.IA, assistente da Imobiliária Horizonte." },
-  { id: "regiao", titulo: "2. Região", ajuda: "Onde vocês atuam.", exemplo: "Zona sul de São Paulo e Grande São Paulo." },
-  { id: "tipo_imovel", titulo: "3. Tipo de imóvel", ajuda: "O que vocês vendem.", exemplo: "Apartamentos novos na planta e prontos." },
-  { id: "empreendimentos", titulo: "4. Empreendimentos", ajuda: "Nome de cada um e o que ela pode ou não informar.", exemplo: "Residencial Aurora: 2 quartos, entrega 2028. Não informar valor da parcela." },
-  { id: "tom", titulo: "5. Tom", ajuda: "Como ela deve conversar.", exemplo: "Simpática e direta. Frases curtas. Pode usar um emoji de vez em quando." },
-  { id: "qualificacao", titulo: "6. Qualificação", ajuda: "O que ela deve perguntar ao cliente.", exemplo: "Renda da família, se tem FGTS, se tem entrada e a região de interesse." },
-  { id: "passagem", titulo: "7. Passagem para o corretor", ajuda: "Quando ela deve chamar um corretor.", exemplo: "Quando o cliente pedir visita, valores ou falar com uma pessoa." },
-  { id: "limites", titulo: "8. Limites", ajuda: "O que ela nunca pode prometer.", exemplo: "Nunca prometer aprovação de financiamento, desconto ou prazo de entrega." },
+  { id: "apresentacao", titulo: mark("1. Apresentação"), ajuda: mark("Como ela deve se apresentar."), exemplo: mark("Sou a Mi.IA, assistente da Imobiliária Horizonte.") },
+  { id: "regiao", titulo: mark("2. Região"), ajuda: mark("Onde vocês atuam."), exemplo: mark("Zona sul de São Paulo e Grande São Paulo.") },
+  { id: "tipo_imovel", titulo: mark("3. Tipo de imóvel"), ajuda: mark("O que vocês vendem."), exemplo: mark("Apartamentos novos na planta e prontos.") },
+  { id: "empreendimentos", titulo: mark("4. Empreendimentos"), ajuda: mark("Nome de cada um e o que ela pode ou não informar."), exemplo: mark("Residencial Aurora: 2 quartos, entrega 2028. Não informar valor da parcela.") },
+  { id: "tom", titulo: mark("5. Tom"), ajuda: mark("Como ela deve conversar."), exemplo: mark("Simpática e direta. Frases curtas. Pode usar um emoji de vez em quando.") },
+  { id: "qualificacao", titulo: mark("6. Qualificação"), ajuda: mark("O que ela deve perguntar ao cliente."), exemplo: mark("Renda da família, se tem FGTS, se tem entrada e a região de interesse.") },
+  { id: "passagem", titulo: mark("7. Passagem para o corretor"), ajuda: mark("Quando ela deve chamar um corretor."), exemplo: mark("Quando o cliente pedir visita, valores ou falar com uma pessoa.") },
+  { id: "limites", titulo: mark("8. Limites"), ajuda: mark("O que ela nunca pode prometer."), exemplo: mark("Nunca prometer aprovação de financiamento, desconto ou prazo de entrega.") },
 ] as const;
 
 export type RespostasMia = Partial<Record<(typeof PERGUNTAS_MIA)[number]["id"], string>>;
@@ -42,7 +43,7 @@ export function montarPromptMia(nomeEmpresa: string, r: RespostasMia, siteTexto?
 // Horário em que a imobiliária quer a Mi.IA atendendo (horário de Brasília). Fora dele, o lead segue direto o fluxo normal.
 export type HorarioMia = { sempre: boolean; dias: number[]; inicio: string; fim: string };
 export const HORARIO_PADRAO: HorarioMia = { sempre: true, dias: [0, 1, 2, 3, 4, 5, 6], inicio: "08:00", fim: "20:00" };
-export const DIAS_SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+export const DIAS_SEMANA = [mark("Dom"), mark("Seg"), mark("Ter"), mark("Qua"), mark("Qui"), mark("Sex"), mark("Sáb")];
 
 export function miaAtendeAgora(h: HorarioMia | null | undefined, agora = new Date()): boolean {
   const c = h ?? HORARIO_PADRAO;

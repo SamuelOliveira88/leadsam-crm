@@ -13,11 +13,14 @@ import {
   Text,
 } from '@react-email/components'
 
+import { LANG_HTML, TEXTOS_EMAIL, com, type IdiomaEmail } from './textos'
+
 interface SignupEmailProps {
   siteName: string
   siteUrl: string
   recipient: string
   confirmationUrl: string
+  lang?: IdiomaEmail
 }
 
 const BRAND = 'Alexandria Leds'
@@ -27,40 +30,44 @@ export const SignupEmail = ({
   siteUrl,
   recipient,
   confirmationUrl,
-}: SignupEmailProps) => (
-  <Html lang="pt-BR" dir="ltr">
+  lang = 'pt',
+}: SignupEmailProps) => {
+  const t = TEXTOS_EMAIL[lang].signup
+  return (
+  <Html lang={LANG_HTML[lang]} dir="ltr">
     <Head />
-    <Preview>Confirme seu e-mail para acessar o {BRAND}</Preview>
+    <Preview>{com(t.preview, BRAND)}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={header}>
           <Text style={brand}>{BRAND}</Text>
         </Section>
-        <Heading style={h1}>Confirme seu e-mail</Heading>
+        <Heading style={h1}>{t.titulo}</Heading>
         <Text style={text}>
-          Obrigado por se cadastrar no{' '}
+          {t.obrigadoAntes}{' '}
           <Link href={siteUrl} style={link}>
             <strong>{BRAND}</strong>
           </Link>
-          !
+          {t.obrigadoDepois}
         </Text>
         <Text style={text}>
-          Confirme seu endereço de e-mail ({' '}
+          {t.confirmeAntes}{' '}
           <Link href={`mailto:${recipient}`} style={link}>
             {recipient}
           </Link>{' '}
-          ) clicando no botão abaixo:
+          {t.confirmeDepois}
         </Text>
         <Button style={button} href={confirmationUrl}>
-          Verificar e-mail
+          {t.botao}
         </Button>
         <Text style={footer}>
-          Se você não criou uma conta, pode ignorar este e-mail com segurança.
+          {t.rodape}
         </Text>
       </Container>
     </Body>
   </Html>
-)
+  )
+}
 
 export default SignupEmail
 

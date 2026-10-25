@@ -6,6 +6,7 @@ import { useGeolocalizacao, ErroGeo } from "@/hooks/use-geolocalizacao";
 import { dentroDoRaio, formatarDistancia, type AlvoGeo, type PosicaoGeo } from "@/lib/geo";
 import { cn } from "@/lib/utils";
 
+import { tr } from "@/i18n";
 type Props = {
   /**
    * Chamado com a posição capturada, quando o check-in é permitido.
@@ -19,7 +20,7 @@ type Props = {
   disabled?: boolean;
 };
 
-export function CheckInButton({ onConfirmar, alvo, rotulo = "Fazer check-in", className, disabled }: Props) {
+export function CheckInButton({ onConfirmar, alvo, rotulo = tr("Fazer check-in"), className, disabled }: Props) {
   const { obter, carregando, permissao } = useGeolocalizacao();
   const [enviando, setEnviando] = useState(false);
 
@@ -30,9 +31,9 @@ export function CheckInButton({ onConfirmar, alvo, rotulo = "Fazer check-in", cl
     const lon = pos.longitude.toFixed(5);
     const aprox = pos.precisaoMetros > 1000;
     return (
-      ` O navegador informou sua posição em ${lat}, ${lon} (margem de erro de ${formatarDistancia(pos.precisaoMetros)}).` +
+      " " + tr("O navegador informou sua posição em {lat}, {lon} (margem de erro de {margem}).", { lat, lon, margem: formatarDistancia(pos.precisaoMetros) }) +
       (aprox
-        ? " Essa posição é aproximada (computador sem GPS ou VPN ligada). Faça o check-in pelo celular ou pelo QR do ponto."
+        ? " " + tr("Essa posição é aproximada (computador sem GPS ou VPN ligada). Faça o check-in pelo celular ou pelo QR do ponto.")
         : "")
     );
   }
@@ -46,7 +47,7 @@ export function CheckInButton({ onConfirmar, alvo, rotulo = "Fazer check-in", cl
         const { dentro, distanciaMetros } = dentroDoRaio(pos, alvo);
         if (!dentro) {
           toast.error(
-            `Você está a ${formatarDistancia(distanciaMetros)} do local. Chegue mais perto para fazer o check-in.` + detalhePosicao(pos),
+            tr("Você está a {distancia} do local. Chegue mais perto para fazer o check-in.", { distancia: formatarDistancia(distanciaMetros) }) + detalhePosicao(pos),
             { duration: 12000 },
           );
           return;
@@ -57,9 +58,9 @@ export function CheckInButton({ onConfirmar, alvo, rotulo = "Fazer check-in", cl
       await onConfirmar(pos);
     } catch (e) {
       if (e instanceof ErroGeo && e.estado === "negada") {
-        toast.error("Localização bloqueada. Toque no cadeado ao lado do endereço do site, permita a localização e tente de novo.");
+        toast.error(tr("Localização bloqueada. Toque no cadeado ao lado do endereço do site, permita a localização e tente de novo."));
       } else {
-        const base = e instanceof Error ? e.message : "Não foi possível fazer o check-in.";
+        const base = e instanceof Error ? tr(e.message) : tr("Não foi possível fazer o check-in.");
         toast.error(/Chegue mais perto/.test(base) ? base + detalhePosicao(pos) : base, { duration: 12000 });
       }
     } finally {
@@ -73,10 +74,10 @@ export function CheckInButton({ onConfirmar, alvo, rotulo = "Fazer check-in", cl
     <div className={cn("space-y-1", className)}>
       <Button type="button" className="w-full" disabled={disabled || ocupado} onClick={handleClick}>
         {ocupado ? <Loader2 className="mr-2 size-4 animate-spin" /> : <MapPin className="mr-2 size-4" />}
-        {carregando ? "Pegando localização…" : enviando ? "Registrando…" : rotulo}
+        {carregando ? tr("Pegando localização…") : enviando ? tr("Registrando…") : rotulo}
       </Button>
       {permissao === "denied" && (
-        <p className="text-xs text-destructive">A localização está bloqueada neste navegador. Libere nas permissões do site.</p>
+        <p className="text-xs text-destructive">{tr("A localização está bloqueada neste navegador. Libere nas permissões do site.")}</p>
       )}
     </div>
   );

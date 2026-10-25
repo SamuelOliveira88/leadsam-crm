@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
+import { tr, mark, localeAtual } from "@/i18n";
 export const Route = createFileRoute("/_authenticated/espelho")({
   ssr: false,
   component: Espelho,
@@ -39,10 +40,10 @@ const CORES: Record<string, string> = {
 };
 
 const LABEL_STATUS: Record<string, string> = {
-  disponivel: "Disponível",
-  reservada: "Reservada",
-  vendida: "Vendida",
-  bloqueada: "Bloqueada",
+  disponivel: mark("Disponível"),
+  reservada: mark("Reservada"),
+  vendida: mark("Vendida"),
+  bloqueada: mark("Bloqueada"),
 };
 
 function Espelho() {
@@ -104,24 +105,23 @@ function Espelho() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Espelho de Vendas</h1>
-          <p className="text-sm text-muted-foreground">Disponibilidade de unidades em tempo real</p>
+          <h1 className="text-2xl font-bold tracking-tight">{tr("Espelho de Vendas")}</h1>
+          <p className="text-sm text-muted-foreground">{tr("Disponibilidade de unidades em tempo real")}</p>
         </div>
         {podeGerenciar && empIdEfetivo && (
           <Button size="sm" onClick={() => setLoteOpen(true)}>
-            <Plus className="mr-2 size-4" /> Cadastrar unidades
-          </Button>
+            <Plus className="mr-2 size-4" /> {tr("Cadastrar unidades")}</Button>
         )}
       </div>
 
       {carregandoEmp ? (
-        <div className="text-sm text-muted-foreground">Carregando empreendimentos…</div>
+        <div className="text-sm text-muted-foreground">{tr("Carregando empreendimentos…")}</div>
       ) : (
         <Card className="flex flex-wrap items-center gap-3 p-4">
           <Building2 className="size-4 text-muted-foreground" />
           <Select value={empIdEfetivo} onValueChange={setEmpId}>
             <SelectTrigger className="w-full max-w-xs">
-              <SelectValue placeholder="Selecione o empreendimento" />
+              <SelectValue placeholder={tr("Selecione o empreendimento")} />
             </SelectTrigger>
             <SelectContent>
               {(empreendimentos ?? []).map((e: any) => (
@@ -132,21 +132,19 @@ function Espelho() {
 
           {!!unidades?.length && (
             <div className="flex flex-wrap gap-2 text-xs">
-              <Badge variant="outline" className="border-emerald-500/50 text-emerald-700">{resumo.disponivel} disponível(is)</Badge>
-              <Badge variant="outline" className="border-amber-500/50 text-amber-700">{resumo.reservada} reservada(s)</Badge>
-              <Badge variant="outline" className="border-rose-500/50 text-rose-700">{resumo.vendida} vendida(s)</Badge>
-              <Badge variant="outline" className="text-muted-foreground">{resumo.bloqueada} bloqueada(s)</Badge>
+              <Badge variant="outline" className="border-emerald-500/50 text-emerald-700">{tr("{disponivel} disponível(is)", { disponivel: resumo.disponivel })}</Badge>
+              <Badge variant="outline" className="border-amber-500/50 text-amber-700">{tr("{reservada} reservada(s)", { reservada: resumo.reservada })}</Badge>
+              <Badge variant="outline" className="border-rose-500/50 text-rose-700">{tr("{vendida} vendida(s)", { vendida: resumo.vendida })}</Badge>
+              <Badge variant="outline" className="text-muted-foreground">{tr("{bloqueada} bloqueada(s)", { bloqueada: resumo.bloqueada })}</Badge>
             </div>
           )}
         </Card>
       )}
 
-      {carregandoUnidades && <div className="text-sm text-muted-foreground">Carregando unidades…</div>}
+      {carregandoUnidades && <div className="text-sm text-muted-foreground">{tr("Carregando unidades…")}</div>}
 
       {empIdEfetivo && !carregandoUnidades && (unidades?.length ?? 0) === 0 && (
-        <Card className="p-6 text-center text-sm text-muted-foreground">
-          Nenhuma unidade cadastrada ainda para este empreendimento.
-          {podeGerenciar && " Clique em \"Cadastrar unidades\" para gerar a planta em lote."}
+        <Card className="p-6 text-center text-sm text-muted-foreground">{tr("Nenhuma unidade cadastrada ainda para este empreendimento.")}{podeGerenciar && tr(" Clique em \"Cadastrar unidades\" para gerar a planta em lote.")}
         </Card>
       )}
 
@@ -166,7 +164,7 @@ function Espelho() {
                           key={u.id}
                           onClick={() => setUnidadeSelecionada(u)}
                           className={`min-w-[52px] rounded-md border px-2 py-1.5 text-[11px] font-medium transition-colors ${CORES[u.status] ?? CORES.bloqueada}`}
-                          title={`${u.numero} · ${LABEL_STATUS[u.status]}`}
+                          title={`${u.numero} · ${tr(LABEL_STATUS[u.status])}`}
                         >
                           {u.numero}
                         </button>
@@ -183,16 +181,16 @@ function Espelho() {
       {/* Cadastro em lote */}
       <Dialog open={loteOpen} onOpenChange={setLoteOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Cadastrar unidades em lote</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{tr("Cadastrar unidades em lote")}</DialogTitle></DialogHeader>
           <FormLote
             onSubmit={async (dados) => {
               try {
                 const r = await criarLoteFn({ data: { empreendimento_id: empIdEfetivo, ...dados } });
-                toast.success(`${r.criadas} unidade(s) geradas.`);
+                toast.success(tr("{criadas} unidade(s) geradas.", { criadas: r.criadas }));
                 setLoteOpen(false);
                 invalidarUnidades();
               } catch (e: any) {
-                toast.error(e.message ?? "Erro ao gerar unidades");
+                toast.error(tr(e.message) ?? tr("Erro ao gerar unidades"));
               }
             }}
           />
@@ -210,31 +208,31 @@ function Espelho() {
               onReservar={async (leadId, clienteNome) => {
                 try {
                   await reservarFn({ data: { unidade_id: unidadeSelecionada.id, lead_id: leadId, cliente_nome: clienteNome } });
-                  toast.success("Unidade reservada.");
+                  toast.success(tr("Unidade reservada."));
                   setUnidadeSelecionada(null);
                   invalidarUnidades();
                 } catch (e: any) {
-                  toast.error(e.message ?? "Erro ao reservar");
+                  toast.error(tr(e.message) ?? tr("Erro ao reservar"));
                 }
               }}
               onLiberar={async () => {
                 try {
                   await liberarFn({ data: { unidade_id: unidadeSelecionada.id } });
-                  toast.success("Unidade liberada.");
+                  toast.success(tr("Unidade liberada."));
                   setUnidadeSelecionada(null);
                   invalidarUnidades();
                 } catch (e: any) {
-                  toast.error(e.message ?? "Erro ao liberar");
+                  toast.error(tr(e.message) ?? tr("Erro ao liberar"));
                 }
               }}
               onAtualizarStatus={async (status) => {
                 try {
                   await atualizarFn({ data: { id: unidadeSelecionada.id, status } });
-                  toast.success("Atualizado.");
+                  toast.success(tr("Atualizado."));
                   setUnidadeSelecionada(null);
                   invalidarUnidades();
                 } catch (e: any) {
-                  toast.error(e.message ?? "Erro ao atualizar");
+                  toast.error(tr(e.message) ?? tr("Erro ao atualizar"));
                 }
               }}
             />
@@ -260,20 +258,20 @@ function FormLote({ onSubmit }: { onSubmit: (d: any) => Promise<void> }) {
   return (
     <div className="space-y-3">
       <div>
-        <Label>Torre / Bloco</Label>
+        <Label>{tr("Torre / Bloco")}</Label>
         <Input value={torre} onChange={(e) => setTorre(e.target.value)} />
       </div>
       <div className="grid grid-cols-3 gap-3">
-        <div><Label>Andar inicial</Label><Input type="number" value={andarInicial} onChange={(e) => setAndarInicial(Number(e.target.value))} /></div>
-        <div><Label>Andar final</Label><Input type="number" value={andarFinal} onChange={(e) => setAndarFinal(Number(e.target.value))} /></div>
-        <div><Label>Unid./andar</Label><Input type="number" value={porAndar} onChange={(e) => setPorAndar(Number(e.target.value))} /></div>
+        <div><Label>{tr("Andar inicial")}</Label><Input type="number" value={andarInicial} onChange={(e) => setAndarInicial(Number(e.target.value))} /></div>
+        <div><Label>{tr("Andar final")}</Label><Input type="number" value={andarFinal} onChange={(e) => setAndarFinal(Number(e.target.value))} /></div>
+        <div><Label>{tr("Unid./andar")}</Label><Input type="number" value={porAndar} onChange={(e) => setPorAndar(Number(e.target.value))} /></div>
       </div>
-      <div><Label>Tipologia (padrão)</Label><Input value={tipologia} onChange={(e) => setTipologia(e.target.value)} /></div>
+      <div><Label>{tr("Tipologia (padrão)")}</Label><Input value={tipologia} onChange={(e) => setTipologia(e.target.value)} /></div>
       <div className="grid grid-cols-2 gap-3">
-        <div><Label>Área m² (padrão)</Label><Input type="number" value={area} onChange={(e) => setArea(e.target.value ? Number(e.target.value) : "")} /></div>
-        <div><Label>Valor R$ (padrão)</Label><Input type="number" value={valor} onChange={(e) => setValor(e.target.value ? Number(e.target.value) : "")} /></div>
+        <div><Label>{tr("Área m² (padrão)")}</Label><Input type="number" value={area} onChange={(e) => setArea(e.target.value ? Number(e.target.value) : "")} /></div>
+        <div><Label>{tr("Valor R$ (padrão)")}</Label><Input type="number" value={valor} onChange={(e) => setValor(e.target.value ? Number(e.target.value) : "")} /></div>
       </div>
-      <div className="text-xs text-muted-foreground">Serão geradas {total} unidade(s) (numeração automática: andar + posição, ex: 101, 102…).</div>
+      <div className="text-xs text-muted-foreground">{tr("Serão geradas {total} unidade(s) (numeração automática: andar + posição, ex: 101, 102…).", { total })}</div>
       <DialogFooter>
         <Button
           disabled={enviando || total <= 0}
@@ -286,9 +284,7 @@ function FormLote({ onSubmit }: { onSubmit: (d: any) => Promise<void> }) {
             setEnviando(false);
           }}
         >
-          {enviando ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Plus className="mr-2 size-4" />}
-          Gerar unidades
-        </Button>
+          {enviando ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Plus className="mr-2 size-4" />}{tr("Gerar unidades")}</Button>
       </DialogFooter>
     </div>
   );
@@ -308,59 +304,59 @@ function UnidadeDetalhe({
   return (
     <div className="space-y-4">
       <DialogHeader>
-        <DialogTitle>Unidade {unidade.numero} · {unidade.torre}</DialogTitle>
+        <DialogTitle>{tr("Unidade {numero} · {torre}", { numero: unidade.numero, torre: unidade.torre })}</DialogTitle>
       </DialogHeader>
 
       <div className="grid grid-cols-2 gap-2 text-sm">
-        <div><span className="text-muted-foreground">Status: </span><Badge variant="outline">{LABEL_STATUS[unidade.status]}</Badge></div>
-        {unidade.tipologia && <div><span className="text-muted-foreground">Tipologia: </span>{unidade.tipologia}</div>}
-        {unidade.area_m2 && <div><span className="text-muted-foreground">Área: </span>{unidade.area_m2} m²</div>}
-        {unidade.valor && <div><span className="text-muted-foreground">Valor: </span>{Number(unidade.valor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</div>}
-        {unidade.corretores?.nome && <div className="col-span-2"><span className="text-muted-foreground">Corretor: </span>{unidade.corretores.nome}</div>}
-        {unidade.cliente_nome && <div className="col-span-2"><span className="text-muted-foreground">Cliente: </span>{unidade.cliente_nome}</div>}
+        <div><span className="text-muted-foreground">{tr("Status:")} </span><Badge variant="outline">{tr(LABEL_STATUS[unidade.status])}</Badge></div>
+        {unidade.tipologia && <div><span className="text-muted-foreground">{tr("Tipologia:")} </span>{unidade.tipologia}</div>}
+        {unidade.area_m2 && <div><span className="text-muted-foreground">{tr("Área:")} </span>{tr("{area_m2} m²", { area_m2: unidade.area_m2 })}</div>}
+        {unidade.valor && <div><span className="text-muted-foreground">{tr("Valor:")} </span>{Number(unidade.valor).toLocaleString(localeAtual(), { style: "currency", currency: "BRL" })}</div>}
+        {unidade.corretores?.nome && <div className="col-span-2"><span className="text-muted-foreground">{tr("Corretor:")} </span>{unidade.corretores.nome}</div>}
+        {unidade.cliente_nome && <div className="col-span-2"><span className="text-muted-foreground">{tr("Cliente:")} </span>{unidade.cliente_nome}</div>}
       </div>
 
       {unidade.status === "disponivel" && (
         <div className="space-y-2 border-t pt-3">
-          <Label>Vincular a um lead (opcional)</Label>
+          <Label>{tr("Vincular a um lead (opcional)")}</Label>
           <Select value={leadId} onValueChange={setLeadId}>
-            <SelectTrigger><SelectValue placeholder="Nenhum lead selecionado" /></SelectTrigger>
+            <SelectTrigger><SelectValue placeholder={tr("Nenhum lead selecionado")} /></SelectTrigger>
             <SelectContent>
               {leads.map((l: any) => (
-                <SelectItem key={l.id} value={l.id}>{l.nome} · {l.telefone ?? "sem telefone"}</SelectItem>
+                <SelectItem key={l.id} value={l.id}>{l.nome} · {l.telefone ?? tr("sem telefone")}</SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Label>Ou nome do cliente (se não estiver na base de leads)</Label>
-          <Input value={clienteNome} onChange={(e) => setClienteNome(e.target.value)} placeholder="Nome do cliente" />
+          <Label>{tr("Ou nome do cliente (se não estiver na base de leads)")}</Label>
+          <Input value={clienteNome} onChange={(e) => setClienteNome(e.target.value)} placeholder={tr("Nome do cliente")} />
           <DialogFooter>
-            <Button onClick={() => onReservar(leadId || null, clienteNome || null)}>Reservar unidade</Button>
+            <Button onClick={() => onReservar(leadId || null, clienteNome || null)}>{tr("Reservar unidade")}</Button>
           </DialogFooter>
         </div>
       )}
 
       {unidade.status === "reservada" && (
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={onLiberar}><Unlock className="mr-2 size-4" /> Liberar reserva</Button>
-          {podeGerenciar && <Button onClick={() => onAtualizarStatus("vendida")}>Marcar como vendida</Button>}
+          <Button variant="outline" onClick={onLiberar}><Unlock className="mr-2 size-4" /> {tr("Liberar reserva")}</Button>
+          {podeGerenciar && <Button onClick={() => onAtualizarStatus("vendida")}>{tr("Marcar como vendida")}</Button>}
         </DialogFooter>
       )}
 
       {podeGerenciar && unidade.status === "vendida" && (
         <DialogFooter>
-          <Button variant="outline" onClick={() => onAtualizarStatus("disponivel")}>Reverter para disponível</Button>
+          <Button variant="outline" onClick={() => onAtualizarStatus("disponivel")}>{tr("Reverter para disponível")}</Button>
         </DialogFooter>
       )}
 
       {podeGerenciar && unidade.status === "bloqueada" && (
         <DialogFooter>
-          <Button variant="outline" onClick={() => onAtualizarStatus("disponivel")}><Unlock className="mr-2 size-4" /> Desbloquear</Button>
+          <Button variant="outline" onClick={() => onAtualizarStatus("disponivel")}><Unlock className="mr-2 size-4" /> {tr("Desbloquear")}</Button>
         </DialogFooter>
       )}
 
       {podeGerenciar && unidade.status === "disponivel" && (
         <DialogFooter>
-          <Button variant="outline" onClick={() => onAtualizarStatus("bloqueada")}><Lock className="mr-2 size-4" /> Bloquear</Button>
+          <Button variant="outline" onClick={() => onAtualizarStatus("bloqueada")}><Lock className="mr-2 size-4" /> {tr("Bloquear")}</Button>
         </DialogFooter>
       )}
     </div>

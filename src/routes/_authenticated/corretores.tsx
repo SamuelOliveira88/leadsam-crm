@@ -17,8 +17,9 @@ import { toast } from "sonner";
 
 import { RequireAdmin } from "@/components/RequireAdmin";
 
+import { tr } from "@/i18n";
 export const Route = createFileRoute("/_authenticated/corretores")({
-  head: () => ({ meta: [{ title: "Corretores — Alexandria Leds" }] }),
+  head: () => ({ meta: [{ title: tr("Corretores — Alexandria Leds") }] }),
   component: () => <RequireAdmin><Corretores /></RequireAdmin>,
 });
 
@@ -43,9 +44,9 @@ function Corretores() {
     mutationFn: (blindada: boolean) => defBlindFn({ data: { blindada } }),
     onSuccess: (r) => {
       qc.invalidateQueries({ queryKey: ["listaBlindada"] });
-      toast.success(r.blindada ? "Listas blindadas: corretor não vê o telefone." : "Listas abertas: corretor vê o telefone.");
+      toast.success(r.blindada ? tr("Listas blindadas: corretor não vê o telefone.") : tr("Listas abertas: corretor vê o telefone."));
     },
-    onError: (e: any) => toast.error(e?.message ?? "Não deu para mudar."),
+    onError: (e: any) => toast.error(tr(e?.message) ?? tr("Não deu para mudar.")),
   });
   const [showGrupos, setShowGrupos] = useState(false);
 
@@ -64,7 +65,7 @@ function Corretores() {
     mutationFn: async () => {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
-      if (!token) throw new Error("Sua sessão expirou. Entre novamente e tente enviar o convite.");
+      if (!token) throw new Error(tr("Sua sessão expirou. Entre novamente e tente enviar o convite."));
 
       const response = await fetch("/api/corretores/convidar", {
         method: "POST",
@@ -90,8 +91,8 @@ function Corretores() {
         const message =
           result?.message ||
           result?.error ||
-          "Não foi possível enviar o convite. Tente novamente.";
-        throw new Error(typeof message === "string" ? message : "Não foi possível enviar o convite.");
+          tr("Não foi possível enviar o convite. Tente novamente.");
+        throw new Error(typeof message === "string" ? message : tr("Não foi possível enviar o convite."));
       }
       return result;
     },
@@ -125,26 +126,25 @@ function Corretores() {
       resetForm();
       qc.invalidateQueries({ queryKey: ["corretores"] });
     },
-    onError: (e: any) => toast.error(e?.message || "Falha ao cadastrar com senha"),
+    onError: (e: any) => toast.error(tr(e?.message) || tr("Falha ao cadastrar com senha")),
   });
 
   const redefinirSenhaMut = useMutation({
     mutationFn: (c: any) => redefinirSenhaFn({ data: { corretor_id: c.id } }),
     onSuccess: (r: any) => setCredenciais({ nome: r.nome, email: r.email ?? "", senha: r.senha }),
-    onError: (e: any) => toast.error(e?.message || "Falha ao redefinir senha"),
+    onError: (e: any) => toast.error(tr(e?.message) || tr("Falha ao redefinir senha")),
   });
 
   return (
     <div className="space-y-4">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Corretores</h1>
-          <p className="text-sm text-muted-foreground">Cadastre e gerencie os corretores da equipe</p>
+          <h1 className="text-2xl font-bold tracking-tight">{tr("Corretores")}</h1>
+          <p className="text-sm text-muted-foreground">{tr("Cadastre e gerencie os corretores da equipe")}</p>
         </div>
         {isMaster && (
           <Button variant="outline" size="sm" onClick={() => setShowGrupos(true)}>
-            <Layers className="mr-2 size-4" /> Gerenciar Grupos
-          </Button>
+            <Layers className="mr-2 size-4" /> {tr("Gerenciar Grupos")}</Button>
         )}
       </div>
 
@@ -157,75 +157,69 @@ function Corretores() {
               variant={form.role === "corretor" ? "default" : "outline"}
               onClick={() => setForm({ ...form, role: "corretor" })}
             >
-              <Mail className="mr-2 size-4" /> Convidar Corretor
-            </Button>
+              <Mail className="mr-2 size-4" /> {tr("Convidar Corretor")}</Button>
             <Button
               type="button"
               size="sm"
               variant={form.role === "gerente" ? "default" : "outline"}
               onClick={() => setForm({ ...form, role: "gerente" })}
             >
-              <UserCog className="mr-2 size-4" /> Convidar Gerente
-            </Button>
+              <UserCog className="mr-2 size-4" /> {tr("Convidar Gerente")}</Button>
           </div>
         )}
-        <Input placeholder="Nome" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
-        <Input placeholder="E-mail (para convite)" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-        <Input placeholder="WhatsApp (55...)" value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} disabled={isMaster && form.role === "gerente"} />
+        <Input placeholder={tr("Nome")} value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
+        <Input placeholder={tr("E-mail (para convite)")} type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+        <Input placeholder={tr("WhatsApp (55...)")} value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} disabled={isMaster && form.role === "gerente"} />
         <select className="rounded-md border bg-background px-3 py-2 text-sm" value={form.grupo_id} onChange={(e) => setForm({ ...form, grupo_id: e.target.value })}>
-          <option value="">{form.role === "gerente" ? "Selecione o grupo…" : "Sem grupo"}</option>
+          <option value="">{form.role === "gerente" ? tr("Selecione o grupo…") : tr("Sem grupo")}</option>
           {(grupos ?? []).map((g) => <option key={g.id} value={g.id}>{g.nome}</option>)}
         </select>
         <select className="rounded-md border bg-background px-3 py-2 text-sm" value={form.canal_notificacao} onChange={(e) => setForm({ ...form, canal_notificacao: e.target.value as any })} disabled={isMaster && form.role === "gerente"}>
-          <option value="whatsapp">WhatsApp</option>
-          <option value="email">E-mail</option>
-          <option value="ambos">Ambos</option>
-          <option value="nenhum">Nenhum</option>
+          <option value="whatsapp">{tr("WhatsApp")}</option>
+          <option value="email">{tr("E-mail")}</option>
+          <option value="ambos">{tr("Ambos")}</option>
+          <option value="nenhum">{tr("Nenhum")}</option>
         </select>
         {isMaster ? (
           <div className="flex flex-wrap gap-2">
             <Button
               disabled={!form.nome || !form.email || (form.role === "gerente" && !form.grupo_id) || inviteMut.isPending}
               onClick={() => inviteMut.mutate(undefined, {
-                onSuccess: () => toast.success(form.role === "gerente" ? "Convite de gerente enviado!" : "Convite enviado por e-mail!"),
+                onSuccess: () => toast.success(form.role === "gerente" ? tr("Convite de gerente enviado!") : tr("Convite enviado por e-mail!")),
                 onError: (e: any) => {
-                  const msg = e?.message || e?.data?.message || e?.error?.message || e?.error || "Falha ao enviar convite";
-                  toast.error(typeof msg === "string" ? msg : "Falha ao enviar convite");
+                  const msg = e?.message || e?.data?.message || e?.error?.message || e?.error || tr("Falha ao enviar convite");
+                  toast.error(typeof msg === "string" ? tr(msg) : tr("Falha ao enviar convite"));
                 },
               })}
             >
-              <Mail className="mr-2 size-4" /> {inviteMut.isPending ? "Enviando…" : "Enviar convite por e-mail"}
+              <Mail className="mr-2 size-4" /> {inviteMut.isPending ? tr("Enviando…") : tr("Enviar convite por e-mail")}
             </Button>
             <Button
               variant="secondary"
               disabled={!form.nome || !form.email || (form.role === "gerente" && !form.grupo_id) || cadastroSenhaMut.isPending}
               onClick={() => cadastroSenhaMut.mutate()}
             >
-              <KeyRound className="mr-2 size-4" /> {cadastroSenhaMut.isPending ? "Criando…" : "Cadastrar com senha (sem e-mail)"}
+              <KeyRound className="mr-2 size-4" /> {cadastroSenhaMut.isPending ? tr("Criando…") : tr("Cadastrar com senha (sem e-mail)")}
             </Button>
           </div>
         ) : (
-          <Button onClick={() => form.nome && createMut.mutate()}><Plus className="mr-2 size-4" /> Adicionar</Button>
+          <Button onClick={() => form.nome && createMut.mutate()}><Plus className="mr-2 size-4" /> {tr("Adicionar")}</Button>
         )}
 
         <div className="flex flex-wrap items-center gap-4 md:col-span-6">
           {form.role === "corretor" && (
             <>
               <label className="flex items-center gap-2 text-xs">
-                <input type="checkbox" checked={form.recebe_via_web} onChange={(e) => setForm({ ...form, recebe_via_web: e.target.checked })} />
-                Recebe via Web
-              </label>
+                <input type="checkbox" checked={form.recebe_via_web} onChange={(e) => setForm({ ...form, recebe_via_web: e.target.checked })} />{tr("Recebe via Web")}</label>
               <label className="flex items-center gap-2 text-xs">
-                <input type="checkbox" checked={form.recebe_via_whatsapp} onChange={(e) => setForm({ ...form, recebe_via_whatsapp: e.target.checked })} />
-                Recebe via WhatsApp
-              </label>
+                <input type="checkbox" checked={form.recebe_via_whatsapp} onChange={(e) => setForm({ ...form, recebe_via_whatsapp: e.target.checked })} />{tr("Recebe via WhatsApp")}</label>
             </>
           )}
           {isMaster && (
             <span className="text-xs text-muted-foreground">
               {form.role === "gerente"
-                ? "O gerente receberá um e-mail com link para definir a senha e verá todos os leads e corretores do grupo selecionado."
-                : "O corretor receberá um e-mail com link para definir a senha e acessar o app."}
+                ? tr("O gerente receberá um e-mail com link para definir a senha e verá todos os leads e corretores do grupo selecionado.")
+                : tr("O corretor receberá um e-mail com link para definir a senha e acessar o app.")}
             </span>
           )}
         </div>
@@ -235,13 +229,11 @@ function Corretores() {
 
       <Card className="flex items-center justify-between gap-4 p-4">
         <div>
-          <div className="font-medium">Telefone dos leads de lista (planilha)</div>
+          <div className="font-medium">{tr("Telefone dos leads de lista (planilha)")}</div>
           <div className="text-sm text-muted-foreground">
             {blindInfo?.blindada !== false
-              ? "Blindado: o corretor vê só o nome e conversa pela tela Conversas."
-              : "Aberto: o corretor vê o telefone dos leads de lista."}
-            {" "}Leads do número mãe ficam sempre blindados.
-          </div>
+              ? tr("Blindado: o corretor vê só o nome e conversa pela tela Conversas.")
+              : tr("Aberto: o corretor vê o telefone dos leads de lista.")} {tr("Leads do número mãe ficam sempre blindados.")}</div>
         </div>
         {isMaster && (
           <Button
@@ -249,7 +241,7 @@ function Corretores() {
             disabled={blindMut.isPending || !blindInfo}
             onClick={() => blindMut.mutate(blindInfo?.blindada === false)}
           >
-            {blindInfo?.blindada === false ? "Blindar" : "Abrir"}
+            {blindInfo?.blindada === false ? tr("Blindar") : tr("Abrir")}
           </Button>
         )}
       </Card>
@@ -261,26 +253,25 @@ function Corretores() {
               <div className="flex items-center gap-2 font-medium">
                 {c.nome}
                 {c.ultimo_ping && Date.now() - new Date(c.ultimo_ping).getTime() < 3 * 60_000 ? (
-                  <Badge className="bg-emerald-500 text-white hover:bg-emerald-500">● online</Badge>
+                  <Badge className="bg-emerald-500 text-white hover:bg-emerald-500">{tr("● online")}</Badge>
                 ) : (
-                  <Badge variant="outline" className="text-muted-foreground">○ offline</Badge>
+                  <Badge variant="outline" className="text-muted-foreground">{tr("○ offline")}</Badge>
                 )}
-                <Badge variant={c.ativo ? "default" : "secondary"}>{c.ativo ? "ativo" : "inativo"}</Badge>
-                {c.recebe_via_web && <Badge variant="outline" className="text-[10px]">Web</Badge>}
-                {c.recebe_via_whatsapp && <Badge variant="outline" className="text-[10px]">WhatsApp</Badge>}
+                <Badge variant={c.ativo ? "default" : "secondary"}>{c.ativo ? tr("ativo") : tr("inativo")}</Badge>
+                {c.recebe_via_web && <Badge variant="outline" className="text-[10px]">{tr("Web")}</Badge>}
+                {c.recebe_via_whatsapp && <Badge variant="outline" className="text-[10px]">{tr("WhatsApp")}</Badge>}
               </div>
               <div className="text-xs text-muted-foreground">
-                {c.telefone ?? "—"} · {c.grupos?.nome ?? "Sem grupo"} · {c.canal_notificacao}
+                {c.telefone ?? "—"} · {c.grupos?.nome ?? tr("Sem grupo")} · {c.canal_notificacao}
               </div>
             </div>
             <div className="flex gap-2">
               <Button size="sm" variant="outline" onClick={() => flagMut.mutate({ id: c.id, patch: { ativo: !c.ativo } })}>
-                {c.ativo ? "Parar de receber leads" : "Voltar a receber leads"}
+                {c.ativo ? tr("Parar de receber leads") : tr("Voltar a receber leads")}
               </Button>
               {isMaster && (
                 <Button size="sm" variant="outline" disabled={redefinirSenhaMut.isPending} onClick={() => redefinirSenhaMut.mutate(c)}>
-                  <KeyRound className="mr-2 size-4" /> Definir senha
-                </Button>
+                  <KeyRound className="mr-2 size-4" /> {tr("Definir senha")}</Button>
               )}
               <Button size="icon" variant="ghost" onClick={() => delMut.mutate(c.id)}>
                 <Trash2 className="size-4 text-destructive" />
@@ -303,33 +294,31 @@ function Corretores() {
 
 function CredenciaisModal({ creds, onClose }: { creds: { nome: string; email: string; senha: string }; onClose: () => void }) {
   const copiar = async () => {
-    const txt = `Acesso Alexandria Leds\nSite: https://alexandria-leds.lovable.app/auth\nE-mail: ${creds.email}\nSenha: ${creds.senha}`;
-    try { await navigator.clipboard.writeText(txt); toast.success("Copiado! Cole no WhatsApp."); }
-    catch { toast.error("Não foi possível copiar"); }
+    const txt = tr("Acesso Alexandria Leds\nSite: https://alexandria-leds.lovable.app/auth\nE-mail: {email}\nSenha: {senha}", { email: creds.email, senha: creds.senha });
+    try { await navigator.clipboard.writeText(txt); toast.success(tr("Copiado! Cole no WhatsApp.")); }
+    catch { toast.error(tr("Não foi possível copiar")); }
   };
   const wa = `https://wa.me/?text=${encodeURIComponent(
-    `Olá ${creds.nome}, aqui está seu acesso ao Alexandria Leds:\n\n🔗 https://alexandria-leds.lovable.app/auth\n📧 ${creds.email}\n🔑 ${creds.senha}\n\nAo entrar, você pode trocar a senha em "Perfil".`
+    tr("Olá {nome}, aqui está seu acesso ao Alexandria Leds:\n\n🔗 https://alexandria-leds.lovable.app/auth\n📧 {email}\n🔑 {senha}\n\nAo entrar, você pode trocar a senha em \"Perfil\".", { nome: creds.nome, email: creds.email, senha: creds.senha })
   )}`;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
       <Card className="w-full max-w-md p-5" onClick={(e) => e.stopPropagation()}>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Credenciais de {creds.nome}</h2>
+          <h2 className="text-lg font-semibold">{tr("Credenciais de {nome}", { nome: creds.nome })}</h2>
           <Button variant="ghost" size="icon" onClick={onClose}><X className="size-4" /></Button>
         </div>
-        <p className="mb-3 text-xs text-muted-foreground">
-          Copie e envie por WhatsApp. A senha só aparece agora — depois é preciso redefinir.
-        </p>
+        <p className="mb-3 text-xs text-muted-foreground">{tr("Copie e envie por WhatsApp. A senha só aparece agora — depois é preciso redefinir.")}</p>
         <div className="space-y-2 rounded-md border bg-muted/40 p-3 font-mono text-sm">
-          <div><span className="text-muted-foreground">E-mail:</span> {creds.email}</div>
-          <div><span className="text-muted-foreground">Senha:</span> <strong>{creds.senha}</strong></div>
+          <div><span className="text-muted-foreground">{tr("E-mail:")}</span> {creds.email}</div>
+          <div><span className="text-muted-foreground">{tr("Senha:")}</span> <strong>{creds.senha}</strong></div>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
-          <Button onClick={copiar}><Copy className="mr-2 size-4" /> Copiar tudo</Button>
+          <Button onClick={copiar}><Copy className="mr-2 size-4" /> {tr("Copiar tudo")}</Button>
           <a href={wa} target="_blank" rel="noreferrer">
-            <Button variant="secondary">Abrir WhatsApp</Button>
+            <Button variant="secondary">{tr("Abrir WhatsApp")}</Button>
           </a>
-          <Button variant="ghost" onClick={onClose}>Fechar</Button>
+          <Button variant="ghost" onClick={onClose}>{tr("Fechar")}</Button>
         </div>
       </Card>
     </div>
@@ -360,23 +349,22 @@ function GruposModal({ onClose }: { onClose: () => void }) {
       <Card className="w-full max-w-lg p-4" onClick={(e) => e.stopPropagation()}>
         <div className="mb-3 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold">Gerenciar Grupos</h2>
-            <p className="text-xs text-muted-foreground">Organize corretores em equipes/imobiliárias</p>
+            <h2 className="text-lg font-semibold">{tr("Gerenciar Grupos")}</h2>
+            <p className="text-xs text-muted-foreground">{tr("Organize corretores em equipes/imobiliárias")}</p>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}><X className="size-4" /></Button>
         </div>
 
         <div className="mb-3 flex gap-2">
-          <Input placeholder="Nome do novo grupo" value={nome} onChange={(e) => setNome(e.target.value)}
+          <Input placeholder={tr("Nome do novo grupo")} value={nome} onChange={(e) => setNome(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && nome) createMut.mutate(); }} />
           <Button onClick={() => nome && createMut.mutate()} disabled={createMut.isPending}>
-            <Plus className="mr-2 size-4" /> Novo Grupo
-          </Button>
+            <Plus className="mr-2 size-4" /> {tr("Novo Grupo")}</Button>
         </div>
 
         <div className="max-h-80 space-y-2 overflow-y-auto">
           {(grupos ?? []).length === 0 && (
-            <div className="py-6 text-center text-sm text-muted-foreground">Nenhum grupo cadastrado.</div>
+            <div className="py-6 text-center text-sm text-muted-foreground">{tr("Nenhum grupo cadastrado.")}</div>
           )}
           {(grupos ?? []).map((g) => (
             <div key={g.id} className="flex items-center justify-between rounded-md border p-2">

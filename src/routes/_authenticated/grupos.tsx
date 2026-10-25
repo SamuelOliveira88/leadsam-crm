@@ -9,8 +9,9 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
+import { tr } from "@/i18n";
 export const Route = createFileRoute("/_authenticated/grupos")({
-  head: () => ({ meta: [{ title: "Grupos — Alexandria Leds" }] }),
+  head: () => ({ meta: [{ title: tr("Grupos — Alexandria Leds") }] }),
   component: Grupos,
 });
 
@@ -33,21 +34,20 @@ function Grupos() {
   });
 
   if (perfil && perfil.role !== "master") {
-    return <div className="p-8 text-center text-sm text-muted-foreground">Acesso restrito ao Master.</div>;
+    return <div className="p-8 text-center text-sm text-muted-foreground">{tr("Acesso restrito ao Master.")}</div>;
   }
 
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Grupos</h1>
-        <p className="text-sm text-muted-foreground">Organize corretores em equipes/imobiliárias</p>
+        <h1 className="text-2xl font-bold tracking-tight">{tr("Grupos")}</h1>
+        <p className="text-sm text-muted-foreground">{tr("Organize corretores em equipes/imobiliárias")}</p>
       </div>
 
       <Card className="flex gap-2 p-4">
-        <Input placeholder="Nome do grupo" value={nome} onChange={(e) => setNome(e.target.value)} />
+        <Input placeholder={tr("Nome do grupo")} value={nome} onChange={(e) => setNome(e.target.value)} />
         <Button onClick={() => nome && createMut.mutate()} disabled={createMut.isPending}>
-          <Plus className="mr-2 size-4" /> Criar
-        </Button>
+          <Plus className="mr-2 size-4" /> {tr("Criar")}</Button>
       </Card>
 
       <div className="grid gap-2">

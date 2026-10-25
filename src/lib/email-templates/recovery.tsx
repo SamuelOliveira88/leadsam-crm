@@ -12,9 +12,12 @@ import {
   Text,
 } from '@react-email/components'
 
+import { LANG_HTML, TEXTOS_EMAIL, com, type IdiomaEmail } from './textos'
+
 interface RecoveryEmailProps {
   siteName: string
   confirmationUrl: string
+  lang?: IdiomaEmail
 }
 
 const BRAND = 'Alexandria Leds'
@@ -22,31 +25,33 @@ const PRIMARY = '#1d5966'
 
 export const RecoveryEmail = ({
   confirmationUrl,
-}: RecoveryEmailProps) => (
-  <Html lang="pt-BR" dir="ltr">
+  lang = 'pt',
+}: RecoveryEmailProps) => {
+  const t = TEXTOS_EMAIL[lang].recovery
+  return (
+  <Html lang={LANG_HTML[lang]} dir="ltr">
     <Head />
-    <Preview>Redefina sua senha do {BRAND}</Preview>
+    <Preview>{com(t.preview, BRAND)}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={header}>
           <Text style={brand}>{BRAND}</Text>
         </Section>
-        <Heading style={h1}>Redefinir senha</Heading>
+        <Heading style={h1}>{t.titulo}</Heading>
         <Text style={text}>
-          Recebemos uma solicitação para redefinir sua senha no {BRAND}. Clique
-          no botão abaixo para escolher uma nova senha.
+          {com(t.texto, BRAND)}
         </Text>
         <Button style={button} href={confirmationUrl}>
-          Redefinir senha
+          {t.botao}
         </Button>
         <Text style={footer}>
-          Se você não solicitou a redefinição, pode ignorar este e-mail. Sua
-          senha não será alterada.
+          {t.rodape}
         </Text>
       </Container>
     </Body>
   </Html>
-)
+  )
+}
 
 export default RecoveryEmail
 

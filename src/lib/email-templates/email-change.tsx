@@ -13,12 +13,15 @@ import {
   Text,
 } from '@react-email/components'
 
+import { LANG_HTML, TEXTOS_EMAIL, com, type IdiomaEmail } from './textos'
+
 interface EmailChangeEmailProps {
   siteName: string
   oldEmail: string
   email: string
   newEmail: string
   confirmationUrl: string
+  lang?: IdiomaEmail
 }
 
 const BRAND = 'Alexandria Leds'
@@ -28,39 +31,42 @@ export const EmailChangeEmail = ({
   oldEmail,
   newEmail,
   confirmationUrl,
-}: EmailChangeEmailProps) => (
-  <Html lang="pt-BR" dir="ltr">
+  lang = 'pt',
+}: EmailChangeEmailProps) => {
+  const t = TEXTOS_EMAIL[lang].email_change
+  return (
+  <Html lang={LANG_HTML[lang]} dir="ltr">
     <Head />
-    <Preview>Confirme a alteração de e-mail no {BRAND}</Preview>
+    <Preview>{com(t.preview, BRAND)}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={header}>
           <Text style={brand}>{BRAND}</Text>
         </Section>
-        <Heading style={h1}>Confirmar alteração de e-mail</Heading>
+        <Heading style={h1}>{t.titulo}</Heading>
         <Text style={text}>
-          Você solicitou alterar o e-mail da sua conta no {BRAND} de{' '}
+          {com(t.antes, BRAND)}{' '}
           <Link href={`mailto:${oldEmail}`} style={link}>
             {oldEmail}
           </Link>{' '}
-          para{' '}
+          {t.para}{' '}
           <Link href={`mailto:${newEmail}`} style={link}>
             {newEmail}
           </Link>
-          .
+          {t.depois}
         </Text>
-        <Text style={text}>Clique no botão abaixo para confirmar:</Text>
+        <Text style={text}>{t.clique}</Text>
         <Button style={button} href={confirmationUrl}>
-          Confirmar alteração
+          {t.botao}
         </Button>
         <Text style={footer}>
-          Se você não solicitou esta alteração, proteja sua conta
-          imediatamente.
+          {t.rodape}
         </Text>
       </Container>
     </Body>
   </Html>
-)
+  )
+}
 
 export default EmailChangeEmail
 

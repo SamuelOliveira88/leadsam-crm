@@ -13,10 +13,13 @@ import {
   Text,
 } from '@react-email/components'
 
+import { LANG_HTML, TEXTOS_EMAIL, com, type IdiomaEmail } from './textos'
+
 interface InviteEmailProps {
   siteName: string
   siteUrl: string
   confirmationUrl: string
+  lang?: IdiomaEmail
 }
 
 const BRAND = 'Alexandria Leds'
@@ -25,33 +28,37 @@ const PRIMARY = '#1d5966'
 export const InviteEmail = ({
   siteUrl,
   confirmationUrl,
-}: InviteEmailProps) => (
-  <Html lang="pt-BR" dir="ltr">
+  lang = 'pt',
+}: InviteEmailProps) => {
+  const t = TEXTOS_EMAIL[lang].invite
+  return (
+  <Html lang={LANG_HTML[lang]} dir="ltr">
     <Head />
-    <Preview>Você foi convidado para o {BRAND}</Preview>
+    <Preview>{com(t.preview, BRAND)}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={header}>
           <Text style={brand}>{BRAND}</Text>
         </Section>
-        <Heading style={h1}>Você foi convidado</Heading>
+        <Heading style={h1}>{t.titulo}</Heading>
         <Text style={text}>
-          Você recebeu um convite para fazer parte do{' '}
+          {t.antes}{' '}
           <Link href={siteUrl} style={link}>
             <strong>{BRAND}</strong>
           </Link>
-          . Clique no botão abaixo para aceitar o convite e criar sua conta.
+          {t.depois}
         </Text>
         <Button style={button} href={confirmationUrl}>
-          Aceitar convite
+          {t.botao}
         </Button>
         <Text style={footer}>
-          Se você não esperava este convite, pode ignorar este e-mail.
+          {t.rodape}
         </Text>
       </Container>
     </Body>
   </Html>
-)
+  )
+}
 
 export default InviteEmail
 

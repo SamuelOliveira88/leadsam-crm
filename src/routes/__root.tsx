@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -14,17 +15,16 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 
+import { tr, LangProvider, SeletorIdioma } from "@/i18n";
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold">Página não encontrada</h2>
-        <p className="mt-2 text-sm text-muted-foreground">Essa página não existe ou foi movida.</p>
+        <h2 className="mt-4 text-xl font-semibold">{tr("Página não encontrada")}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">{tr("Essa página não existe ou foi movida.")}</p>
         <div className="mt-6">
-          <Link to="/" className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-            Voltar ao início
-          </Link>
+          <Link to="/" className="inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">{tr("Voltar ao início")}</Link>
         </div>
       </div>
     </div>
@@ -37,11 +37,11 @@ function ErrorComponent({ error, reset }: { error: any; reset: () => void }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold">Não foi possível carregar</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Tente novamente ou volte ao início.</p>
+        <h1 className="text-xl font-semibold">{tr("Não foi possível carregar")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{tr("Tente novamente ou volte ao início.")}</p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button onClick={() => { router.invalidate(); reset(); }} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Tentar novamente</button>
-          <a href="/" className="rounded-md border border-input px-4 py-2 text-sm font-medium">Ir para início</a>
+          <button onClick={() => { router.invalidate(); reset(); }} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">{tr("Tentar novamente")}</button>
+          <a href="/" className="rounded-md border border-input px-4 py-2 text-sm font-medium">{tr("Ir para início")}</a>
         </div>
       </div>
     </div>
@@ -53,8 +53,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1" },
-      { title: "Alexandria Leds — CRM com IA para corretores de imóveis" },
-      { name: "description", content: "CRM com Inteligência Artificial para corretores brasileiros. Gerencie leads, funil, agenda e dispare mensagens no WhatsApp." },
+      { title: tr("Alexandria Leds — CRM com IA para corretores de imóveis") },
+      { name: "description", content: tr("CRM com Inteligência Artificial para corretores brasileiros. Gerencie leads, funil, agenda e dispare mensagens no WhatsApp.") },
       { name: "theme-color", content: "#1d5966" },
       { property: "og:title", content: "Alexandria Leds — CRM com IA para corretores de imóveis" },
       { property: "og:description", content: "CRM com Inteligência Artificial para corretores brasileiros. Gerencie leads, funil, agenda e dispare mensagens no WhatsApp." },
@@ -94,9 +94,13 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+// Telas sem o menu lateral: o botão de idioma fica solto no canto.
+const PAGINAS_SEM_MENU = ["/", "/auth", "/cadastro-empresa", "/set-password"];
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
+  const pathname = useRouterState({ select: (st) => st.location.pathname });
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
@@ -108,8 +112,11 @@ function RootComponent() {
   }, [router, queryClient]);
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <Toaster position="top-right" richColors />
+      <LangProvider>
+        {PAGINAS_SEM_MENU.includes(pathname) && <SeletorIdioma className="fixed right-3 top-3 z-50 bg-background/90 backdrop-blur" />}
+        <Outlet />
+        <Toaster position="top-right" richColors />
+      </LangProvider>
     </QueryClientProvider>
   );
 }

@@ -11,33 +11,38 @@ import {
   Text,
 } from '@react-email/components'
 
+import { LANG_HTML, TEXTOS_EMAIL, com, type IdiomaEmail } from './textos'
+
 interface ReauthenticationEmailProps {
   token: string
+  lang?: IdiomaEmail
 }
 
 const BRAND = 'Alexandria Leds'
 const PRIMARY = '#1d5966'
 
-export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => (
-  <Html lang="pt-BR" dir="ltr">
+export const ReauthenticationEmail = ({ token, lang = 'pt' }: ReauthenticationEmailProps) => {
+  const t = TEXTOS_EMAIL[lang].reauthentication
+  return (
+  <Html lang={LANG_HTML[lang]} dir="ltr">
     <Head />
-    <Preview>Seu código de verificação do {BRAND}</Preview>
+    <Preview>{com(t.preview, BRAND)}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={header}>
           <Text style={brand}>{BRAND}</Text>
         </Section>
-        <Heading style={h1}>Confirmar identidade</Heading>
-        <Text style={text}>Use o código abaixo para confirmar sua identidade:</Text>
+        <Heading style={h1}>{t.titulo}</Heading>
+        <Text style={text}>{t.texto}</Text>
         <Text style={codeStyle}>{token}</Text>
         <Text style={footer}>
-          Este código expira em breve. Se você não solicitou, pode ignorar este
-          e-mail.
+          {t.rodape}
         </Text>
       </Container>
     </Body>
   </Html>
-)
+  )
+}
 
 export default ReauthenticationEmail
 

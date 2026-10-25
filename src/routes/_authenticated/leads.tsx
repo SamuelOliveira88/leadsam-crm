@@ -23,8 +23,9 @@ import { COR_ETAPA, ehEtapaFunil, type EtapaFunil } from "@/lib/funil";
 import { cn } from "@/lib/utils";
 
 
+import { tr, mark, localeAtual } from "@/i18n";
 export const Route = createFileRoute("/_authenticated/leads")({
-  head: () => ({ meta: [{ title: "Leads — ImobLead" }] }),
+  head: () => ({ meta: [{ title: tr("Leads — ImobLead") }] }),
   component: Leads,
 });
 
@@ -71,9 +72,9 @@ function Leads() {
       XLSX.utils.book_append_sheet(wb, ws, "Leads");
       const data = new Date().toISOString().slice(0, 10);
       XLSX.writeFile(wb, `leads-imobLead-${data}.xlsx`);
-      toast.success(`${linhas.length} lead(s) exportado(s).`);
+      toast.success(tr("{length} lead(s) exportado(s).", { length: linhas.length }));
     } catch (e: any) {
-      toast.error(e.message ?? "Erro ao exportar leads");
+      toast.error(tr(e.message) ?? tr("Erro ao exportar leads"));
     } finally {
       setExportando(false);
     }
@@ -111,15 +112,14 @@ function Leads() {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Leads</h1>
-          <p className="text-sm text-muted-foreground">Toque em um lead para abrir o histórico e gerar mensagem</p>
+          <h1 className="text-2xl font-bold tracking-tight">{tr("Leads")}</h1>
+          <p className="text-sm text-muted-foreground">{tr("Toque em um lead para abrir o histórico e gerar mensagem")}</p>
         </div>
         <div className="flex gap-2">
           <Button size="sm" onClick={() => setNovoAberto(true)}>
-            <Plus className="mr-2 size-4" /> Novo lead
-          </Button>
+            <Plus className="mr-2 size-4" /> {tr("Novo lead")}</Button>
           <Button size="sm" variant="outline" onClick={handleExportar} disabled={exportando}>
-            <Download className="mr-2 size-4" /> {exportando ? "Exportando…" : "Exportar planilha"}
+            <Download className="mr-2 size-4" /> {exportando ? tr("Exportando…") : tr("Exportar planilha")}
           </Button>
         </div>
       </div>
@@ -127,20 +127,18 @@ function Leads() {
       <NovoLeadDialog open={novoAberto} onOpenChange={setNovoAberto} />
 
 
-      {isLoading && <div className="text-sm text-muted-foreground">Carregando…</div>}
+      {isLoading && <div className="text-sm text-muted-foreground">{tr("Carregando…")}</div>}
 
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex rounded-md border p-0.5">
           <Button size="sm" variant={visao === "lista" ? "default" : "ghost"} onClick={() => trocarVisao("lista")}>
-            <LayoutList className="mr-1 size-4" /> Lista
-          </Button>
+            <LayoutList className="mr-1 size-4" /> {tr("Lista")}</Button>
           <Button size="sm" variant={visao === "quadro" ? "default" : "ghost"} onClick={() => trocarVisao("quadro")}>
-            <Columns3 className="mr-1 size-4" /> Quadro
-          </Button>
+            <Columns3 className="mr-1 size-4" /> {tr("Quadro")}</Button>
         </div>
-        {visao === "lista" && ([["todos", "Todos"], ["contatados", "✓ Já contatados"], ["nao", "Ainda não contatados"]] as const).map(([k, t]) => (
+        {visao === "lista" && ([["todos", mark("Todos")], ["contatados", mark("✓ Já contatados")], ["nao", mark("Ainda não contatados")]] as const).map(([k, rotulo]) => (
           <Button key={k} size="sm" variant={filtroContato === k ? "default" : "outline"} onClick={() => setFiltroContato(k)}>
-            {t} ({(data ?? []).filter((l: any) => k === "todos" ? true : k === "contatados" ? (l.etapa_funil ?? "Novo") !== "Novo" : (l.etapa_funil ?? "Novo") === "Novo").length})
+            {tr(rotulo)} ({(data ?? []).filter((l: any) => k === "todos" ? true : k === "contatados" ? (l.etapa_funil ?? "Novo") !== "Novo" : (l.etapa_funil ?? "Novo") === "Novo").length})
           </Button>
         ))}
         <div className="relative min-w-[220px] flex-1 sm:max-w-xs">
@@ -148,7 +146,7 @@ function Leads() {
           <Input
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
-            placeholder="Buscar por telefone…"
+            placeholder={tr("Buscar por telefone…")}
             className="pl-9 pr-9"
             inputMode="tel"
           />
@@ -157,7 +155,7 @@ function Leads() {
               type="button"
               onClick={() => setBusca("")}
               className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:text-foreground"
-              aria-label="Limpar busca"
+              aria-label={tr("Limpar busca")}
             >
               <X className="size-4" />
             </button>
@@ -182,13 +180,13 @@ function Leads() {
                 <Badge variant={l.status === "represado" ? "secondary" : "default"}>{l.status}</Badge>
                 {ehEtapaFunil(l.etapa_funil) && l.etapa_funil !== "Novo" ? (
                   <Badge className={cn("border-transparent text-white", COR_ETAPA[l.etapa_funil as EtapaFunil])}>{l.etapa_funil}</Badge>
-                ) : <Badge variant="outline">Novo</Badge>}
+                ) : <Badge variant="outline">{tr("Novo")}</Badge>}
                 {!l.visualizado_em && l.corretor_id && (
-                  <Badge variant="outline" className="border-orange-400 text-orange-600">novo</Badge>
+                  <Badge variant="outline" className="border-orange-400 text-orange-600">{tr("novo")}</Badge>
                 )}
               </div>
               <div className="mt-1 truncate text-xs text-muted-foreground">
-                {l.telefone ?? "—"} · {l.grupos?.nome ?? "Sem grupo"} · {l.corretores?.nome ?? "não atribuído"}
+                {l.telefone ?? "—"} · {l.grupos?.nome ?? tr("Sem grupo")} · {l.corretores?.nome ?? tr("não atribuído")}
                 {l.fonte ? ` · ${l.fonte}` : ""}
                 {l.cidade ? ` · ${l.cidade}` : ""}
               </div>
@@ -204,7 +202,7 @@ function Leads() {
         ))}
         {!isLoading && leadsFiltrados.length === 0 && (
           <Card className="p-8 text-center text-sm text-muted-foreground">
-            {(data ?? []).length === 0 ? "Nenhum lead ainda." : "Nenhum lead encontrado com esse telefone."}
+            {(data ?? []).length === 0 ? tr("Nenhum lead ainda.") : tr("Nenhum lead encontrado com esse telefone.")}
           </Card>
         )}
       </div>
@@ -237,11 +235,11 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
   const editarMut = useMutation({
     mutationFn: () => atualizarFn({ data: { id: lead.id, ...form } }),
     onSuccess: () => {
-      toast.success("Lead atualizado.");
+      toast.success(tr("Lead atualizado."));
       setEditando(false);
       qc.invalidateQueries({ queryKey: ["leads"] });
     },
-    onError: (e: any) => toast.error(e?.message ?? "Falha ao salvar"),
+    onError: (e: any) => toast.error(tr(e?.message) ?? tr("Falha ao salvar")),
   });
   const listCorretoresFn = useServerFn(listarCorretores);
   const [texto, setTexto] = useState("");
@@ -262,38 +260,38 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
   const transferirMut = useMutation({
     mutationFn: () => transferirFn({ data: { lead_id: lead.id, corretor_id: novoCorretor } }),
     onSuccess: (r: any) => {
-      toast.success(`Lead transferido para ${r.corretor_nome}.`);
+      toast.success(tr("Lead transferido para {corretor_nome}.", { corretor_nome: r.corretor_nome }));
       setMostrarTransfer(false);
       setNovoCorretor("");
       qc.invalidateQueries({ queryKey: ["leads"] });
       onClose();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Falha ao transferir"),
+    onError: (e: any) => toast.error(tr(e?.message) ?? tr("Falha ao transferir")),
   });
 
   const transferirOnlineMut = useMutation({
     mutationFn: () => transferirOnlineFn({ data: { lead_id: lead.id } }),
     onSuccess: (r: any) => {
-      toast.success(`Lead enviado para ${r.corretor_nome} (online).`);
+      toast.success(tr("Lead enviado para {corretor_nome} (online).", { corretor_nome: r.corretor_nome }));
       qc.invalidateQueries({ queryKey: ["leads"] });
       onClose();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Nenhum corretor online agora"),
+    onError: (e: any) => toast.error(tr(e?.message) ?? tr("Nenhum corretor online agora")),
   });
 
   const descartarMut = useMutation({
     mutationFn: (motivo?: string) => descartarFn({ data: { lead_id: lead.id, motivo } }),
     onSuccess: (r: any) => {
       if (r?.represado) {
-        toast.success("Lead descartado. Ninguém elegível — voltou para represados.");
+        toast.success(tr("Lead descartado. Ninguém elegível — voltou para represados."));
       } else {
-        toast.success(`Lead descartado e redistribuído para ${r.corretor_nome}.`);
+        toast.success(tr("Lead descartado e redistribuído para {corretor_nome}.", { corretor_nome: r.corretor_nome }));
       }
       qc.invalidateQueries({ queryKey: ["leads"] });
       qc.invalidateQueries({ queryKey: ["notas", lead.id] });
       onClose();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Falha ao descartar"),
+    onError: (e: any) => toast.error(tr(e?.message) ?? tr("Falha ao descartar")),
   });
 
   const { data: notas } = useQuery({
@@ -315,9 +313,9 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
       setTexto("");
       qc.invalidateQueries({ queryKey: ["notas", lead.id] });
       qc.invalidateQueries({ queryKey: ["leads"] });
-      toast.success("Nota salva. Timer de 6 dias reiniciado.");
+      toast.success(tr("Nota salva. Timer de 6 dias reiniciado."));
     },
-    onError: (e: any) => toast.error(e.message ?? "Erro ao salvar"),
+    onError: (e: any) => toast.error(tr(e.message) ?? tr("Erro ao salvar")),
   });
 
   async function handleGerar() {
@@ -325,11 +323,11 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
     try {
       const { mensagem, telefone } = await gerarFn({ data: { lead_id: lead.id } });
       const phone = (telefone || lead.telefone || "").replace(/\D/g, "");
-      if (!phone) { toast.error("Lead sem telefone"); return; }
+      if (!phone) { toast.error(tr("Lead sem telefone")); return; }
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(mensagem)}`;
       window.open(url, "_blank");
     } catch (e: any) {
-      toast.error(e.message ?? "Erro ao gerar mensagem");
+      toast.error(tr(e.message) ?? tr("Erro ao gerar mensagem"));
     } finally { setGerando(false); }
   }
 
@@ -346,11 +344,10 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
               <Badge variant={lead.status === "represado" ? "secondary" : "default"}>{lead.status}</Badge>
             </div>
             <div className="mt-1 text-xs text-muted-foreground">
-              {lead.telefone ?? "—"} · {lead.corretores?.nome ?? "não atribuído"}
+              {lead.telefone ?? "—"} · {lead.corretores?.nome ?? tr("não atribuído")}
               {lead.visualizado_em && (
                 <span className="ml-2 inline-flex items-center gap-1 text-emerald-600">
-                  <Eye className="size-3" /> visto
-                </span>
+                  <Eye className="size-3" /> {tr("visto")}</span>
               )}
             </div>
           </div>
@@ -359,7 +356,7 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
 
         {lead.observacoes && (
           <div className="mb-4 rounded-lg border bg-muted/40 p-3">
-            <div className="mb-1 text-xs font-semibold text-muted-foreground">Resumo da qualificação (IA)</div>
+            <div className="mb-1 text-xs font-semibold text-muted-foreground">{tr("Resumo da qualificação (IA)")}</div>
             <div className="whitespace-pre-wrap text-sm">{lead.observacoes}</div>
           </div>
         )}
@@ -369,7 +366,7 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
         <div className="mb-4 flex flex-wrap gap-2">
           <Button size="sm" onClick={handleGerar} disabled={gerando}>
             <Sparkles className="mr-2 size-4" />
-            {gerando ? "Gerando…" : "✨ Gerar Mensagem de Abertura (IA)"}
+            {gerando ? tr("Gerando…") : tr("✨ Gerar Mensagem de Abertura (IA)")}
           </Button>
           {lead.telefone && (
             <Button
@@ -377,8 +374,7 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
               variant="outline"
               onClick={() => window.open(`https://wa.me/${lead.telefone.replace(/\D/g, "")}`, "_blank")}
             >
-              <MessageCircle className="mr-2 size-4" /> Abrir WhatsApp
-            </Button>
+              <MessageCircle className="mr-2 size-4" /> {tr("Abrir WhatsApp")}</Button>
           )}
           <Button
             size="sm"
@@ -386,12 +382,11 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
             onClick={async () => {
               try {
                 await notificarFn({ data: { lead_id: lead.id } });
-                toast.success("Corretor notificado via WhatsApp (Evolution).");
-              } catch (e: any) { toast.error(e?.message ?? "Falha ao notificar"); }
+                toast.success(tr("Corretor notificado via WhatsApp (Evolution)."));
+              } catch (e: any) { toast.error(tr(e?.message) ?? tr("Falha ao notificar")); }
             }}
           >
-            <MessageCircle className="mr-2 size-4" /> Notificar corretor (Evolution)
-          </Button>
+            <MessageCircle className="mr-2 size-4" /> {tr("Notificar corretor (Evolution)")}</Button>
           <Button
             size="sm"
             variant="outline"
@@ -406,71 +401,69 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
               setEditando(true);
             }}
           >
-            <Pencil className="mr-2 size-4" /> Editar lead
-          </Button>
+            <Pencil className="mr-2 size-4" /> {tr("Editar lead")}</Button>
           <Button
             size="sm"
             variant="outline"
             onClick={() => setMostrarTransfer((v) => !v)}
           >
-            <ArrowRightLeft className="mr-2 size-4" /> Transferir corretor
-          </Button>
+            <ArrowRightLeft className="mr-2 size-4" /> {tr("Transferir corretor")}</Button>
           <Button
             size="sm"
             variant="default"
             disabled={transferirOnlineMut.isPending}
             onClick={() => transferirOnlineMut.mutate()}
-            title="Envia para um corretor online agora, seguindo o rodízio do grupo"
+            title={tr("Envia para um corretor online agora, seguindo o rodízio do grupo")}
           >
             <Zap className="mr-2 size-4" />
-            {transferirOnlineMut.isPending ? "Enviando…" : "Enviar p/ online"}
+            {transferirOnlineMut.isPending ? tr("Enviando…") : tr("Enviar p/ online")}
           </Button>
           <Button
             size="sm"
             variant="destructive"
             disabled={descartarMut.isPending}
             onClick={() => {
-              const motivo = window.prompt("Motivo do descarte (opcional):") ?? undefined;
+              const motivo = window.prompt(tr("Motivo do descarte (opcional):")) ?? undefined;
               if (motivo === undefined) return; // cancelado
-              if (!window.confirm("Descartar este lead e devolvê-lo ao rodízio (excluindo você)?")) return;
+              if (!window.confirm(tr("Descartar este lead e devolvê-lo ao rodízio (excluindo você)?"))) return;
               descartarMut.mutate(motivo || undefined);
             }}
-            title="Devolve o lead ao rodízio, sem você como candidato"
+            title={tr("Devolve o lead ao rodízio, sem você como candidato")}
           >
             <RotateCcw className="mr-2 size-4" />
-            {descartarMut.isPending ? "Descartando…" : "Descartar lead"}
+            {descartarMut.isPending ? tr("Descartando…") : tr("Descartar lead")}
           </Button>
         </div>
 
         <Dialog open={editando} onOpenChange={(o) => !o && setEditando(false)}>
           <DialogContent>
-            <DialogHeader><DialogTitle>Editar lead</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{tr("Editar lead")}</DialogTitle></DialogHeader>
             <div className="space-y-3">
               <div>
-                <Label htmlFor="ed-nome">Nome</Label>
+                <Label htmlFor="ed-nome">{tr("Nome")}</Label>
                 <Input id="ed-nome" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
               </div>
               <div>
-                <Label htmlFor="ed-tel">Telefone</Label>
+                <Label htmlFor="ed-tel">{tr("Telefone")}</Label>
                 <Input id="ed-tel" value={form.telefone} onChange={(e) => setForm({ ...form, telefone: e.target.value })} />
               </div>
               <div>
-                <Label htmlFor="ed-email">E-mail</Label>
+                <Label htmlFor="ed-email">{tr("E-mail")}</Label>
                 <Input id="ed-email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
               </div>
               <div>
-                <Label htmlFor="ed-fonte">Origem / fonte</Label>
+                <Label htmlFor="ed-fonte">{tr("Origem / fonte")}</Label>
                 <Input id="ed-fonte" value={form.fonte} onChange={(e) => setForm({ ...form, fonte: e.target.value })} />
               </div>
               <div>
-                <Label htmlFor="ed-obs">Observações</Label>
+                <Label htmlFor="ed-obs">{tr("Observações")}</Label>
                 <Textarea id="ed-obs" rows={4} value={form.observacoes} onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="ghost" onClick={() => setEditando(false)}>Cancelar</Button>
+              <Button variant="ghost" onClick={() => setEditando(false)}>{tr("Cancelar")}</Button>
               <Button disabled={editarMut.isPending || form.nome.trim().length < 2} onClick={() => editarMut.mutate()}>
-                {editarMut.isPending ? "Salvando…" : "Salvar"}
+                {editarMut.isPending ? tr("Salvando…") : tr("Salvar")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -478,18 +471,14 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
 
         {mostrarTransfer && (
           <div className="mb-4 rounded-md border bg-muted/40 p-3">
-            <label className="text-xs font-semibold uppercase text-muted-foreground">
-              Escolha o novo corretor
-            </label>
-            <div className="mt-1 text-[11px] text-muted-foreground">
-              🟢 indica corretor online agora (visto há menos de 3 minutos)
-            </div>
+            <label className="text-xs font-semibold uppercase text-muted-foreground">{tr("Escolha o novo corretor")}</label>
+            <div className="mt-1 text-[11px] text-muted-foreground">{tr("🟢 indica corretor online agora (visto há menos de 3 minutos)")}</div>
             <select
               className="mt-2 w-full rounded-md border bg-background p-2 text-sm"
               value={novoCorretor}
               onChange={(e) => setNovoCorretor(e.target.value)}
             >
-              <option value="">— Selecione —</option>
+              <option value="">{tr("— Selecione —")}</option>
               {(corretores ?? [])
                 .slice()
                 .sort((a: any, b: any) => Number(isOnline(b)) - Number(isOnline(a)))
@@ -497,53 +486,49 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
                   <option key={c.id} value={c.id} disabled={!c.ativo}>
                     {isOnline(c) ? "🟢 " : "⚪ "}{c.nome}
                     {c.grupos?.nome ? ` · ${c.grupos.nome}` : ""}
-                    {c.ativo ? "" : " (inativo)"}
+                    {c.ativo ? "" : tr(" (inativo)")}
                   </option>
                 ))}
             </select>
             <div className="mt-2 flex justify-end gap-2">
-              <Button size="sm" variant="ghost" onClick={() => setMostrarTransfer(false)}>Cancelar</Button>
+              <Button size="sm" variant="ghost" onClick={() => setMostrarTransfer(false)}>{tr("Cancelar")}</Button>
               <Button
                 size="sm"
                 disabled={!novoCorretor || transferirMut.isPending}
                 onClick={() => transferirMut.mutate()}
               >
-                {transferirMut.isPending ? "Transferindo…" : "Confirmar transferência"}
+                {transferirMut.isPending ? tr("Transferindo…") : tr("Confirmar transferência")}
               </Button>
             </div>
           </div>
         )}
 
         <div className="mb-4">
-          <label className="text-xs font-semibold uppercase text-muted-foreground">Nova nota / histórico</label>
+          <label className="text-xs font-semibold uppercase text-muted-foreground">{tr("Nova nota / histórico")}</label>
           <Textarea
             className="mt-2"
             rows={3}
-            placeholder="Ex: Liguei, ficou de retornar amanhã às 10h..."
+            placeholder={tr("Ex: Liguei, ficou de retornar amanhã às 10h...")}
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
           />
           <div className="mt-2 flex justify-between">
-            <span className="text-[11px] text-muted-foreground">Salvar reinicia o cronômetro de 6 dias.</span>
-            <Button size="sm" disabled={!texto.trim() || criarMut.isPending} onClick={() => criarMut.mutate()}>
-              Salvar nota
-            </Button>
+            <span className="text-[11px] text-muted-foreground">{tr("Salvar reinicia o cronômetro de 6 dias.")}</span>
+            <Button size="sm" disabled={!texto.trim() || criarMut.isPending} onClick={() => criarMut.mutate()}>{tr("Salvar nota")}</Button>
           </div>
         </div>
 
         <div>
-          <div className="mb-2 text-xs font-semibold uppercase text-muted-foreground">Histórico</div>
+          <div className="mb-2 text-xs font-semibold uppercase text-muted-foreground">{tr("Histórico")}</div>
           <div className="space-y-2">
             {(notas ?? []).length === 0 && (
-              <div className="rounded-md border border-dashed p-4 text-center text-xs text-muted-foreground">
-                Nenhuma nota ainda.
-              </div>
+              <div className="rounded-md border border-dashed p-4 text-center text-xs text-muted-foreground">{tr("Nenhuma nota ainda.")}</div>
             )}
             {(notas ?? []).map((n: any) => (
               <div key={n.id} className="rounded-md border bg-muted/30 p-3">
                 <div className="whitespace-pre-wrap text-sm">{n.texto}</div>
                 <div className="mt-1 text-[11px] text-muted-foreground">
-                  {new Date(n.created_at).toLocaleString("pt-BR")}
+                  {new Date(n.created_at).toLocaleString(localeAtual())}
                 </div>
               </div>
             ))}
@@ -578,14 +563,14 @@ function NovoLeadDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
   const mut = useMutation({
     mutationFn: () => criar({ data: { nome: nome.trim(), telefone: telefone.replace(/\D/g, ""), grupo_id: grupoId, privado } }),
     onSuccess: (r: any) => {
-      toast.success(r?.distribuido ? "Lead criado e distribuído." : "Lead criado (represado — fora do horário ou sem corretor).");
+      toast.success(r?.distribuido ? tr("Lead criado e distribuído.") : tr("Lead criado (represado — fora do horário ou sem corretor)."));
       qc.invalidateQueries({ queryKey: ["leads"] });
       setNome("");
       setTelefone("");
       setPrivado(false);
       onOpenChange(false);
     },
-    onError: (e: any) => toast.error(e?.message ?? "Erro ao criar lead"),
+    onError: (e: any) => toast.error(tr(e?.message) ?? tr("Erro ao criar lead")),
   });
 
 
@@ -595,30 +580,30 @@ function NovoLeadDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Novo lead manual</DialogTitle>
+          <DialogTitle>{tr("Novo lead manual")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1.5">
-            <Label htmlFor="nl-nome">Nome</Label>
-            <Input id="nl-nome" value={nome} maxLength={120} onChange={(e) => setNome(e.target.value)} placeholder="Nome do cliente" />
+            <Label htmlFor="nl-nome">{tr("Nome")}</Label>
+            <Input id="nl-nome" value={nome} maxLength={120} onChange={(e) => setNome(e.target.value)} placeholder={tr("Nome do cliente")} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="nl-tel">Telefone (WhatsApp)</Label>
+            <Label htmlFor="nl-tel">{tr("Telefone (WhatsApp)")}</Label>
             <Input id="nl-tel" value={telefone} maxLength={20} inputMode="tel" onChange={(e) => setTelefone(e.target.value)} placeholder="11999999999" />
           </div>
           <label className="flex items-start gap-2 rounded-md border p-3 text-sm">
             <input type="checkbox" className="mt-0.5" checked={privado} onChange={(e) => setPrivado(e.target.checked)} />
             <span>
-              <span className="font-medium">Lead privado</span>
-              <span className="block text-xs text-muted-foreground">Somente você verá e poderá editar este lead — inclusive master e suporte ficam sem acesso.</span>
+              <span className="font-medium">{tr("Lead privado")}</span>
+              <span className="block text-xs text-muted-foreground">{tr("Somente você verá e poderá editar este lead — inclusive master e suporte ficam sem acesso.")}</span>
             </span>
           </label>
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancelar</Button>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>{tr("Cancelar")}</Button>
           <Button disabled={!valido || mut.isPending} onClick={() => mut.mutate()}>
-            {mut.isPending ? "Criando…" : "Criar lead"}
+            {mut.isPending ? tr("Criando…") : tr("Criar lead")}
           </Button>
         </DialogFooter>
       </DialogContent>

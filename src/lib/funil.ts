@@ -1,4 +1,5 @@
 // Funil do lead — valores fixos, usados no servidor e na tela.
+import { localeAtual } from "@/i18n";
 
 export const ETAPAS_FUNIL = [
   "Novo",
@@ -53,5 +54,5 @@ export function parseValorBR(entrada: string): number | null {
 
 export function formatarReais(valor: number | null | undefined): string {
   if (valor == null) return "—";
-  return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
+  return valor.toLocaleString(localeAtual(), { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 }

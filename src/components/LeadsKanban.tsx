@@ -18,6 +18,7 @@ import { useMoverEtapa } from "@/hooks/use-mover-etapa";
 import { COR_ETAPA, ETAPAS_FUNIL, ehEtapaFunil, formatarReais, type EtapaFunil } from "@/lib/funil";
 import { cn } from "@/lib/utils";
 
+import { tr } from "@/i18n";
 const POR_PAGINA = 50;
 
 type Lead = {
@@ -45,12 +46,12 @@ function CartaoVisual({ lead, className }: { lead: Lead; className?: string }) {
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 truncate text-sm font-semibold">{lead.nome}</div>
         {!lead.visualizado_em && lead.corretor_id && (
-          <Badge variant="outline" className="shrink-0 border-orange-400 px-1.5 py-0 text-[10px] text-orange-600">novo</Badge>
+          <Badge variant="outline" className="shrink-0 border-orange-400 px-1.5 py-0 text-[10px] text-orange-600">{tr("novo")}</Badge>
         )}
       </div>
       <div className="mt-1 truncate text-xs text-muted-foreground">{lead.telefone ?? "—"}</div>
       <div className="truncate text-xs text-muted-foreground">
-        {lead.corretores?.nome ?? "não atribuído"}
+        {lead.corretores?.nome ?? tr("não atribuído")}
         {lead.fonte ? ` · ${lead.fonte}` : ""}
       </div>
       {etapa === "Vendido" && lead.valor_negociacao != null && (
@@ -91,20 +92,19 @@ function Coluna({ etapa, leads, aoAbrir }: { etapa: EtapaFunil; leads: Lead[]; a
     >
       <div className="flex items-center gap-2 border-b px-3 py-2">
         <span className={cn("size-2.5 rounded-full", COR_ETAPA[etapa])} />
-        <span className="flex-1 truncate text-sm font-semibold">{etapa}</span>
+        <span className="flex-1 truncate text-sm font-semibold">{tr(etapa)}</span>
         <Badge variant="secondary">{leads.length}</Badge>
       </div>
       {etapa === "Vendido" && leads.length > 0 && (
-        <div className="border-b px-3 py-1 text-xs font-medium text-emerald-600">Total: {formatarReais(totalVendido)}</div>
+        <div className="border-b px-3 py-1 text-xs font-medium text-emerald-600">{tr("Total: {formatarReais}", { formatarReais: formatarReais(totalVendido) })}</div>
       )}
       <div className="flex max-h-[calc(100vh-20rem)] min-h-24 flex-col gap-2 overflow-y-auto p-2">
         {visiveis.map((l) => (
           <CartaoArrastavel key={l.id} lead={l} aoAbrir={aoAbrir} />
         ))}
-        {leads.length === 0 && <div className="py-6 text-center text-xs text-muted-foreground">Solte um lead aqui</div>}
+        {leads.length === 0 && <div className="py-6 text-center text-xs text-muted-foreground">{tr("Solte um lead aqui")}</div>}
         {leads.length > limite && (
-          <Button type="button" variant="ghost" size="sm" onClick={() => setLimite((n) => n + POR_PAGINA)}>
-            Mostrar mais ({leads.length - limite})
+          <Button type="button" variant="ghost" size="sm" onClick={() => setLimite((n) => n + POR_PAGINA)}>{tr("Mostrar mais ({n})", { n: leads.length - limite })}
           </Button>
         )}
       </div>

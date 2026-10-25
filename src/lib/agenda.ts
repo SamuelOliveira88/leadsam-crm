@@ -1,4 +1,5 @@
 // Agenda de compromissos — tipos, rótulos, datas no fuso de São Paulo e texto do lembrete.
+import { tr, mark, idiomaAtual } from "@/i18n";
 // O Brasil não usa horário de verão desde 2019, então São Paulo é sempre UTC-03:00.
 
 export const TIPOS_COMPROMISSO = ["visita", "ligacao", "reuniao"] as const;
@@ -8,20 +9,20 @@ export const STATUS_COMPROMISSO = ["agendado", "realizado", "cancelado", "nao_co
 export type StatusCompromisso = (typeof STATUS_COMPROMISSO)[number];
 
 export const ROTULO_TIPO: Record<TipoCompromisso, string> = {
-  visita: "Visita",
-  ligacao: "Ligação",
-  reuniao: "Reunião",
+  visita: mark("Visita"),
+  ligacao: mark("Ligação"),
+  reuniao: mark("Reunião"),
 };
 
 export const ROTULO_STATUS: Record<StatusCompromisso, string> = {
-  agendado: "Agendado",
-  realizado: "Realizado",
-  cancelado: "Cancelado",
-  nao_compareceu: "Não compareceu",
+  agendado: mark("Agendado"),
+  realizado: mark("Realizado"),
+  cancelado: mark("Cancelado"),
+  nao_compareceu: mark("Não compareceu"),
 };
 
 const TZ = "America/Sao_Paulo";
-const DIAS_CURTOS = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
+const DIAS_CURTOS = [mark("dom"), mark("seg"), mark("ter"), mark("qua"), mark("qui"), mark("sex"), mark("sáb")];
 
 /** Data de hoje em São Paulo, como "AAAA-MM-DD". */
 export function hojeSP(agora: Date = new Date()): string {
@@ -74,7 +75,8 @@ export function horaSP(iso: string): string {
 export function rotuloDia(ymd: string): string {
   const [a, m, d] = ymd.split("-").map(Number);
   const dow = new Date(Date.UTC(a, m - 1, d)).getUTCDay();
-  return `${DIAS_CURTOS[dow]}, ${String(d).padStart(2, "0")}/${String(m).padStart(2, "0")}`;
+  const dd = String(d).padStart(2, "0"), mm = String(m).padStart(2, "0");
+  return `${tr(DIAS_CURTOS[dow])}, ${idiomaAtual() === "en" ? `${mm}/${dd}` : `${dd}/${mm}`}`;
 }
 
 export function mensagemLembrete(p: {

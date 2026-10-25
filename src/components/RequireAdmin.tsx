@@ -6,6 +6,7 @@ import { meuPerfil } from "@/lib/perfis.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
+import { tr } from "@/i18n";
 /** Bloqueia o acesso quando o usuário logado é apenas "corretor". */
 export function RequireAdmin({ children }: { children: React.ReactNode }) {
   const perfilFn = useServerFn(meuPerfil);
@@ -22,12 +23,10 @@ export function RequireAdmin({ children }: { children: React.ReactNode }) {
         <div className="mx-auto mb-4 grid size-12 place-items-center rounded-full bg-destructive/10 text-destructive">
           <ShieldAlert className="size-6" />
         </div>
-        <h1 className="mb-2 text-lg font-semibold">Acesso restrito</h1>
-        <p className="text-sm text-muted-foreground">
-          Esta área é exclusiva para gerentes e master. Fale com o responsável se você precisa deste acesso.
-        </p>
+        <h1 className="mb-2 text-lg font-semibold">{tr("Acesso restrito")}</h1>
+        <p className="text-sm text-muted-foreground">{tr("Esta área é exclusiva para gerentes e master. Fale com o responsável se você precisa deste acesso.")}</p>
         <Link to="/dashboard">
-          <Button className="mt-6">Voltar ao Dashboard</Button>
+          <Button className="mt-6">{tr("Voltar ao Dashboard")}</Button>
         </Link>
       </Card>
     </div>

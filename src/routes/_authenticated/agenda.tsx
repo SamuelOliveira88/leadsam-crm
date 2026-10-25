@@ -28,8 +28,9 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
+import { tr } from "@/i18n";
 export const Route = createFileRoute("/_authenticated/agenda")({
-  head: () => ({ meta: [{ title: "Agenda — Alexandria Leds" }] }),
+  head: () => ({ meta: [{ title: tr("Agenda — Alexandria Leds") }] }),
   component: AgendaPage,
 });
 
@@ -93,40 +94,39 @@ function AgendaPage() {
   const mudar = useMutation({
     mutationFn: (v: { id: string; status?: StatusCompromisso; data_hora?: string }) => atualizarFn({ data: v }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["compromissos"] }),
-    onError: (e: any) => toast.error(e?.message ?? "Não foi possível atualizar."),
+    onError: (e: any) => toast.error(tr(e?.message) ?? tr("Não foi possível atualizar.")),
   });
 
   const hoje = hojeSP();
   const titulo =
     visao === "dia"
       ? dia === hoje ? "Hoje" : rotuloDia(dia)
-      : `${rotuloDia(dias[0])} a ${rotuloDia(dias[6])}`;
+      : tr("{inicio} a {fim}", { inicio: rotuloDia(dias[0]), fim: rotuloDia(dias[6]) });
   const agendadosNoPeriodo = filtrados.filter((i) => i.status === "agendado").length;
 
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center gap-3">
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-bold"><CalendarDays className="size-6" /> Agenda</h1>
+          <h1 className="flex items-center gap-2 text-2xl font-bold"><CalendarDays className="size-6" /> {tr("Agenda")}</h1>
           <p className="text-sm text-muted-foreground">
-            {ehEquipe ? "Compromissos da equipe." : "Seus compromissos."} {agendadosNoPeriodo} por fazer neste período.
-          </p>
+            {ehEquipe ? tr("Compromissos da equipe.") : tr("Seus compromissos.")} {tr("{agendadosNoPeriodo} por fazer neste período.", { agendadosNoPeriodo })}</p>
         </div>
         <div className="ml-auto inline-flex rounded-lg border p-0.5">
           {(["dia", "semana"] as const).map((v) => (
             <Button key={v} type="button" size="sm" variant={visao === v ? "default" : "ghost"} onClick={() => trocarVisao(v)}>
-              {v === "dia" ? "Dia" : "Semana"}
+              {v === "dia" ? tr("Dia") : tr("Semana")}
             </Button>
           ))}
         </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <Button type="button" variant="outline" size="icon" aria-label="Anterior" onClick={() => setDia(somarDias(dia, visao === "semana" ? -7 : -1))}>
+        <Button type="button" variant="outline" size="icon" aria-label={tr("Anterior")} onClick={() => setDia(somarDias(dia, visao === "semana" ? -7 : -1))}>
           <ChevronLeft className="size-4" />
         </Button>
-        <Button type="button" variant="outline" onClick={() => setDia(hoje)}>Hoje</Button>
-        <Button type="button" variant="outline" size="icon" aria-label="Próximo" onClick={() => setDia(somarDias(dia, visao === "semana" ? 7 : 1))}>
+        <Button type="button" variant="outline" onClick={() => setDia(hoje)}>{tr("Hoje")}</Button>
+        <Button type="button" variant="outline" size="icon" aria-label={tr("Próximo")} onClick={() => setDia(somarDias(dia, visao === "semana" ? 7 : 1))}>
           <ChevronRight className="size-4" />
         </Button>
         <span className="px-2 text-sm font-semibold">{titulo}</span>
@@ -134,7 +134,7 @@ function AgendaPage() {
           <label className="ml-auto flex items-center gap-2 text-sm">
             <Users className="size-4 text-muted-foreground" />
             <select className="rounded-md border bg-background p-2 text-sm" value={filtroCorretor} onChange={(e) => setFiltroCorretor(e.target.value)}>
-              <option value="todos">Toda a equipe</option>
+              <option value="todos">{tr("Toda a equipe")}</option>
               {corretores.map(([id, nome]) => <option key={id} value={id}>{nome}</option>)}
             </select>
           </label>
@@ -142,7 +142,7 @@ function AgendaPage() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">Carregando…</p>
+        <p className="text-sm text-muted-foreground">{tr("Carregando…")}</p>
       ) : (
         <div className={cn("grid gap-3", visao === "semana" && "md:grid-cols-2 xl:grid-cols-4")}>
           {dias.map((d) => {
@@ -151,12 +151,12 @@ function AgendaPage() {
               <div key={d} className={cn("space-y-2", visao === "semana" && "rounded-xl border bg-muted/20 p-3")}>
                 {visao === "semana" && (
                   <div className="flex items-center justify-between text-sm font-semibold">
-                    <span className={cn(d === hoje && "text-primary")}>{d === hoje ? "Hoje · " : ""}{rotuloDia(d)}</span>
+                    <span className={cn(d === hoje && "text-primary")}>{d === hoje ? tr("Hoje · ") : ""}{rotuloDia(d)}</span>
                     <Badge variant="secondary">{lista.length}</Badge>
                   </div>
                 )}
                 {lista.length === 0 && (
-                  <p className="py-4 text-center text-sm text-muted-foreground">Nada agendado.</p>
+                  <p className="py-4 text-center text-sm text-muted-foreground">{tr("Nada agendado.")}</p>
                 )}
                 {lista.map((i) => (
                   <CartaoCompromisso
@@ -179,7 +179,7 @@ function AgendaPage() {
         aoFechar={() => setRemarcando(null)}
         aoConfirmar={(iso) => {
           if (!remarcando) return;
-          mudar.mutate({ id: remarcando.id, data_hora: iso }, { onSuccess: () => { toast.success("Compromisso remarcado."); setRemarcando(null); } });
+          mudar.mutate({ id: remarcando.id, data_hora: iso }, { onSuccess: () => { toast.success(tr("Compromisso remarcado.")); setRemarcando(null); } });
         }}
       />
     </div>
@@ -213,35 +213,35 @@ function CartaoCompromisso({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2">
             <span className="text-sm font-bold">{horaSP(item.data_hora)}</span>
-            <span className="text-xs text-muted-foreground">{ROTULO_TIPO[tipo]}</span>
+            <span className="text-xs text-muted-foreground">{tr(ROTULO_TIPO[tipo])}</span>
             <Badge variant={agendado ? "outline" : item.status === "realizado" ? "default" : "secondary"} className="ml-auto">
-              {ROTULO_STATUS[item.status as StatusCompromisso] ?? item.status}
+              {tr(ROTULO_STATUS[item.status as StatusCompromisso] ?? item.status)}
             </Badge>
           </div>
-          <div className="truncate text-sm font-medium">{item.lead_nome ?? "Sem lead"}</div>
+          <div className="truncate text-sm font-medium">{item.lead_nome ?? tr("Sem lead")}</div>
           {item.empreendimento && <div className="truncate text-xs text-muted-foreground">{item.empreendimento}</div>}
-          {mostrarCorretor && item.corretor_nome && <div className="truncate text-xs text-muted-foreground">Corretor: {item.corretor_nome}</div>}
+          {mostrarCorretor && item.corretor_nome && <div className="truncate text-xs text-muted-foreground">{tr("Corretor: {corretor_nome}", { corretor_nome: item.corretor_nome })}</div>}
           {item.observacoes && <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">{item.observacoes}</div>}
         </div>
       </div>
 
-      {atrasado && <p className="text-xs font-medium text-amber-600">O horário passou. Registre como foi.</p>}
+      {atrasado && <p className="text-xs font-medium text-amber-600">{tr("O horário passou. Registre como foi.")}</p>}
 
       <div className="flex flex-wrap gap-1.5">
         {whats && (
           <Button asChild size="sm" variant="ghost">
-            <a href={whats} target="_blank" rel="noreferrer"><MessageCircle className="mr-1 size-4" /> WhatsApp</a>
+            <a href={whats} target="_blank" rel="noreferrer"><MessageCircle className="mr-1 size-4" /> {tr("WhatsApp")}</a>
           </Button>
         )}
         {agendado ? (
           <>
-            <Button size="sm" variant="outline" disabled={ocupado} onClick={() => aoMudarStatus("realizado")}>Realizado</Button>
-            <Button size="sm" variant="outline" disabled={ocupado} onClick={() => aoMudarStatus("nao_compareceu")}>Não compareceu</Button>
-            <Button size="sm" variant="ghost" disabled={ocupado} onClick={aoRemarcar}>Remarcar</Button>
-            <Button size="sm" variant="ghost" disabled={ocupado} onClick={() => aoMudarStatus("cancelado")}>Cancelar</Button>
+            <Button size="sm" variant="outline" disabled={ocupado} onClick={() => aoMudarStatus("realizado")}>{tr("Realizado")}</Button>
+            <Button size="sm" variant="outline" disabled={ocupado} onClick={() => aoMudarStatus("nao_compareceu")}>{tr("Não compareceu")}</Button>
+            <Button size="sm" variant="ghost" disabled={ocupado} onClick={aoRemarcar}>{tr("Remarcar")}</Button>
+            <Button size="sm" variant="ghost" disabled={ocupado} onClick={() => aoMudarStatus("cancelado")}>{tr("Cancelar")}</Button>
           </>
         ) : (
-          <Button size="sm" variant="ghost" disabled={ocupado} onClick={() => aoMudarStatus("agendado")}>Reabrir</Button>
+          <Button size="sm" variant="ghost" disabled={ocupado} onClick={() => aoMudarStatus("agendado")}>{tr("Reabrir")}</Button>
         )}
       </div>
     </Card>
@@ -265,8 +265,8 @@ function RemarcarDialog({
 
   function confirmar() {
     const iso = inputLocalParaISO(valor);
-    if (!iso) return setErro("Escolha a data e a hora.");
-    if (new Date(iso).getTime() < Date.now() - 5 * 60_000) return setErro("Escolha uma data e hora no futuro.");
+    if (!iso) return setErro(tr("Escolha a data e a hora."));
+    if (new Date(iso).getTime() < Date.now() - 5 * 60_000) return setErro(tr("Escolha uma data e hora no futuro."));
     aoConfirmar(iso);
   }
 
@@ -274,18 +274,18 @@ function RemarcarDialog({
     <Dialog open={!!item} onOpenChange={(o) => { if (!o) aoFechar(); }}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Remarcar compromisso</DialogTitle>
+          <DialogTitle>{tr("Remarcar compromisso")}</DialogTitle>
           <DialogDescription>{item?.lead_nome ?? ""}</DialogDescription>
         </DialogHeader>
         <div>
-          <Label htmlFor="rem-quando">Nova data e hora</Label>
+          <Label htmlFor="rem-quando">{tr("Nova data e hora")}</Label>
           <Input id="rem-quando" type="datetime-local" value={valor} onChange={(e) => { setValor(e.target.value); setErro(null); }} />
-          <p className="mt-1 text-xs text-muted-foreground">O lembrete no WhatsApp será refeito para o novo horário.</p>
+          <p className="mt-1 text-xs text-muted-foreground">{tr("O lembrete no WhatsApp será refeito para o novo horário.")}</p>
           {erro && <p className="mt-1 text-sm text-destructive">{erro}</p>}
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={aoFechar}>Cancelar</Button>
-          <Button onClick={confirmar}>Remarcar</Button>
+          <Button variant="ghost" onClick={aoFechar}>{tr("Cancelar")}</Button>
+          <Button onClick={confirmar}>{tr("Remarcar")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

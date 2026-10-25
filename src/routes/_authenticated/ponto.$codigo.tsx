@@ -9,9 +9,10 @@ import { CheckInButton } from "@/components/CheckInButton";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
+import { tr } from "@/i18n";
 // Página aberta ao escanear o QR fixo de um ponto de acesso.
 export const Route = createFileRoute("/_authenticated/ponto/$codigo")({
-  head: () => ({ meta: [{ title: "Check-in no ponto — Alexandria Leds" }] }),
+  head: () => ({ meta: [{ title: tr("Check-in no ponto — Alexandria Leds") }] }),
   component: PontoPage,
 });
 
@@ -31,10 +32,8 @@ function PontoPage() {
     return (
       <div className="mx-auto max-w-md">
         <Card className="space-y-2 p-5">
-          <h1 className="text-xl font-bold">QR não reconhecido</h1>
-          <p className="text-sm text-muted-foreground">
-            Este QR não é de um ponto da sua imobiliária, ou foi trocado. Peça um QR atualizado ao master.
-          </p>
+          <h1 className="text-xl font-bold">{tr("QR não reconhecido")}</h1>
+          <p className="text-sm text-muted-foreground">{tr("Este QR não é de um ponto da sua imobiliária, ou foi trocado. Peça um QR atualizado ao master.")}</p>
         </Card>
       </div>
     );
@@ -45,16 +44,16 @@ function PontoPage() {
       <Card className="space-y-4 p-5">
         <div className="flex items-center gap-2">
           <MapPin className="size-5 text-primary" />
-          <h1 className="text-xl font-bold">{ponto?.nome ?? "Carregando…"}</h1>
+          <h1 className="text-xl font-bold">{ponto?.nome ?? tr("Carregando…")}</h1>
         </div>
-        {ponto && !ponto.ativo && <p className="text-sm text-amber-600">Este ponto está desativado.</p>}
+        {ponto && !ponto.ativo && <p className="text-sm text-amber-600">{tr("Este ponto está desativado.")}</p>}
         {ponto && (
           <p className="text-sm text-muted-foreground">
             {ponto.usa_gps && ponto.usa_ip
-              ? "Vamos conferir a sua localização e a internet do ponto."
+              ? tr("Vamos conferir a sua localização e a internet do ponto.")
               : ponto.usa_ip
-                ? "Vamos conferir a internet do ponto."
-                : "Vamos conferir a sua localização."}
+                ? tr("Vamos conferir a internet do ponto.")
+                : tr("Vamos conferir a sua localização.")}
           </p>
         )}
         {ponto && !ponto.usa_gps ? (
@@ -67,19 +66,19 @@ function PontoPage() {
               setEnviandoIp(true);
               try {
                 const r = await registrarFn({ data: { codigo } });
-                toast.success(`Check-in feito em ${r.local_nome}.`);
+                toast.success(tr("Check-in feito em {local_nome}.", { local_nome: r.local_nome }));
               } catch (e) {
-                toast.error(e instanceof Error ? e.message : "Não foi possível fazer o check-in.");
+                toast.error(e instanceof Error ? e.message : tr("Não foi possível fazer o check-in."));
               } finally {
                 setEnviandoIp(false);
               }
             }}
           >
-            {enviandoIp ? "Registrando…" : "Fazer check-in neste ponto"}
+            {enviandoIp ? tr("Registrando…") : tr("Fazer check-in neste ponto")}
           </Button>
         ) : (
           <CheckInButton
-            rotulo="Fazer check-in neste ponto"
+            rotulo={tr("Fazer check-in neste ponto")}
             disabled={!ponto || !ponto.ativo}
             onConfirmar={async (pos) => {
               const r = await registrarFn({
@@ -90,8 +89,8 @@ function PontoPage() {
               });
               toast.success(
                 r.distancia_metros != null
-                  ? `Check-in feito em ${r.local_nome} (${textoDistancia(r.distancia_metros)} do ponto).`
-                  : `Check-in feito em ${r.local_nome}.`,
+                  ? tr("Check-in feito em {local_nome} ({textoDistancia} do ponto).", { local_nome: r.local_nome, textoDistancia: textoDistancia(r.distancia_metros) })
+                  : tr("Check-in feito em {local_nome}.", { local_nome: r.local_nome }),
               );
             }}
           />

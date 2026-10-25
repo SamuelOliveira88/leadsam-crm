@@ -14,8 +14,9 @@ import { meuPerfil } from "@/lib/perfis.functions";
 import { testarMia } from "@/lib/mia-empresa.functions";
 import { PERGUNTAS_MIA, HORARIO_PADRAO, DIAS_SEMANA, type RespostasMia, type HorarioMia } from "@/lib/mia-empresa";
 
+import { tr, rich } from "@/i18n";
 export const Route = createFileRoute("/_authenticated/minha-mia")({
-  head: () => ({ meta: [{ title: "Minha Mi.IA — Alexandria Leds" }] }),
+  head: () => ({ meta: [{ title: tr("Minha Mi.IA — Alexandria Leds") }] }),
   component: () => <RequireAdmin><MinhaMia /></RequireAdmin>,
 });
 
@@ -58,8 +59,8 @@ function MinhaMia() {
       }, { onConflict: "empresa_id" });
       if (error) throw new Error(error.message);
     },
-    onSuccess: () => { toast.success("Mi.IA salva."); qc.invalidateQueries({ queryKey: ["mia-config"] }); },
-    onError: (e: any) => toast.error(e?.message || "Não consegui salvar."),
+    onSuccess: () => { toast.success(tr("Mi.IA salva.")); qc.invalidateQueries({ queryKey: ["mia-config"] }); },
+    onError: (e: any) => toast.error(tr(e?.message) || tr("Não consegui salvar.")),
   });
 
   // Conversa de teste
@@ -67,8 +68,8 @@ function MinhaMia() {
   const [texto, setTexto] = useState("");
   const enviar = useMutation({
     mutationFn: (msgs: Msg[]) => testarFn({ data: { mensagens: msgs } }),
-    onSuccess: (r, msgs) => setChat([...msgs, { papel: "mia", texto: r.resposta + (r.passar ? "\n\n➡️ (Aqui a Mi.IA passaria o cliente para um corretor.)" : "") }]),
-    onError: (e: any) => toast.error(e?.message || "A Mi.IA não respondeu."),
+    onSuccess: (r, msgs) => setChat([...msgs, { papel: "mia", texto: r.resposta + (r.passar ? "\n\n" + tr("➡️ (Aqui a Mi.IA passaria o cliente para um corretor.)") : "") }]),
+    onError: (e: any) => toast.error(tr(e?.message) || tr("A Mi.IA não respondeu.")),
   });
   const mandar = () => {
     const t = texto.trim(); if (!t || enviar.isPending) return;
@@ -82,76 +83,70 @@ function MinhaMia() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight"><Bot className="size-6" /> Minha Mi.IA</h1>
-        <p className="text-sm text-muted-foreground">Responda as 8 perguntas. A Mi.IA usa o que você escrever para atender o cliente antes de passar para o corretor.</p>
+        <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight"><Bot className="size-6" /> {tr("Minha Mi.IA")}</h1>
+        <p className="text-sm text-muted-foreground">{tr("Responda as 8 perguntas. A Mi.IA usa o que você escrever para atender o cliente antes de passar para o corretor.")}</p>
       </div>
 
       {plano && !liberada && (
-        <Card className="border-primary/40 bg-primary/5 p-4 text-sm">
-          A Mi.IA faz parte do plano <b>Alexandria + Mi.IA</b> (R$ 499/mês). Você pode preencher as respostas agora, mas só liga com o plano.{" "}
-          <Link to="/meu-plano" className="font-medium underline">Ver planos</Link>
+        <Card className="border-primary/40 bg-primary/5 p-4 text-sm">{rich("A Mi.IA faz parte do plano <b>Alexandria + Mi.IA</b> (R$ 499/mês). Você pode preencher as respostas agora, mas só liga com o plano.")} <Link to="/meu-plano" className="font-medium underline">{tr("Ver planos")}</Link>
         </Card>
       )}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="space-y-3">
-          {isLoading ? "Carregando…" : PERGUNTAS_MIA.map((p) => (
+          {isLoading ? tr("Carregando…") : PERGUNTAS_MIA.map((p) => (
             <Card key={p.id} className="space-y-1.5 p-4">
-              <div className="text-sm font-semibold">{p.titulo} <span className="font-normal text-muted-foreground">— {p.ajuda}</span></div>
+              <div className="text-sm font-semibold">{tr(p.titulo)} <span className="font-normal text-muted-foreground">— {tr(p.ajuda)}</span></div>
               <Textarea rows={p.id === "empreendimentos" ? 4 : 2} maxLength={1500} value={resp[p.id] ?? ""}
-                onChange={(e) => setResp((r) => ({ ...r, [p.id]: e.target.value }))} placeholder={`Ex.: ${p.exemplo}`} />
+                onChange={(e) => setResp((r) => ({ ...r, [p.id]: e.target.value }))} placeholder={tr("Ex.: {exemplo}", { exemplo: tr(p.exemplo) })} />
             </Card>
           ))}
           <Card className="space-y-1.5 p-4">
-            <div className="text-sm font-semibold">Site da imobiliária <span className="font-normal text-muted-foreground">— opcional, endereço para consulta</span></div>
-            <Input value={site} onChange={(e) => setSite(e.target.value)} placeholder="https://www.suaimobiliaria.com.br" maxLength={200} />
+            <div className="text-sm font-semibold">{tr("Site da imobiliária")} <span className="font-normal text-muted-foreground">{tr("— opcional, endereço para consulta")}</span></div>
+            <Input value={site} onChange={(e) => setSite(e.target.value)} placeholder={tr("https://www.suaimobiliaria.com.br")} maxLength={200} />
           </Card>
 
           <Card className="space-y-3 p-4">
-            <div className="text-sm font-semibold">Quando a Mi.IA atende</div>
-            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={horario.sempre} onChange={(e) => setHorario((h) => ({ ...h, sempre: e.target.checked }))} /> O dia todo, todos os dias</label>
+            <div className="text-sm font-semibold">{tr("Quando a Mi.IA atende")}</div>
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={horario.sempre} onChange={(e) => setHorario((h) => ({ ...h, sempre: e.target.checked }))} /> {tr("O dia todo, todos os dias")}</label>
             {!horario.sempre && (
               <div className="space-y-2">
                 <div className="flex flex-wrap gap-1.5">
                   {DIAS_SEMANA.map((n, d) => (
-                    <Button key={d} type="button" size="sm" variant={horario.dias.includes(d) ? "default" : "outline"} onClick={() => alternaDia(d)}>{n}</Button>
+                    <Button key={d} type="button" size="sm" variant={horario.dias.includes(d) ? "default" : "outline"} onClick={() => alternaDia(d)}>{tr(n)}</Button>
                   ))}
                 </div>
-                <div className="flex items-center gap-2 text-sm">
-                  das <Input type="time" className="w-28" value={horario.inicio} onChange={(e) => setHorario((h) => ({ ...h, inicio: e.target.value }))} />
-                  às <Input type="time" className="w-28" value={horario.fim} onChange={(e) => setHorario((h) => ({ ...h, fim: e.target.value }))} />
-                  <span className="text-xs text-muted-foreground">(horário de Brasília)</span>
+                <div className="flex items-center gap-2 text-sm">{tr("das")} <Input type="time" className="w-28" value={horario.inicio} onChange={(e) => setHorario((h) => ({ ...h, inicio: e.target.value }))} />{tr("às")} <Input type="time" className="w-28" value={horario.fim} onChange={(e) => setHorario((h) => ({ ...h, fim: e.target.value }))} />
+                  <span className="text-xs text-muted-foreground">{tr("(horário de Brasília)")}</span>
                 </div>
-                <p className="text-xs text-muted-foreground">Fora desse horário o lead segue direto para os corretores, como hoje.</p>
+                <p className="text-xs text-muted-foreground">{tr("Fora desse horário o lead segue direto para os corretores, como hoje.")}</p>
               </div>
             )}
           </Card>
 
           <Card className="flex flex-wrap items-center justify-between gap-3 p-4">
             <label className="flex items-center gap-2 text-sm font-medium">
-              <input type="checkbox" checked={ativa} disabled={!liberada} onChange={(e) => setAtiva(e.target.checked)} />
-              Mi.IA ligada (atende os leads novos antes do corretor)
-            </label>
-            <Button onClick={() => salvar.mutate()} disabled={salvar.isPending || !empresaId}>{salvar.isPending ? "Salvando…" : "Salvar"}</Button>
+              <input type="checkbox" checked={ativa} disabled={!liberada} onChange={(e) => setAtiva(e.target.checked)} />{tr("Mi.IA ligada (atende os leads novos antes do corretor)")}</label>
+            <Button onClick={() => salvar.mutate()} disabled={salvar.isPending || !empresaId}>{salvar.isPending ? tr("Salvando…") : tr("Salvar")}</Button>
           </Card>
         </div>
 
         <Card className="flex h-fit flex-col gap-3 p-4 lg:sticky lg:top-4">
-          <div className="text-sm font-semibold">Teste a sua Mi.IA</div>
-          <p className="text-xs text-muted-foreground">Salve as respostas e converse como se fosse um cliente. Ajuste o que não ficou bom.</p>
+          <div className="text-sm font-semibold">{tr("Teste a sua Mi.IA")}</div>
+          <p className="text-xs text-muted-foreground">{tr("Salve as respostas e converse como se fosse um cliente. Ajuste o que não ficou bom.")}</p>
           <div className="max-h-[420px] min-h-[200px] space-y-2 overflow-y-auto rounded-md border p-3 text-sm">
-            {chat.length === 0 && <div className="text-muted-foreground">Escreva, por exemplo: “Oi, vi um anúncio de vocês.”</div>}
+            {chat.length === 0 && <div className="text-muted-foreground">{tr("Escreva, por exemplo: “Oi, vi um anúncio de vocês.”")}</div>}
             {chat.map((m, i) => (
               <div key={i} className={m.papel === "cliente" ? "ml-8 rounded-lg bg-primary/10 p-2" : "mr-8 whitespace-pre-wrap rounded-lg bg-muted p-2"}>{m.texto}</div>
             ))}
-            {enviar.isPending && <div className="text-muted-foreground">Mi.IA está digitando…</div>}
+            {enviar.isPending && <div className="text-muted-foreground">{tr("Mi.IA está digitando…")}</div>}
           </div>
           <div className="flex gap-2">
-            <Input value={texto} onChange={(e) => setTexto(e.target.value)} onKeyDown={(e) => e.key === "Enter" && mandar()} placeholder="Mensagem do cliente" maxLength={500} disabled={!liberada} />
+            <Input value={texto} onChange={(e) => setTexto(e.target.value)} onKeyDown={(e) => e.key === "Enter" && mandar()} placeholder={tr("Mensagem do cliente")} maxLength={500} disabled={!liberada} />
             <Button onClick={mandar} disabled={!liberada || enviar.isPending}><Send className="size-4" /></Button>
           </div>
-          {!liberada && <p className="text-xs text-muted-foreground">O teste libera com o plano com a Mi.IA ou durante os 7 dias grátis.</p>}
-          <Button variant="outline" size="sm" onClick={() => setChat([])}>Limpar conversa</Button>
+          {!liberada && <p className="text-xs text-muted-foreground">{tr("O teste libera com o plano com a Mi.IA ou durante os 7 dias grátis.")}</p>}
+          <Button variant="outline" size="sm" onClick={() => setChat([])}>{tr("Limpar conversa")}</Button>
         </Card>
       </div>
     </div>
