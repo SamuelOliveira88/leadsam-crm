@@ -15,29 +15,30 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import type { User } from "@supabase/supabase-js";
 
+import { tr, mark, SeletorIdioma } from "@/i18n";
 const NAV_CORRETOR = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/leads", label: "Leads", icon: Users },
-  { to: "/conversas", label: "Conversas", icon: MessageCircle },
-  { to: "/espelho", label: "Espelho", icon: Grid3x3 },
-  { to: "/propostas", label: "Propostas", icon: FileText },
-  { to: "/agenda", label: "Agenda", icon: CalendarDays },
-  { to: "/notas", label: "Notas", icon: NotebookPen },
-  { to: "/checkin", label: "Check-in", icon: MapPin },
+  { to: "/dashboard", label: mark("Dashboard"), icon: LayoutDashboard },
+  { to: "/leads", label: mark("Leads"), icon: Users },
+  { to: "/conversas", label: mark("Conversas"), icon: MessageCircle },
+  { to: "/espelho", label: mark("Espelho"), icon: Grid3x3 },
+  { to: "/propostas", label: mark("Propostas"), icon: FileText },
+  { to: "/agenda", label: mark("Agenda"), icon: CalendarDays },
+  { to: "/notas", label: mark("Notas"), icon: NotebookPen },
+  { to: "/checkin", label: mark("Check-in"), icon: MapPin },
 ] as const;
 
 const NAV_ADMIN = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/leads", label: "Leads", icon: Users },
-  { to: "/conversas", label: "Conversas", icon: MessageCircle },
-  { to: "/espelho", label: "Espelho", icon: Grid3x3 },
-  { to: "/propostas", label: "Propostas", icon: FileText },
-  { to: "/agenda", label: "Agenda", icon: CalendarDays },
-  { to: "/notas", label: "Notas", icon: NotebookPen },
-  { to: "/importar", label: "Importar", icon: Upload },
-  { to: "/corretores", label: "Corretores", icon: UserCog },
-  { to: "/horarios", label: "Horários", icon: Clock },
-  { to: "/checkin", label: "Check-in", icon: MapPin },
+  { to: "/dashboard", label: mark("Dashboard"), icon: LayoutDashboard },
+  { to: "/leads", label: mark("Leads"), icon: Users },
+  { to: "/conversas", label: mark("Conversas"), icon: MessageCircle },
+  { to: "/espelho", label: mark("Espelho"), icon: Grid3x3 },
+  { to: "/propostas", label: mark("Propostas"), icon: FileText },
+  { to: "/agenda", label: mark("Agenda"), icon: CalendarDays },
+  { to: "/notas", label: mark("Notas"), icon: NotebookPen },
+  { to: "/importar", label: mark("Importar"), icon: Upload },
+  { to: "/corretores", label: mark("Corretores"), icon: UserCog },
+  { to: "/horarios", label: mark("Horários"), icon: Clock },
+  { to: "/checkin", label: mark("Check-in"), icon: MapPin },
 ] as const;
 
 
@@ -213,21 +214,21 @@ export function AppShell({ user, children }: { user: User; children: React.React
   if (perfil && !isMaster && !isSuperAdmin && travaRemota && acessoRemoto && !acessoRemoto.permitido) {
     const msg =
       acessoRemoto.motivo === "ip"
-        ? "Você está fora da rede autorizada pela sua imobiliária."
+        ? tr("Você está fora da rede autorizada pela sua imobiliária.")
         : acessoRemoto.motivo === "local_sem_gps"
-          ? "Ative a localização do aparelho e permita o acesso do site para entrar."
-          : "Você está fora do local de trabalho autorizado pela sua imobiliária.";
+          ? tr("Ative a localização do aparelho e permita o acesso do site para entrar.")
+          : tr("Você está fora do local de trabalho autorizado pela sua imobiliária.");
     return (
       <div className="grid min-h-screen place-items-center bg-background p-6">
         <div className="max-w-md rounded-2xl border bg-card p-8 text-center shadow-soft">
           <div className="mx-auto mb-4 grid size-12 place-items-center rounded-full bg-primary/10 text-primary">
             <ShieldCheck className="size-6" />
           </div>
-          <h1 className="mb-2 text-xl font-bold">Acesso bloqueado</h1>
+          <h1 className="mb-2 text-xl font-bold">{tr("Acesso bloqueado")}</h1>
           <p className="text-sm text-muted-foreground">{msg}</p>
-          <p className="mt-2 text-xs text-muted-foreground">Peça ao administrador para liberar seu acesso, se necessário.</p>
-          <Button className="mt-4 w-full" variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ["acesso_remoto"] })}>Tentar de novo</Button>
-          <Button className="mt-2 w-full" onClick={handleLogout}>Sair</Button>
+          <p className="mt-2 text-xs text-muted-foreground">{tr("Peça ao administrador para liberar seu acesso, se necessário.")}</p>
+          <Button className="mt-4 w-full" variant="outline" onClick={() => queryClient.invalidateQueries({ queryKey: ["acesso_remoto"] })}>{tr("Tentar de novo")}</Button>
+          <Button className="mt-2 w-full" onClick={handleLogout}>{tr("Sair")}</Button>
         </div>
       </div>
     );
@@ -242,19 +243,16 @@ export function AppShell({ user, children }: { user: User; children: React.React
           <div className="mx-auto mb-4 grid size-12 place-items-center rounded-full bg-primary/10 text-primary">
             <Clock className="size-6" />
           </div>
-          <h1 className="mb-2 text-xl font-bold">Fora do horário de acesso</h1>
-          <p className="text-sm text-muted-foreground">
-            O acesso para {perfil.role === "gerente" ? "gerentes" : "corretores"} está disponível
-            <br /><strong>das {ini} às {fim}</strong> (horário de Brasília).
-          </p>
-          <p className="mt-2 text-xs text-muted-foreground">Peça ao master ou gerente para liberar acesso imediato, se necessário.</p>
-          <Button className="mt-6 w-full" onClick={handleLogout}>Sair</Button>
+          <h1 className="mb-2 text-xl font-bold">{tr("Fora do horário de acesso")}</h1>
+          <p className="text-sm text-muted-foreground">{tr(perfil.role === "gerente" ? mark("O acesso para gerentes está disponível") : mark("O acesso para corretores está disponível"))}<br /><strong>{tr("das {ini} às {fim}", { ini, fim })}</strong> {tr("(horário de Brasília).")}</p>
+          <p className="mt-2 text-xs text-muted-foreground">{tr("Peça ao master ou gerente para liberar acesso imediato, se necessário.")}</p>
+          <Button className="mt-6 w-full" onClick={handleLogout}>{tr("Sair")}</Button>
         </div>
       </div>
     );
   }
 
-  const nav = [...(isGerenteOuMaster ? NAV_ADMIN : NAV_CORRETOR), { to: "/notificacoes" as const, label: "Alertas", icon: Bell }];
+  const nav = [...(isGerenteOuMaster ? NAV_ADMIN : NAV_CORRETOR), { to: "/notificacoes" as const, label: mark("Alertas"), icon: Bell }];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -264,15 +262,13 @@ export function AppShell({ user, children }: { user: User; children: React.React
             <Building2 className="size-5" />
           </div>
           <div>
-            <div className="text-base font-bold tracking-tight">Alexandria Leds</div>
-            <div className="text-[11px] text-muted-foreground">Gestão de Corretores</div>
+            <div className="text-base font-bold tracking-tight">{tr("Alexandria Leds")}</div>
+            <div className="text-[11px] text-muted-foreground">{tr("Gestão de Corretores")}</div>
           </div>
         </div>
         {isSuperAdmin && (ctxEmpresas?.empresas?.length ?? 0) > 0 && (
           <div className="px-3 pb-3">
-            <label className="mb-1 block px-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Empresa
-            </label>
+            <label className="mb-1 block px-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{tr("Empresa")}</label>
             <select
               className="w-full rounded-lg border border-sidebar-border bg-card px-2 py-2 text-sm disabled:opacity-60"
               value={(perfil as any)?.empresa_id ?? ""}
@@ -296,7 +292,7 @@ export function AppShell({ user, children }: { user: User; children: React.React
                 active ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
               )}>
                 <Icon className="size-4" />
-                <span className="flex-1">{n.label}</span>
+                <span className="flex-1">{tr(n.label)}</span>
                 {showBadge && (
                   <span className="grid size-5 place-items-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
                     {naoLidas > 9 ? "9+" : naoLidas}
@@ -310,85 +306,77 @@ export function AppShell({ user, children }: { user: User; children: React.React
               "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
               pathname.startsWith("/acesso") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground hover:bg-sidebar-accent/60",
             )}>
-              <ShieldCheck className="size-4" /> Acesso
-            </Link>
+              <ShieldCheck className="size-4" /> {tr("Acesso")}</Link>
           )}
           <Link to="/manual" className={cn(
             "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
             pathname.startsWith("/manual") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground hover:bg-sidebar-accent/60",
           )}>
-            <BookOpen className="size-4" /> Manual
-          </Link>
+            <BookOpen className="size-4" /> {tr("Manual")}</Link>
           {isSuperAdmin && (
             <>
-              <div className="mt-4 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Super-admin</div>
+              <div className="mt-4 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{tr("Super-admin")}</div>
               <Link to="/empresas" className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
                 pathname.startsWith("/empresas") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground hover:bg-sidebar-accent/60",
               )}>
-                <Building2 className="size-4" /> Empresas
-              </Link>
+                <Building2 className="size-4" /> {tr("Empresas")}</Link>
             </>
           )}
           {isMaster && (
             <>
-              <div className="mt-4 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Master</div>
+              <div className="mt-4 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{tr("Master")}</div>
               <Link to="/grupos" className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
                 pathname.startsWith("/grupos") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground hover:bg-sidebar-accent/60",
               )}>
-                <Layers className="size-4" /> Grupos
-              </Link>
+                <Layers className="size-4" /> {tr("Grupos")}</Link>
               <Link to="/whatsapp" className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
                 pathname.startsWith("/whatsapp") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground hover:bg-sidebar-accent/60",
               )}>
-                <Smartphone className="size-4" /> WhatsApp
-              </Link>
+                <Smartphone className="size-4" /> {tr("WhatsApp")}</Link>
               <Link to="/minha-mia" className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
                 pathname.startsWith("/minha-mia") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground hover:bg-sidebar-accent/60",
               )}>
-                <Bot className="size-4" /> Minha Mi.IA
-              </Link>
+                <Bot className="size-4" /> {tr("Minha Mi.IA")}</Link>
               <Link to="/meu-plano" className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
                 pathname.startsWith("/meu-plano") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground hover:bg-sidebar-accent/60",
               )}>
-                <CreditCard className="size-4" /> Meu plano
-              </Link>
+                <CreditCard className="size-4" /> {tr("Meu plano")}</Link>
               <Link to="/integracoes" className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium",
                 pathname.startsWith("/integracoes") ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground hover:bg-sidebar-accent/60",
               )}>
-                <Plug className="size-4" /> Integrações
-              </Link>
+                <Plug className="size-4" /> {tr("Integrações")}</Link>
             </>
           )}
         </nav>
         <div className="border-t border-sidebar-border p-3">
           <div className="mb-2 truncate rounded-md bg-sidebar-accent/50 px-3 py-2 text-xs">
-            <div className="font-medium">{perfil?.nome ?? user.user_metadata?.full_name ?? "Usuário"}</div>
+            <div className="font-medium">{perfil?.nome ?? user.user_metadata?.full_name ?? tr("Usuário")}</div>
             <div className="truncate text-muted-foreground">{user.email}</div>
-            <div className="mt-0.5 text-[10px] uppercase text-primary">{perfil?.role ?? "..."}</div>
+            <div className="mt-0.5 text-[10px] uppercase text-primary">{perfil?.role ? tr(perfil.role) : "..."}</div>
           </div>
+          <SeletorIdioma className="mb-2" />
           <Button variant="ghost" size="sm" className="w-full justify-start" onClick={handleLogout}>
-            <LogOut className="mr-2 size-4" /> Sair
-          </Button>
+            <LogOut className="mr-2 size-4" /> {tr("Sair")}</Button>
         </div>
       </aside>
 
+      <SeletorIdioma className="fixed right-2 top-2 z-40 bg-background/90 backdrop-blur md:hidden" />
       <main className="pb-20 md:ml-64 md:pb-0">
         {statusEmpresa?.status === "teste" && !statusEmpresa.bloqueada && statusEmpresa.dias_restantes !== null && (
-          <div className="border-b border-amber-300/50 bg-amber-50 px-4 py-1.5 text-center text-xs text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
-            Período de teste: {statusEmpresa.dias_restantes} {statusEmpresa.dias_restantes === 1 ? "dia restante" : "dias restantes"}
+          <div className="border-b border-amber-300/50 bg-amber-50 px-4 py-1.5 text-center text-xs text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">{tr(statusEmpresa.dias_restantes === 1 ? mark("Período de teste: {dias} dia restante") : mark("Período de teste: {dias} dias restantes"), { dias: statusEmpresa.dias_restantes })}
           </div>
         )}
         <div className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">
           {statusEmpresa?.bloqueada && !statusEmpresa.super_admin ? (
             <div className="mx-auto mt-16 max-w-md rounded-lg border border-border bg-card p-8 text-center">
-              <h1 className="text-xl font-bold">Teste encerrado</h1>
-              <p className="mt-2 text-sm text-muted-foreground">Fale com o administrador para ativar.</p>
+              <h1 className="text-xl font-bold">{tr("Teste encerrado")}</h1>
+              <p className="mt-2 text-sm text-muted-foreground">{tr("Fale com o administrador para ativar.")}</p>
             </div>
           ) : (
             children
@@ -408,7 +396,7 @@ export function AppShell({ user, children }: { user: User; children: React.React
                 active ? "text-primary" : "text-muted-foreground",
               )}>
                 <Icon className="size-5" />
-                {n.label}
+                {tr(n.label)}
                 {showBadge && (
                   <span className="absolute right-3 top-1 grid size-4 place-items-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
                     {naoLidas > 9 ? "9+" : naoLidas}

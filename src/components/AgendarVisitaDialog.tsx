@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
+import { tr, mark } from "@/i18n";
 type LeadParaAgendar = { id: string; nome?: string | null; corretor_id?: string | null };
 
 /** Agenda uma visita (ou ligação/reunião) para um lead. Visita move o lead para "Visita agendada". */
@@ -77,20 +78,20 @@ export function AgendarVisitaDialog({
         },
       }),
     onSuccess: (r) => {
-      toast.success(`${ROTULO_TIPO[tipo]} agendada para ${rotuloDia(diaSP(r.data_hora))} às ${horaSP(r.data_hora)}.`);
+      toast.success(tr(tipo === "visita" ? mark("Visita agendada para {rotuloDia} às {horaSP}.") : tipo === "ligacao" ? mark("Ligação agendada para {rotuloDia} às {horaSP}.") : mark("Reunião agendada para {rotuloDia} às {horaSP}."), { rotuloDia: rotuloDia(diaSP(r.data_hora)), horaSP: horaSP(r.data_hora) }));
       qc.invalidateQueries({ queryKey: ["compromissos"] });
       qc.invalidateQueries({ queryKey: ["leads"] });
       aoAgendar?.(tipo);
       aoFechar();
     },
-    onError: (e: any) => setErro(e?.message ?? "Não foi possível agendar."),
+    onError: (e: any) => setErro(tr(e?.message) ?? tr("Não foi possível agendar.")),
   });
 
   function confirmar() {
     const iso = inputLocalParaISO(quando);
-    if (!iso) return setErro("Escolha a data e a hora.");
-    if (new Date(iso).getTime() < Date.now() - 5 * 60_000) return setErro("Escolha uma data e hora no futuro.");
-    if (!ehCorretor && !corretorId) return setErro("Escolha o corretor responsável.");
+    if (!iso) return setErro(tr("Escolha a data e a hora."));
+    if (new Date(iso).getTime() < Date.now() - 5 * 60_000) return setErro(tr("Escolha uma data e hora no futuro."));
+    if (!ehCorretor && !corretorId) return setErro(tr("Escolha o corretor responsável."));
     setErro(null);
     agendar.mutate({ iso });
   }
@@ -99,48 +100,48 @@ export function AgendarVisitaDialog({
     <Dialog open={aberto} onOpenChange={(o) => { if (!o) aoFechar(); }}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Agendar {ROTULO_TIPO[tipo].toLowerCase()}</DialogTitle>
+          <DialogTitle>{tr(tipo === "visita" ? mark("Agendar visita") : tipo === "ligacao" ? mark("Agendar ligação") : mark("Agendar reunião"))}</DialogTitle>
           <DialogDescription>{lead.nome ?? ""}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
           <div>
-            <Label htmlFor="ag-tipo">Tipo</Label>
+            <Label htmlFor="ag-tipo">{tr("Tipo")}</Label>
             <select id="ag-tipo" className="w-full rounded-md border bg-background p-2 text-sm" value={tipo} onChange={(e) => setTipo(e.target.value as TipoCompromisso)}>
-              {TIPOS_COMPROMISSO.map((t) => <option key={t} value={t}>{ROTULO_TIPO[t]}</option>)}
+              {TIPOS_COMPROMISSO.map((t) => <option key={t} value={t}>{tr(ROTULO_TIPO[t])}</option>)}
             </select>
           </div>
           <div>
-            <Label htmlFor="ag-quando">Data e hora</Label>
+            <Label htmlFor="ag-quando">{tr("Data e hora")}</Label>
             <Input id="ag-quando" type="datetime-local" value={quando} min={isoParaInputLocal(new Date().toISOString())} onChange={(e) => { setQuando(e.target.value); setErro(null); }} />
           </div>
           <div>
-            <Label htmlFor="ag-empr">Empreendimento</Label>
-            <Input id="ag-empr" list="ag-empr-lista" value={empreendimento} maxLength={120} onChange={(e) => setEmpreendimento(e.target.value)} placeholder="Ex.: Vista Plaza" />
+            <Label htmlFor="ag-empr">{tr("Empreendimento")}</Label>
+            <Input id="ag-empr" list="ag-empr-lista" value={empreendimento} maxLength={120} onChange={(e) => setEmpreendimento(e.target.value)} placeholder={tr("Ex.: Vista Plaza")} />
             <datalist id="ag-empr-lista">
               {(opcoes?.empreendimentos ?? []).map((e) => <option key={e.id} value={e.nome} />)}
             </datalist>
           </div>
           {!ehCorretor && (
             <div>
-              <Label htmlFor="ag-corretor">Corretor responsável</Label>
+              <Label htmlFor="ag-corretor">{tr("Corretor responsável")}</Label>
               <select id="ag-corretor" className="w-full rounded-md border bg-background p-2 text-sm" value={corretorId} onChange={(e) => { setCorretorId(e.target.value); setErro(null); }}>
-                <option value="">Escolha…</option>
+                <option value="">{tr("Escolha…")}</option>
                 {(opcoes?.corretores ?? []).map((c) => <option key={c.id} value={c.id}>{c.nome}</option>)}
               </select>
             </div>
           )}
           <div>
-            <Label htmlFor="ag-obs">Observações</Label>
-            <Textarea id="ag-obs" rows={2} maxLength={1000} value={obs} onChange={(e) => setObs(e.target.value)} placeholder="Ex.: levar planta e simulação" />
+            <Label htmlFor="ag-obs">{tr("Observações")}</Label>
+            <Textarea id="ag-obs" rows={2} maxLength={1000} value={obs} onChange={(e) => setObs(e.target.value)} placeholder={tr("Ex.: levar planta e simulação")} />
           </div>
-          <p className="text-xs text-muted-foreground">O corretor recebe um lembrete no WhatsApp 1 hora antes.</p>
+          <p className="text-xs text-muted-foreground">{tr("O corretor recebe um lembrete no WhatsApp 1 hora antes.")}</p>
           {erro && <p className="text-sm text-destructive">{erro}</p>}
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={aoFechar}>Cancelar</Button>
-          <Button onClick={confirmar} disabled={agendar.isPending}>{agendar.isPending ? "Agendando…" : "Agendar"}</Button>
+          <Button variant="ghost" onClick={aoFechar}>{tr("Cancelar")}</Button>
+          <Button onClick={confirmar} disabled={agendar.isPending}>{agendar.isPending ? tr("Agendando…") : tr("Agendar")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

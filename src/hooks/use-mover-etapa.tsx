@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
+import { tr } from "@/i18n";
 type LeadParaMover = {
   id: string;
   nome?: string | null;
@@ -62,10 +63,10 @@ export function useMoverEtapa(opcoes?: { aoMover?: (linha: EtapaMovida) => void 
     },
     onError: (e: any, _v, ctx) => {
       if (ctx?.anterior) qc.setQueryData(["leads"], ctx.anterior);
-      toast.error(e?.message ?? "Não foi possível mover o lead");
+      toast.error(tr(e?.message) ?? tr("Não foi possível mover o lead"));
     },
     onSuccess: (linha: any, v) => {
-      toast.success(`Lead movido para ${v.etapa}`);
+      toast.success(tr("Lead movido para {etapa}", { etapa: v.etapa }));
       qc.invalidateQueries({ queryKey: ["lead_historico", v.lead_id] });
       opcoes?.aoMover?.(linha as EtapaMovida);
     },
@@ -108,7 +109,7 @@ export function useMoverEtapa(opcoes?: { aoMover?: (linha: EtapaMovida) => void 
     <Dialog open={!!pedido} onOpenChange={(aberto) => { if (!aberto) setPedido(null); }}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{pedido?.etapa === "Perdido" ? "Por que o lead foi perdido?" : "Qual foi o valor da venda?"}</DialogTitle>
+          <DialogTitle>{pedido?.etapa === "Perdido" ? tr("Por que o lead foi perdido?") : tr("Qual foi o valor da venda?")}</DialogTitle>
           <DialogDescription>{pedido?.lead.nome ?? ""}</DialogDescription>
         </DialogHeader>
 
@@ -117,43 +118,43 @@ export function useMoverEtapa(opcoes?: { aoMover?: (linha: EtapaMovida) => void 
             <div className="flex flex-wrap gap-2">
               {MOTIVOS_PERDA_SUGERIDOS.map((m) => (
                 <Button key={m} type="button" size="sm" variant="outline" onClick={() => { setMotivo(m); setErro(null); }}>
-                  {m}
+                  {tr(m)}
                 </Button>
               ))}
             </div>
             <div>
-              <Label htmlFor="motivo-perda">Motivo</Label>
+              <Label htmlFor="motivo-perda">{tr("Motivo")}</Label>
               <Textarea
                 id="motivo-perda"
                 rows={3}
                 maxLength={500}
                 value={motivo}
                 onChange={(e) => { setMotivo(e.target.value); setErro(null); }}
-                placeholder="Escreva o motivo"
+                placeholder={tr("Escreva o motivo")}
               />
             </div>
           </div>
         ) : (
           <div>
-            <Label htmlFor="valor-venda">Valor da venda (R$)</Label>
+            <Label htmlFor="valor-venda">{tr("Valor da venda (R$)")}</Label>
             <Input
               id="valor-venda"
               inputMode="decimal"
               value={valor}
               onChange={(e) => { setValor(e.target.value); setErro(null); }}
               onKeyDown={(e) => { if (e.key === "Enter") confirmar(); }}
-              placeholder="Ex.: 250.000,00"
+              placeholder={tr("Ex.: 250.000,00")}
               autoFocus
             />
-            {valorLido !== null && <p className="mt-1 text-xs text-muted-foreground">Entendi: {formatarReais(valorLido)}</p>}
+            {valorLido !== null && <p className="mt-1 text-xs text-muted-foreground">{tr("Entendi: {formatarReais}", { formatarReais: formatarReais(valorLido) })}</p>}
           </div>
         )}
 
         {erro && <p className="text-sm text-destructive">{erro}</p>}
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => setPedido(null)}>Cancelar</Button>
-          <Button onClick={confirmar} disabled={mutacao.isPending}>Confirmar</Button>
+          <Button variant="ghost" onClick={() => setPedido(null)}>{tr("Cancelar")}</Button>
+          <Button onClick={confirmar} disabled={mutacao.isPending}>{tr("Confirmar")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

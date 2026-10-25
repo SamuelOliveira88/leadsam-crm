@@ -8,13 +8,14 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+import { tr, rich, idiomaAtual } from "@/i18n";
 export const Route = createFileRoute("/cadastro-empresa")({
   ssr: false,
   validateSearch: (s: Record<string, unknown>) => ({ codigo: typeof s.codigo === "string" ? s.codigo : "" }),
   head: () => ({
     meta: [
-      { title: "Cadastro por convite — Alexandria Leds" },
-      { name: "description", content: "Novas imobiliárias entram com um código de convite." },
+      { title: tr("Cadastro por convite — Alexandria Leds") },
+      { name: "description", content: tr("Novas imobiliárias entram com um código de convite.") },
     ],
   }),
   component: CadastroPorCodigo,
@@ -51,15 +52,15 @@ function CadastroPorCodigo() {
       const { data: cad, error: eCad } = await supabase.auth.signUp({
         email: email.trim(),
         password: senha,
-        options: { data: { nome: nome.trim() } },
+        options: { data: { nome: nome.trim(), lang: idiomaAtual() } },
       });
       let temSessao = !!cad.session;
       if (eCad && !/already|registered/i.test(eCad.message)) throw new Error(eCad.message);
       if (!temSessao) {
         const { data: ent, error: eEnt } = await supabase.auth.signInWithPassword({ email: email.trim(), password: senha });
         if (eEnt) {
-          toast.message("Confirme seu e-mail", {
-            description: "Abra o e-mail que enviamos, confirme, e volte aqui para clicar em Criar de novo (os dados ficam salvos).",
+          toast.message(tr("Confirme seu e-mail"), {
+            description: tr("Abra o e-mail que enviamos, confirme, e volte aqui para clicar em Criar de novo (os dados ficam salvos)."),
             duration: 15000,
           });
           return;
@@ -74,10 +75,10 @@ function CadastroPorCodigo() {
         p_nome: nome.trim(),
       });
       if (eRpc) throw new Error(eRpc.message);
-      toast.success("Imobiliária criada! Teste de 7 dias liberado.");
+      toast.success(tr("Imobiliária criada! Teste de 7 dias liberado."));
       navigate({ to: "/" });
     } catch (err: any) {
-      toast.error(err?.message ?? "Não foi possível concluir o cadastro.");
+      toast.error(tr(err?.message) ?? tr("Não foi possível concluir o cadastro."));
     } finally {
       setCarregando(false);
     }
@@ -90,37 +91,34 @@ function CadastroPorCodigo() {
           <div className="mx-auto mb-3 grid size-12 place-items-center rounded-xl bg-primary/10 text-primary">
             <Building2 className="size-6" />
           </div>
-          <h1 className="text-xl font-bold">Cadastro por convite</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Use o código que você recebeu para criar a sua imobiliária no Alexandria Leds.
-          </p>
+          <h1 className="text-xl font-bold">{tr("Cadastro por convite")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{tr("Use o código que você recebeu para criar a sua imobiliária no Alexandria Leds.")}</p>
         </div>
         <form onSubmit={enviar} className="space-y-3">
-          <div className="space-y-1"><Label htmlFor="cod">Código do convite</Label>
+          <div className="space-y-1"><Label htmlFor="cod">{tr("Código do convite")}</Label>
             <Input id="cod" value={codigo} onChange={(e) => setCodigo(e.target.value.toUpperCase())} maxLength={8} required className="uppercase tracking-widest" /></div>
-          <div className="space-y-1"><Label htmlFor="emp">Nome da imobiliária</Label>
+          <div className="space-y-1"><Label htmlFor="emp">{tr("Nome da imobiliária")}</Label>
             <Input id="emp" value={empresa} onChange={(e) => setEmpresa(e.target.value)} maxLength={80} required /></div>
-          <div className="space-y-1"><Label htmlFor="nom">Seu nome</Label>
+          <div className="space-y-1"><Label htmlFor="nom">{tr("Seu nome")}</Label>
             <Input id="nom" value={nome} onChange={(e) => setNome(e.target.value)} maxLength={60} required /></div>
           {logado ? (
-            <p className="rounded-md bg-muted/50 p-2 text-xs text-muted-foreground">Você entrou como <b>{email}</b>.</p>
+            <p className="rounded-md bg-muted/50 p-2 text-xs text-muted-foreground">{rich("Você entrou como <b>{email}</b>.", {}, { email })}</p>
           ) : (
             <>
-              <div className="space-y-1"><Label htmlFor="em">E-mail</Label>
+              <div className="space-y-1"><Label htmlFor="em">{tr("E-mail")}</Label>
                 <Input id="em" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required /></div>
-              <div className="space-y-1"><Label htmlFor="pw">Senha (mínimo 8)</Label>
+              <div className="space-y-1"><Label htmlFor="pw">{tr("Senha (mínimo 8)")}</Label>
                 <Input id="pw" type="password" value={senha} onChange={(e) => setSenha(e.target.value)} minLength={8} autoComplete="new-password" required /></div>
             </>
           )}
-          <p className="text-xs text-muted-foreground">Ao criar a conta, você concorda com os <a href="/termos" target="_blank" className="underline">Termos de Uso</a> e a <a href="/privacidade" target="_blank" className="underline">Política de Privacidade</a>.</p>
+          <p className="text-xs text-muted-foreground">{rich("Ao criar a conta, você concorda com os <t>Termos de Uso</t> e a <p>Política de Privacidade</p>.", { t: (c) => <a href="/termos" target="_blank" className="underline">{c}</a>, p: (c) => <a href="/privacidade" target="_blank" className="underline">{c}</a> })}</p>
           <Button type="submit" className="w-full" disabled={carregando}>
-            {carregando ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}Criar minha imobiliária
-          </Button>
+            {carregando ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}{tr("Criar minha imobiliária")}</Button>
         </form>
         <div className="text-center">
           {logado
-            ? <Button variant="ghost" size="sm" onClick={async () => { await supabase.auth.signOut(); window.location.href = "/auth"; }}>Entrar com outra conta</Button>
-            : <Link to="/auth"><Button variant="ghost" size="sm">Já tenho conta — entrar</Button></Link>}
+            ? <Button variant="ghost" size="sm" onClick={async () => { await supabase.auth.signOut(); window.location.href = "/auth"; }}>{tr("Entrar com outra conta")}</Button>
+            : <Link to="/auth"><Button variant="ghost" size="sm">{tr("Já tenho conta — entrar")}</Button></Link>}
         </div>
       </Card>
     </div>

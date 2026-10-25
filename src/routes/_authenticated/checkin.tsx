@@ -11,13 +11,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
+import { tr, localeAtual } from "@/i18n";
 export const Route = createFileRoute("/_authenticated/checkin")({
-  head: () => ({ meta: [{ title: "Check-in — Alexandria Leds" }] }),
+  head: () => ({ meta: [{ title: tr("Check-in — Alexandria Leds") }] }),
   component: CheckinPage,
 });
 
 const quando = (iso: string) =>
-  new Date(iso).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" });
+  new Date(iso).toLocaleString(localeAtual(), { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" });
 
 function CheckinPage() {
   const qc = useQueryClient();
@@ -38,27 +39,27 @@ function CheckinPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Check-in</h1>
-        <p className="text-sm text-muted-foreground">Confirme que você está no plantão. O sistema confere a sua localização.</p>
+        <h1 className="text-2xl font-bold">{tr("Check-in")}</h1>
+        <p className="text-sm text-muted-foreground">{tr("Confirme que você está no plantão. O sistema confere a sua localização.")}</p>
       </div>
 
       <Card className="space-y-3 p-5">
         <CheckInButton
-          rotulo="Fazer check-in agora"
+          rotulo={tr("Fazer check-in agora")}
           disabled={semLocal}
           onConfirmar={async (pos) => {
             const r = await registrarFn({
               data: { latitude: pos.latitude, longitude: pos.longitude, precisaoMetros: pos.precisaoMetros },
             });
-            toast.success(`Check-in feito em ${r.local_nome ?? "o local"} (${textoDistancia(r.distancia_metros)} do ponto).`);
+            toast.success(tr("Check-in feito em {local} ({textoDistancia} do ponto).", { local: r.local_nome ?? tr("o local"), textoDistancia: textoDistancia(r.distancia_metros) }));
             qc.invalidateQueries({ queryKey: ["checkins"] });
           }}
         />
         {semLocal && (
           <p className="text-sm text-amber-600">
             {ehMaster
-              ? "Cadastre o local do plantão abaixo para liberar o check-in."
-              : "Sua imobiliária ainda não cadastrou o local do plantão. Peça ao master."}
+              ? tr("Cadastre o local do plantão abaixo para liberar o check-in.")
+              : tr("Sua imobiliária ainda não cadastrou o local do plantão. Peça ao master.")}
           </p>
         )}
       </Card>
@@ -66,17 +67,17 @@ function CheckinPage() {
       {ehMaster && <PontosCard pontos={locais ?? []} />}
 
       <Card className="p-5">
-        <h2 className="mb-3 text-base font-semibold">{ehEquipe ? "Registros da equipe (7 dias)" : "Meus registros (7 dias)"}</h2>
+        <h2 className="mb-3 text-base font-semibold">{ehEquipe ? tr("Registros da equipe (7 dias)") : tr("Meus registros (7 dias)")}</h2>
         <div className="space-y-2">
           {(registros ?? []).map((r) => (
             <div key={r.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border p-3 text-sm">
               <span className="font-medium">{r.usuario_nome ?? "—"}</span>
-              <Badge variant="secondary">{r.tipo === "checkin" ? "Check-in" : "Login"}</Badge>
-              {r.metodo && <Badge variant="outline">{r.metodo === "gps+ip" ? "GPS + IP" : r.metodo.toUpperCase()}</Badge>}
-              {r.dentro_do_raio === true && <Badge className="bg-emerald-600 text-white">No local</Badge>}
-              {r.dentro_do_raio === false && <Badge variant="destructive">Fora do local</Badge>}
+              <Badge variant="secondary">{r.tipo === "checkin" ? tr("Check-in") : tr("Login")}</Badge>
+              {r.metodo && <Badge variant="outline">{r.metodo === "gps+ip" ? tr("GPS + IP") : r.metodo.toUpperCase()}</Badge>}
+              {r.dentro_do_raio === true && <Badge className="bg-emerald-600 text-white">{tr("No local")}</Badge>}
+              {r.dentro_do_raio === false && <Badge variant="destructive">{tr("Fora do local")}</Badge>}
               <span className="text-muted-foreground">
-                {r.local_nome ? `${r.local_nome} · ${textoDistancia(r.distancia_metros)}` : "sem local cadastrado"}
+                {r.local_nome ? `${r.local_nome} · ${textoDistancia(r.distancia_metros)}` : tr("sem local cadastrado")}
               </span>
               <span className="ml-auto text-xs text-muted-foreground">{quando(r.created_at)}</span>
               {r.latitude != null && r.longitude != null && (
@@ -85,13 +86,12 @@ function CheckinPage() {
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                >
-                  mapa <ExternalLink className="size-3" />
+                >{tr("mapa")} <ExternalLink className="size-3" />
                 </a>
               )}
             </div>
           ))}
-          {registros && registros.length === 0 && <p className="text-sm text-muted-foreground">Nenhum registro ainda.</p>}
+          {registros && registros.length === 0 && <p className="text-sm text-muted-foreground">{tr("Nenhum registro ainda.")}</p>}
         </div>
       </Card>
     </div>

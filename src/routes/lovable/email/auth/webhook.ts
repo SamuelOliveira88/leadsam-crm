@@ -7,6 +7,7 @@ import { MagicLinkEmail } from '@/lib/email-templates/magic-link'
 import { RecoveryEmail } from '@/lib/email-templates/recovery'
 import { EmailChangeEmail } from '@/lib/email-templates/email-change'
 import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
+import { idiomaDoUsuario } from '@/lib/email-templates/textos'
 
 // Configuration
 const SITE_NAME = "Alexandria Leds"
@@ -35,6 +36,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
                   siteUrl: SITE_URL,
                   recipient: data.email,
                   confirmationUrl: data.url,
+                  lang: idiomaDoUsuario(data),
                 }),
             },
             invite: {
@@ -44,6 +46,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
                   siteName: SITE_NAME,
                   siteUrl: SITE_URL,
                   confirmationUrl: data.url,
+                  lang: idiomaDoUsuario(data),
                 }),
             },
             magiclink: {
@@ -52,6 +55,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
                 React.createElement(MagicLinkEmail, {
                   siteName: SITE_NAME,
                   confirmationUrl: data.url,
+                  lang: idiomaDoUsuario(data),
                 }),
             },
             recovery: {
@@ -60,6 +64,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
                 React.createElement(RecoveryEmail, {
                   siteName: SITE_NAME,
                   confirmationUrl: data.url,
+                  lang: idiomaDoUsuario(data),
                 }),
             },
             email_change: {
@@ -71,12 +76,16 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
                   email: data.email,
                   newEmail: data.new_email ?? '',
                   confirmationUrl: data.url,
+                  lang: idiomaDoUsuario(data),
                 }),
             },
             reauthentication: {
               subject: 'Seu código de verificação — Alexandria Leds',
               render: (data) =>
-                React.createElement(ReauthenticationEmail, { token: data.token ?? '' }),
+                React.createElement(ReauthenticationEmail, {
+                  token: data.token ?? '',
+                  lang: idiomaDoUsuario(data),
+                }),
             },
           },
         })

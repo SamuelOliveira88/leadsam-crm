@@ -14,8 +14,9 @@ import { toast } from "sonner";
 
 import { RequireAdmin } from "@/components/RequireAdmin";
 
+import { tr } from "@/i18n";
 export const Route = createFileRoute("/_authenticated/importar")({
-  head: () => ({ meta: [{ title: "Importar leads — ImobLead" }] }),
+  head: () => ({ meta: [{ title: tr("Importar leads — ImobLead") }] }),
   component: () => <RequireAdmin><Importar /></RequireAdmin>,
 });
 
@@ -25,9 +26,9 @@ function parseCSV(text: string): LeadRow[] {
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   if (lines.length === 0) return [];
   const header = lines[0].split(/[,;\t]/).map((h) => h.trim().toLowerCase());
-  const idxNome = header.findIndex((h) => h.includes("nome") || h.includes("name"));
+  const idxNome = header.findIndex((h) => h.includes("nome") || h.includes("name") || h.includes("nombre"));
   const idxTel = header.findIndex((h) => h.includes("tel") || h.includes("fone") || h.includes("phone") || h.includes("whats"));
-  const idxEmail = header.findIndex((h) => h.includes("email") || h.includes("e-mail"));
+  const idxEmail = header.findIndex((h) => h.includes("email") || h.includes("e-mail") || h.includes("correo"));
   const rows: LeadRow[] = [];
   for (let i = 1; i < lines.length; i++) {
     const cols = lines[i].split(/[,;\t]/).map((c) => c.trim());
@@ -170,7 +171,7 @@ function PlanilhaImportSection({ grupoId }: { grupoId: string }) {
     }
     setResultado({ sucesso, erros, semCorretor });
     setProgresso(null);
-    toast.success(`Importação concluída: ${sucesso} lead(s) importado(s).`);
+    toast.success(tr("Importação concluída: {sucesso} lead(s) importado(s).", { sucesso }));
   }
 
   const comCorretor = linhas.filter((l) => l.corretor_nome).length;
@@ -178,11 +179,8 @@ function PlanilhaImportSection({ grupoId }: { grupoId: string }) {
   return (
     <Card className="space-y-3 p-4">
       <div>
-        <h2 className="font-semibold">Importar planilha completa (Leadfy / Excel)</h2>
-        <p className="text-xs text-muted-foreground">
-          Sobe o arquivo .xlsx ou .csv exportado do Leadfy. Reconhece automaticamente cliente, telefone, email,
-          corretor, fonte, canal, cidade, status, motivo de perda, observações, data e valor.
-        </p>
+        <h2 className="font-semibold">{tr("Importar planilha completa (Leadfy / Excel)")}</h2>
+        <p className="text-xs text-muted-foreground">{tr("Sobe o arquivo .xlsx ou .csv exportado do Leadfy. Reconhece automaticamente cliente, telefone, email, corretor, fonte, canal, cidade, status, motivo de perda, observações, data e valor.")}</p>
       </div>
 
       <input
@@ -193,30 +191,24 @@ function PlanilhaImportSection({ grupoId }: { grupoId: string }) {
         onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
       />
       <Button type="button" variant="outline" onClick={() => fileRef.current?.click()}>
-        <FileSpreadsheet className="mr-2 size-4" /> Escolher arquivo
-      </Button>
+        <FileSpreadsheet className="mr-2 size-4" /> {tr("Escolher arquivo")}</Button>
 
       {nomeArquivo && (
         <div className="rounded-md border bg-muted/30 p-3 text-sm">
           <div className="flex items-center gap-2 font-medium"><CheckCircle2 className="size-4 text-emerald-600" /> {nomeArquivo}</div>
-          <div className="mt-1 text-xs text-muted-foreground">
-            {linhas.length} lead(s) detectado(s) — {comCorretor} serão atribuídos ao corretor original (por nome),{" "}
-            {linhas.length - comCorretor} entrarão como represados (corretor não encontrado no grupo selecionado).
-          </div>
+          <div className="mt-1 text-xs text-muted-foreground">{tr("{length} lead(s) detectado(s) — {comCorretor} serão atribuídos ao corretor original (por nome), {resto} entrarão como represados (corretor não encontrado no grupo selecionado).", { length: linhas.length, comCorretor, resto: linhas.length - comCorretor })}</div>
         </div>
       )}
 
       <Button onClick={handleImportar} disabled={!grupoId || linhas.length === 0 || !!progresso}>
         <Upload className="mr-2 size-4" />
-        {progresso ? `Importando… ${progresso.atual}/${progresso.total}` : "Importar planilha"}
+        {progresso ? tr("Importando… {atual}/{total}", { atual: progresso.atual, total: progresso.total }) : tr("Importar planilha")}
       </Button>
 
-      {!grupoId && <div className="text-xs text-amber-600">Selecione um grupo acima antes de importar.</div>}
+      {!grupoId && <div className="text-xs text-amber-600">{tr("Selecione um grupo acima antes de importar.")}</div>}
 
       {resultado && (
-        <div className="rounded-md border border-green-500/30 bg-green-500/10 p-3 text-sm">
-          {resultado.sucesso} lead(s) importado(s), {resultado.erros} erro(s), {resultado.semCorretor} sem corretor casado.
-        </div>
+        <div className="rounded-md border border-green-500/30 bg-green-500/10 p-3 text-sm">{tr("{sucesso} lead(s) importado(s), {erros} erro(s), {semCorretor} sem corretor casado.", { sucesso: resultado.sucesso, erros: resultado.erros, semCorretor: resultado.semCorretor })}</div>
       )}
     </Card>
   );
@@ -250,31 +242,31 @@ function Importar() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Importar leads</h1>
-        <p className="text-sm text-muted-foreground">Cole uma planilha (CSV: nome, telefone, email)</p>
+        <h1 className="text-2xl font-bold tracking-tight">{tr("Importar leads")}</h1>
+        <p className="text-sm text-muted-foreground">{tr("Cole uma planilha (CSV: nome, telefone, email)")}</p>
       </div>
 
       <Card className="space-y-3 p-4">
         <div className="grid gap-3 md:grid-cols-2">
           <div>
-            <label className="mb-1 block text-xs font-medium">Grupo</label>
+            <label className="mb-1 block text-xs font-medium">{tr("Grupo")}</label>
             <select className="w-full rounded-md border bg-background px-3 py-2 text-sm" value={grupoId} onChange={(e) => setGrupoId(e.target.value)}>
-              <option value="">Selecione…</option>
+              <option value="">{tr("Selecione…")}</option>
               {(grupos ?? []).map((g) => <option key={g.id} value={g.id}>{g.nome}</option>)}
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium">Distribuição</label>
+            <label className="mb-1 block text-xs font-medium">{tr("Distribuição")}</label>
             <select className="w-full rounded-md border bg-background px-3 py-2 text-sm" value={modo} onChange={(e) => setModo(e.target.value as any)}>
-              <option value="rodizio">Rodízio (todos do grupo)</option>
-              <option value="direcionado">Direcionada (escolher corretores)</option>
+              <option value="rodizio">{tr("Rodízio (todos do grupo)")}</option>
+              <option value="direcionado">{tr("Direcionada (escolher corretores)")}</option>
             </select>
           </div>
         </div>
 
         {modo === "direcionado" && grupoId && (
           <div className="rounded-md border p-3">
-            <div className="mb-2 text-xs font-medium">Corretores selecionados</div>
+            <div className="mb-2 text-xs font-medium">{tr("Corretores selecionados")}</div>
             <div className="flex flex-wrap gap-2">
               {corretoresGrupo.map((c: any) => {
                 const on = selecionados.includes(c.id);
@@ -286,26 +278,24 @@ function Importar() {
                   </button>
                 );
               })}
-              {corretoresGrupo.length === 0 && <div className="text-xs text-muted-foreground">Nenhum corretor ativo neste grupo.</div>}
+              {corretoresGrupo.length === 0 && <div className="text-xs text-muted-foreground">{tr("Nenhum corretor ativo neste grupo.")}</div>}
             </div>
           </div>
         )}
 
         <div>
-          <label className="mb-1 block text-xs font-medium">Planilha (CSV)</label>
+          <label className="mb-1 block text-xs font-medium">{tr("Planilha (CSV)")}</label>
           <Textarea rows={8} value={csvText} onChange={(e) => setCsvText(e.target.value)}
-            placeholder="nome,telefone,email&#10;João Silva,5511999999999,joao@ex.com" />
-          <div className="mt-1 text-xs text-muted-foreground">{parsed.length} lead(s) detectado(s)</div>
+            placeholder={tr("nome,telefone,email&#10;João Silva,5511999999999,joao@ex.com")} />
+          <div className="mt-1 text-xs text-muted-foreground">{tr("{length} lead(s) detectado(s)", { length: parsed.length })}</div>
         </div>
 
         <Button onClick={() => mut.mutate()} disabled={!grupoId || parsed.length === 0 || mut.isPending}>
-          <Upload className="mr-2 size-4" /> {mut.isPending ? "Importando…" : "Importar"}
+          <Upload className="mr-2 size-4" /> {mut.isPending ? tr("Importando…") : tr("Importar")}
         </Button>
 
         {resultado && (
-          <div className="rounded-md border border-green-500/30 bg-green-500/10 p-3 text-sm">
-            {resultado.sucesso} lead(s) importado(s), {resultado.erros} erro(s).
-          </div>
+          <div className="rounded-md border border-green-500/30 bg-green-500/10 p-3 text-sm">{tr("{sucesso} lead(s) importado(s), {erros} erro(s).", { sucesso: resultado.sucesso, erros: resultado.erros })}</div>
         )}
       </Card>
 

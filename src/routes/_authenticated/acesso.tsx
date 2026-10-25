@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
+import { tr, localeAtual } from "@/i18n";
 export const Route = createFileRoute("/_authenticated/acesso")({
   component: AcessoPage,
 });
@@ -63,34 +64,34 @@ function AcessoPage() {
       ips_permitidos: ipsTexto.split(/[\s,;]+/).map((x) => x.trim()).filter(Boolean),
       restringir_local: restringirLocal,
     } }),
-    onSuccess: () => { toast.success("Configuração salva"); qc.invalidateQueries({ queryKey: ["config_acesso"] }); },
-    onError: (e: any) => toast.error(e?.message ?? "Erro ao salvar"),
+    onSuccess: () => { toast.success(tr("Configuração salva")); qc.invalidateQueries({ queryKey: ["config_acesso"] }); },
+    onError: (e: any) => toast.error(tr(e?.message) ?? tr("Erro ao salvar")),
   });
 
   const liberar = useMutation({
     mutationFn: (m: number) => liberarFn({ data: { minutos: m } }),
-    onSuccess: () => { toast.success("Acesso liberado"); qc.invalidateQueries({ queryKey: ["config_acesso"] }); },
-    onError: (e: any) => toast.error(e?.message ?? "Erro"),
+    onSuccess: () => { toast.success(tr("Acesso liberado")); qc.invalidateQueries({ queryKey: ["config_acesso"] }); },
+    onError: (e: any) => toast.error(tr(e?.message) ?? tr("Erro")),
   });
 
   const revogar = useMutation({
     mutationFn: () => revogarFn(),
-    onSuccess: () => { toast.success("Liberação revogada"); qc.invalidateQueries({ queryKey: ["config_acesso"] }); },
+    onSuccess: () => { toast.success(tr("Liberação revogada")); qc.invalidateQueries({ queryKey: ["config_acesso"] }); },
   });
 
   const liberarUm = useMutation({
     mutationFn: (p: { corretor_id: string; minutos: number }) => liberarCorretorFn({ data: p }),
-    onSuccess: () => { toast.success("Corretor liberado"); qc.invalidateQueries({ queryKey: ["corretores"] }); },
-    onError: (e: any) => toast.error(e?.message ?? "Erro"),
+    onSuccess: () => { toast.success(tr("Corretor liberado")); qc.invalidateQueries({ queryKey: ["corretores"] }); },
+    onError: (e: any) => toast.error(tr(e?.message) ?? tr("Erro")),
   });
 
   const revogarUm = useMutation({
     mutationFn: (corretor_id: string) => revogarCorretorFn({ data: { corretor_id } }),
-    onSuccess: () => { toast.success("Liberação removida"); qc.invalidateQueries({ queryKey: ["corretores"] }); },
+    onSuccess: () => { toast.success(tr("Liberação removida")); qc.invalidateQueries({ queryKey: ["corretores"] }); },
   });
 
   if (perfil && perfil.role !== "master" && perfil.role !== "gerente") {
-    return <div className="rounded-xl border bg-card p-6">Acesso negado.</div>;
+    return <div className="rounded-xl border bg-card p-6">{tr("Acesso negado.")}</div>;
   }
 
   const liberadoAte = config?.liberado_ate ? new Date(config.liberado_ate) : null;
@@ -99,23 +100,23 @@ function AcessoPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Controle de Acesso</h1>
-        <p className="text-sm text-muted-foreground">Defina se corretores e gerentes têm restrição de horário, ou libere o acesso imediatamente.</p>
+        <h1 className="text-2xl font-bold">{tr("Controle de Acesso")}</h1>
+        <p className="text-sm text-muted-foreground">{tr("Defina se corretores e gerentes têm restrição de horário, ou libere o acesso imediatamente.")}</p>
       </div>
 
       {/* Travas de login: por IP e por local */}
       <div className="rounded-2xl border bg-card p-6 shadow-soft">
         <div className="mb-1 flex items-center gap-2">
           <Network className="size-5 text-primary" />
-          <h2 className="text-lg font-semibold">Login só de IP autorizado</h2>
+          <h2 className="text-lg font-semibold">{tr("Login só de IP autorizado")}</h2>
         </div>
         <div className="mb-3 flex items-center justify-between gap-4">
-          <p className="text-xs text-muted-foreground">Corretores e gerentes só entram se estiverem na internet da imobiliária (IP fixo). Master nunca é barrado.</p>
+          <p className="text-xs text-muted-foreground">{tr("Corretores e gerentes só entram se estiverem na internet da imobiliária (IP fixo). Master nunca é barrado.")}</p>
           <Switch checked={restringirIp} onCheckedChange={setRestringirIp} disabled={perfil?.role !== "master"} />
         </div>
         {restringirIp && (
           <div className="space-y-2">
-            <Label className="text-xs">IPs permitidos (um por linha)</Label>
+            <Label className="text-xs">{tr("IPs permitidos (um por linha)")}</Label>
             <textarea
               className="min-h-24 w-full rounded-md border bg-background p-2 font-mono text-sm"
               value={ipsTexto}
@@ -123,12 +124,9 @@ function AcessoPage() {
               placeholder="200.150.10.5"
             />
             {meuIp?.ip && (
-              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                Seu IP agora: <strong>{meuIp.ip}</strong>
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">{tr("Seu IP agora:")} <strong>{meuIp.ip}</strong>
                 <Button type="button" size="sm" variant="outline"
-                  onClick={() => setIpsTexto((t) => (t.split(/\s+/).includes(meuIp.ip!) ? t : (t.trim() ? t.trim() + "\n" : "") + meuIp.ip))}>
-                  Adicionar este IP
-                </Button>
+                  onClick={() => setIpsTexto((t) => (t.split(/\s+/).includes(meuIp.ip!) ? t : (t.trim() ? t.trim() + "\n" : "") + meuIp.ip))}>{tr("Adicionar este IP")}</Button>
               </div>
             )}
           </div>
@@ -138,43 +136,40 @@ function AcessoPage() {
       <div className="rounded-2xl border bg-card p-6 shadow-soft">
         <div className="mb-1 flex items-center gap-2">
           <MapPin className="size-5 text-primary" />
-          <h2 className="text-lg font-semibold">Login só no local de trabalho</h2>
+          <h2 className="text-lg font-semibold">{tr("Login só no local de trabalho")}</h2>
         </div>
         <div className="flex items-center justify-between gap-4">
-          <p className="text-xs text-muted-foreground">Corretores e gerentes só entram se o aparelho estiver dentro do raio de um local de plantão cadastrado. Precisa da localização ligada no celular. Sem local cadastrado, a trava não bloqueia ninguém.</p>
+          <p className="text-xs text-muted-foreground">{tr("Corretores e gerentes só entram se o aparelho estiver dentro do raio de um local de plantão cadastrado. Precisa da localização ligada no celular. Sem local cadastrado, a trava não bloqueia ninguém.")}</p>
           <Switch checked={restringirLocal} onCheckedChange={setRestringirLocal} disabled={perfil?.role !== "master"} />
         </div>
-        <p className="mt-3 text-xs text-muted-foreground">Se as duas travas estiverem ligadas, a pessoa precisa passar nas duas. Lembre de clicar em Salvar abaixo.</p>
+        <p className="mt-3 text-xs text-muted-foreground">{tr("Se as duas travas estiverem ligadas, a pessoa precisa passar nas duas. Lembre de clicar em Salvar abaixo.")}</p>
       </div>
 
       {/* Liberação imediata */}
       <div className="rounded-2xl border bg-card p-6 shadow-soft">
         <div className="mb-4 flex items-center gap-2">
           <Unlock className="size-5 text-primary" />
-          <h2 className="text-lg font-semibold">Liberar agora</h2>
+          <h2 className="text-lg font-semibold">{tr("Liberar agora")}</h2>
         </div>
         {liberacaoAtiva ? (
-          <div className="mb-4 rounded-lg bg-primary/10 p-3 text-sm">
-            ✅ Acesso liberado até <strong>{liberadoAte!.toLocaleString("pt-BR")}</strong>
+          <div className="mb-4 rounded-lg bg-primary/10 p-3 text-sm">{tr("✅ Acesso liberado até")} <strong>{liberadoAte!.toLocaleString(localeAtual())}</strong>
           </div>
         ) : (
-          <p className="mb-4 text-sm text-muted-foreground">Nenhuma liberação temporária ativa.</p>
+          <p className="mb-4 text-sm text-muted-foreground">{tr("Nenhuma liberação temporária ativa.")}</p>
         )}
         <div className="flex flex-wrap items-end gap-3">
           <div>
-            <Label className="text-xs">Duração (minutos)</Label>
+            <Label className="text-xs">{tr("Duração (minutos)")}</Label>
             <Input type="number" min={5} max={1440} value={minutos} onChange={(e) => setMinutos(Number(e.target.value))} className="w-32" />
           </div>
-          <Button onClick={() => liberar.mutate(minutos)} disabled={liberar.isPending}>
-            Liberar por {minutos} min
-          </Button>
+          <Button onClick={() => liberar.mutate(minutos)} disabled={liberar.isPending}>{tr("Liberar por {minutos} min", { minutos })}</Button>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => liberar.mutate(60)}>1h</Button>
-            <Button variant="outline" onClick={() => liberar.mutate(240)}>4h</Button>
-            <Button variant="outline" onClick={() => liberar.mutate(1440)}>24h</Button>
+            <Button variant="outline" onClick={() => liberar.mutate(60)}>{tr("1h")}</Button>
+            <Button variant="outline" onClick={() => liberar.mutate(240)}>{tr("4h")}</Button>
+            <Button variant="outline" onClick={() => liberar.mutate(1440)}>{tr("24h")}</Button>
           </div>
           {liberacaoAtiva && (
-            <Button variant="ghost" onClick={() => revogar.mutate()}>Revogar</Button>
+            <Button variant="ghost" onClick={() => revogar.mutate()}>{tr("Revogar")}</Button>
           )}
         </div>
       </div>
@@ -183,59 +178,55 @@ function AcessoPage() {
       <div className="rounded-2xl border bg-card p-6 shadow-soft">
         <div className="mb-4 flex items-center gap-2">
           <UserCheck className="size-5 text-primary" />
-          <h2 className="text-lg font-semibold">Liberar um corretor específico</h2>
+          <h2 className="text-lg font-semibold">{tr("Liberar um corretor específico")}</h2>
         </div>
-        <p className="mb-4 text-sm text-muted-foreground">
-          Escolha um corretor e libere o acesso apenas para ele, mesmo fora do horário padrão.
-        </p>
+        <p className="mb-4 text-sm text-muted-foreground">{tr("Escolha um corretor e libere o acesso apenas para ele, mesmo fora do horário padrão.")}</p>
         <div className="flex flex-wrap items-end gap-3">
           <div className="min-w-[220px] flex-1">
-            <Label className="text-xs">Corretor</Label>
+            <Label className="text-xs">{tr("Corretor")}</Label>
             <select
               className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
               value={corretorSel}
               onChange={(e) => setCorretorSel(e.target.value)}
             >
-              <option value="">Selecione…</option>
+              <option value="">{tr("Selecione…")}</option>
               {(corretores ?? []).map((c: any) => {
                 const ativo = c.liberado_ate && new Date(c.liberado_ate).getTime() > Date.now();
                 return (
                   <option key={c.id} value={c.id}>
-                    {c.nome} {ativo ? "· ✅ liberado" : ""}
+                    {c.nome} {ativo ? tr("· ✅ liberado") : ""}
                   </option>
                 );
               })}
             </select>
           </div>
           <div>
-            <Label className="text-xs">Duração (minutos)</Label>
+            <Label className="text-xs">{tr("Duração (minutos)")}</Label>
             <Input type="number" min={5} max={1440} value={minutosCorretor} onChange={(e) => setMinutosCorretor(Number(e.target.value))} className="w-32" />
           </div>
           <Button
             disabled={!corretorSel || liberarUm.isPending}
             onClick={() => liberarUm.mutate({ corretor_id: corretorSel, minutos: minutosCorretor })}
-          >
-            Liberar
-          </Button>
+          >{tr("Liberar")}</Button>
           <div className="flex gap-2">
-            <Button variant="outline" disabled={!corretorSel} onClick={() => liberarUm.mutate({ corretor_id: corretorSel, minutos: 60 })}>1h</Button>
-            <Button variant="outline" disabled={!corretorSel} onClick={() => liberarUm.mutate({ corretor_id: corretorSel, minutos: 240 })}>4h</Button>
-            <Button variant="outline" disabled={!corretorSel} onClick={() => liberarUm.mutate({ corretor_id: corretorSel, minutos: 1440 })}>24h</Button>
+            <Button variant="outline" disabled={!corretorSel} onClick={() => liberarUm.mutate({ corretor_id: corretorSel, minutos: 60 })}>{tr("1h")}</Button>
+            <Button variant="outline" disabled={!corretorSel} onClick={() => liberarUm.mutate({ corretor_id: corretorSel, minutos: 240 })}>{tr("4h")}</Button>
+            <Button variant="outline" disabled={!corretorSel} onClick={() => liberarUm.mutate({ corretor_id: corretorSel, minutos: 1440 })}>{tr("24h")}</Button>
           </div>
         </div>
 
         {(corretores ?? []).some((c: any) => c.liberado_ate && new Date(c.liberado_ate).getTime() > Date.now()) && (
           <div className="mt-4 space-y-2">
-            <div className="text-xs font-medium text-muted-foreground">Liberações ativas</div>
+            <div className="text-xs font-medium text-muted-foreground">{tr("Liberações ativas")}</div>
             {(corretores ?? [])
               .filter((c: any) => c.liberado_ate && new Date(c.liberado_ate).getTime() > Date.now())
               .map((c: any) => (
                 <div key={c.id} className="flex items-center justify-between rounded-lg border p-3 text-sm">
                   <div>
                     <div className="font-medium">{c.nome}</div>
-                    <div className="text-xs text-muted-foreground">até {new Date(c.liberado_ate).toLocaleString("pt-BR")}</div>
+                    <div className="text-xs text-muted-foreground">{tr("até")} {new Date(c.liberado_ate).toLocaleString(localeAtual())}</div>
                   </div>
-                  <Button size="sm" variant="ghost" onClick={() => revogarUm.mutate(c.id)}>Revogar</Button>
+                  <Button size="sm" variant="ghost" onClick={() => revogarUm.mutate(c.id)}>{tr("Revogar")}</Button>
                 </div>
               ))}
           </div>
@@ -247,23 +238,23 @@ function AcessoPage() {
       <div className="rounded-2xl border bg-card p-6 shadow-soft">
         <div className="mb-4 flex items-center gap-2">
           <Clock className="size-5 text-primary" />
-          <h2 className="text-lg font-semibold">Horário padrão de acesso</h2>
+          <h2 className="text-lg font-semibold">{tr("Horário padrão de acesso")}</h2>
         </div>
         <div className="mb-4 flex items-center justify-between gap-4 rounded-lg border p-3">
           <div>
-            <Label className="text-sm font-medium">Restringir acesso por horário</Label>
-            <p className="text-xs text-muted-foreground">Quando desligado, corretores e gerentes acessam a qualquer hora.</p>
+            <Label className="text-sm font-medium">{tr("Restringir acesso por horário")}</Label>
+            <p className="text-xs text-muted-foreground">{tr("Quando desligado, corretores e gerentes acessam a qualquer hora.")}</p>
           </div>
           <Switch checked={restringir} onCheckedChange={setRestringir} />
         </div>
         {restringir && (
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label className="text-xs">Início</Label>
+              <Label className="text-xs">{tr("Início")}</Label>
               <Input type="time" value={inicio} onChange={(e) => setInicio(e.target.value)} />
             </div>
             <div>
-              <Label className="text-xs">Fim</Label>
+              <Label className="text-xs">{tr("Fim")}</Label>
               <Input type="time" value={fim} onChange={(e) => setFim(e.target.value)} />
             </div>
           </div>
@@ -272,15 +263,13 @@ function AcessoPage() {
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <ShieldCheck className="size-4" />{" "}
             {perfil?.role === "master"
-              ? "Masters sempre têm acesso irrestrito."
-              : "Apenas usuários Master podem alterar o horário padrão."}
+              ? tr("Masters sempre têm acesso irrestrito.")
+              : tr("Apenas usuários Master podem alterar o horário padrão.")}
           </div>
           <Button
             onClick={() => salvar.mutate()}
             disabled={salvar.isPending || perfil?.role !== "master"}
-          >
-            Salvar
-          </Button>
+          >{tr("Salvar")}</Button>
         </div>
       </div>
     </div>

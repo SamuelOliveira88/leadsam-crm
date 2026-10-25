@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
+import { tr } from "@/i18n";
 export const LIMITE_PONTOS = 10;
 
 export type Ponto = {
@@ -97,20 +98,20 @@ function PontoForm({
       const p = await obter();
       setLat(p.latitude.toFixed(6));
       setLng(p.longitude.toFixed(6));
-      toast.success(`Localização capturada (erro de cerca de ${Math.round(p.precisaoMetros)} m).`);
+      toast.success(tr("Localização capturada (erro de cerca de {round} m).", { round: Math.round(p.precisaoMetros) }));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Não consegui pegar a localização.");
+      toast.error(e instanceof Error ? e.message : tr("Não consegui pegar a localização."));
     }
   }
 
   async function usarMeuIp() {
     try {
       const r = await ipFn();
-      if (!r.ip) throw new Error("Não consegui descobrir o seu IP.");
+      if (!r.ip) throw new Error(tr("Não consegui descobrir o seu IP."));
       setIp(r.ip);
-      toast.success("IP preenchido com o da sua internet de agora.");
+      toast.success(tr("IP preenchido com o da sua internet de agora."));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Não consegui descobrir o seu IP.");
+      toast.error(e instanceof Error ? e.message : tr("Não consegui descobrir o seu IP."));
     }
   }
 
@@ -124,41 +125,41 @@ function PontoForm({
   return (
     <div className="space-y-4">
       <div>
-        <Label htmlFor={`ponto-nome-${inicial?.id ?? "novo"}`}>Nome do ponto</Label>
+        <Label htmlFor={`ponto-nome-${inicial?.id ?? "novo"}`}>{tr("Nome do ponto")}</Label>
         <Input
           id={`ponto-nome-${inicial?.id ?? "novo"}`}
           value={nome}
           maxLength={80}
           onChange={(e) => setNome(e.target.value)}
-          placeholder="Ex.: Stand Vista Plaza"
+          placeholder={tr("Ex.: Stand Vista Plaza")}
         />
       </div>
 
       <div className="space-y-3 rounded-lg border p-3">
         <div className="flex items-center justify-between gap-3">
-          <Label className="flex items-center gap-2"><MapPin className="size-4" /> Login por localização (GPS)</Label>
+          <Label className="flex items-center gap-2"><MapPin className="size-4" /> {tr("Login por localização (GPS)")}</Label>
           <Switch checked={usaGps} onCheckedChange={setUsaGps} />
         </div>
         {usaGps && (
           <div className="grid gap-3 sm:grid-cols-3">
             <div>
-              <Label>Latitude</Label>
+              <Label>{tr("Latitude")}</Label>
               <Input inputMode="decimal" value={lat} onChange={(e) => setLat(e.target.value)} placeholder="-23.6" />
             </div>
             <div>
-              <Label>Longitude</Label>
+              <Label>{tr("Longitude")}</Label>
               <Input inputMode="decimal" value={lng} onChange={(e) => setLng(e.target.value)} placeholder="-46.7" />
             </div>
             <div>
-              <Label>Raio (metros)</Label>
+              <Label>{tr("Raio (metros)")}</Label>
               <Input inputMode="numeric" value={raio} onChange={(e) => setRaio(e.target.value)} />
             </div>
             <div className="sm:col-span-3">
               <Button type="button" variant="outline" size="sm" onClick={usarMinhaLocalizacao} disabled={carregando}>
                 <LocateFixed className="mr-2 size-4" />
-                {carregando ? "Pegando…" : "Usar minha localização atual"}
+                {carregando ? tr("Pegando…") : tr("Usar minha localização atual")}
               </Button>
-              <p className="mt-1 text-xs text-muted-foreground">Fique no ponto e toque no botão.</p>
+              <p className="mt-1 text-xs text-muted-foreground">{tr("Fique no ponto e toque no botão.")}</p>
             </div>
           </div>
         )}
@@ -166,22 +167,20 @@ function PontoForm({
 
       <div className="space-y-3 rounded-lg border p-3">
         <div className="flex items-center justify-between gap-3">
-          <Label className="flex items-center gap-2"><Network className="size-4" /> Login por IP fixo</Label>
+          <Label className="flex items-center gap-2"><Network className="size-4" /> {tr("Login por IP fixo")}</Label>
           <Switch checked={usaIp} onCheckedChange={setUsaIp} />
         </div>
         {usaIp && (
           <div className="space-y-2">
-            <Label>IP da internet do ponto</Label>
-            <Input value={ip} onChange={(e) => setIp(e.target.value)} placeholder="Ex.: 200.150.10.5" />
-            <Button type="button" variant="outline" size="sm" onClick={usarMeuIp}>
-              Usar o IP da minha internet agora
-            </Button>
-            <p className="text-xs text-muted-foreground">Só funciona se a internet do ponto tiver IP fixo.</p>
+            <Label>{tr("IP da internet do ponto")}</Label>
+            <Input value={ip} onChange={(e) => setIp(e.target.value)} placeholder={tr("Ex.: 200.150.10.5")} />
+            <Button type="button" variant="outline" size="sm" onClick={usarMeuIp}>{tr("Usar o IP da minha internet agora")}</Button>
+            <p className="text-xs text-muted-foreground">{tr("Só funciona se a internet do ponto tiver IP fixo.")}</p>
           </div>
         )}
       </div>
 
-      {!usaGps && !usaIp && <p className="text-sm text-amber-600">Escolha ao menos um método: localização ou IP fixo.</p>}
+      {!usaGps && !usaIp && <p className="text-sm text-amber-600">{tr("Escolha ao menos um método: localização ou IP fixo.")}</p>}
 
       <Button
         type="button"
@@ -213,11 +212,11 @@ function QrDialog({ ponto, onFechar }: { ponto: Ponto | null; onFechar: () => vo
   const regerar = useMutation({
     mutationFn: (id: string) => regerarFn({ data: { id } }),
     onSuccess: () => {
-      toast.success("QR novo gerado. O QR antigo deixou de valer.");
+      toast.success(tr("QR novo gerado. O QR antigo deixou de valer."));
       qc.invalidateQueries({ queryKey: ["locais_checkin"] });
       onFechar();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Não foi possível gerar um QR novo."),
+    onError: (e: any) => toast.error(tr(e?.message) ?? tr("Não foi possível gerar um QR novo.")),
   });
 
   const endereco = ponto ? enderecoDoPonto(ponto.qr_codigo) : "";
@@ -228,7 +227,7 @@ function QrDialog({ ponto, onFechar }: { ponto: Ponto | null; onFechar: () => vo
     try {
       await baixarQrPng(endereco, `qr-${ponto.nome.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "ponto"}`, ponto.nome);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Não consegui baixar o QR.");
+      toast.error(e instanceof Error ? e.message : tr("Não consegui baixar o QR."));
     } finally {
       setBaixando(false);
     }
@@ -238,10 +237,8 @@ function QrDialog({ ponto, onFechar }: { ponto: Ponto | null; onFechar: () => vo
     <Dialog open={!!ponto} onOpenChange={(a) => !a && onFechar()}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>QR do ponto “{ponto?.nome}”</DialogTitle>
-          <DialogDescription>
-            Este QR é fixo: ele não muda. Imprima e cole no ponto. Quem escanear faz o check-in aqui.
-          </DialogDescription>
+          <DialogTitle>{tr("QR do ponto “{nome}”", { nome: ponto?.nome })}</DialogTitle>
+          <DialogDescription>{tr("Este QR é fixo: ele não muda. Imprima e cole no ponto. Quem escanear faz o check-in aqui.")}</DialogDescription>
         </DialogHeader>
         {ponto && (
           <div className="space-y-3">
@@ -253,24 +250,20 @@ function QrDialog({ ponto, onFechar }: { ponto: Ponto | null; onFechar: () => vo
             <p className="break-all text-center text-xs text-muted-foreground">{endereco}</p>
             <div className="flex flex-wrap justify-center gap-2">
               <Button type="button" onClick={baixar} disabled={baixando}>
-                {baixando ? "Gerando…" : "Baixar imagem (PNG)"}
+                {baixando ? tr("Gerando…") : tr("Baixar imagem (PNG)")}
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button type="button" variant="ghost" size="sm" className="text-destructive">
-                    Gerar QR novo
-                  </Button>
+                  <Button type="button" variant="ghost" size="sm" className="text-destructive">{tr("Gerar QR novo")}</Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Trocar o QR deste ponto?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      O QR que já está impresso vai parar de funcionar. Só faça isso se o QR atual vazou ou foi perdido.
-                    </AlertDialogDescription>
+                    <AlertDialogTitle>{tr("Trocar o QR deste ponto?")}</AlertDialogTitle>
+                    <AlertDialogDescription>{tr("O QR que já está impresso vai parar de funcionar. Só faça isso se o QR atual vazou ou foi perdido.")}</AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => regerar.mutate(ponto.id)}>Trocar o QR</AlertDialogAction>
+                    <AlertDialogCancel>{tr("Cancelar")}</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => regerar.mutate(ponto.id)}>{tr("Trocar o QR")}</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -296,26 +289,26 @@ export function PontosCard({ pontos }: { pontos: Ponto[] }) {
   const criar = useMutation({
     mutationFn: (d: Dados) => salvarFn({ data: d }),
     onSuccess: () => {
-      toast.success("Ponto criado.");
+      toast.success(tr("Ponto criado."));
       setNovoAberto(false);
       recarregar();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Não foi possível criar o ponto."),
+    onError: (e: any) => toast.error(tr(e?.message) ?? tr("Não foi possível criar o ponto.")),
   });
 
   const editar = useMutation({
     mutationFn: (v: { id: string; dados: Dados }) => atualizarFn({ data: v }),
     onSuccess: () => {
-      toast.success("Ponto salvo.");
+      toast.success(tr("Ponto salvo."));
       recarregar();
     },
-    onError: (e: any) => toast.error(e?.message ?? "Não foi possível salvar."),
+    onError: (e: any) => toast.error(tr(e?.message) ?? tr("Não foi possível salvar.")),
   });
 
   const alternar = useMutation({
     mutationFn: (v: { id: string; ativo: boolean }) => ativoFn({ data: v }),
     onSuccess: recarregar,
-    onError: (e: any) => toast.error(e?.message ?? "Não foi possível alterar."),
+    onError: (e: any) => toast.error(tr(e?.message) ?? tr("Não foi possível alterar.")),
   });
 
   const cheio = pontos.length >= LIMITE_PONTOS;
@@ -324,19 +317,17 @@ export function PontosCard({ pontos }: { pontos: Ponto[] }) {
     <Card className="space-y-4 p-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="text-base font-semibold">Pontos de acesso</h2>
-          <p className="text-xs text-muted-foreground">
-            Até {LIMITE_PONTOS} pontos por imobiliária. {pontos.length} de {LIMITE_PONTOS} usados.
-          </p>
+          <h2 className="text-base font-semibold">{tr("Pontos de acesso")}</h2>
+          <p className="text-xs text-muted-foreground">{tr("Até {LIMITE_PONTOS} pontos por imobiliária. {length} de {LIMITE_PONTOS} usados.", { LIMITE_PONTOS, length: pontos.length })}</p>
         </div>
         <Button type="button" size="sm" onClick={() => setNovoAberto((v) => !v)} disabled={cheio}>
-          {novoAberto ? "Fechar" : "Novo ponto"}
+          {novoAberto ? tr("Fechar") : tr("Novo ponto")}
         </Button>
       </div>
 
       {novoAberto && (
         <div className="rounded-lg border border-dashed p-4">
-          <PontoForm rotuloSalvar="Criar ponto" salvando={criar.isPending} onSalvar={(d) => criar.mutate(d)} />
+          <PontoForm rotuloSalvar={tr("Criar ponto")} salvando={criar.isPending} onSalvar={(d) => criar.mutate(d)} />
         </div>
       )}
 
@@ -347,15 +338,14 @@ export function PontosCard({ pontos }: { pontos: Ponto[] }) {
             <div key={p.id} className="rounded-lg border p-3 text-sm">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-medium">{p.nome}</span>
-                {p.usa_gps && <Badge variant="secondary">GPS · {p.raio_metros} m</Badge>}
-                {p.usa_ip && <Badge variant="secondary">IP {p.ip_fixo}</Badge>}
-                {!p.ativo && <Badge variant="outline">desativado</Badge>}
+                {p.usa_gps && <Badge variant="secondary">{tr("GPS · {raio_metros} m", { raio_metros: p.raio_metros })}</Badge>}
+                {p.usa_ip && <Badge variant="secondary">{tr("IP {ip_fixo}", { ip_fixo: p.ip_fixo })}</Badge>}
+                {!p.ativo && <Badge variant="outline">{tr("desativado")}</Badge>}
                 <div className="ml-auto flex flex-wrap gap-1">
                   <Button type="button" size="sm" variant="outline" onClick={() => setQrDe(p)}>
-                    <QrCode className="mr-1 size-4" /> QR
-                  </Button>
+                    <QrCode className="mr-1 size-4" /> {tr("QR")}</Button>
                   <Button type="button" size="sm" variant="ghost" onClick={() => setAbertoId(aberto ? null : p.id)}>
-                    {aberto ? "Fechar" : "Editar"}
+                    {aberto ? tr("Fechar") : tr("Editar")}
                   </Button>
                   <Button
                     type="button"
@@ -364,7 +354,7 @@ export function PontosCard({ pontos }: { pontos: Ponto[] }) {
                     disabled={alternar.isPending}
                     onClick={() => alternar.mutate({ id: p.id, ativo: !p.ativo })}
                   >
-                    {p.ativo ? "Desativar" : "Ativar"}
+                    {p.ativo ? tr("Desativar") : tr("Ativar")}
                   </Button>
                 </div>
               </div>
@@ -372,7 +362,7 @@ export function PontosCard({ pontos }: { pontos: Ponto[] }) {
                 <div className="mt-3 border-t pt-3">
                   <PontoForm
                     inicial={p}
-                    rotuloSalvar="Salvar alterações"
+                    rotuloSalvar={tr("Salvar alterações")}
                     salvando={editar.isPending}
                     onSalvar={(dados) => editar.mutate({ id: p.id, dados })}
                   />
@@ -381,7 +371,7 @@ export function PontosCard({ pontos }: { pontos: Ponto[] }) {
             </div>
           );
         })}
-        {pontos.length === 0 && <p className="text-sm text-muted-foreground">Nenhum ponto cadastrado ainda.</p>}
+        {pontos.length === 0 && <p className="text-sm text-muted-foreground">{tr("Nenhum ponto cadastrado ainda.")}</p>}
       </div>
 
       <QrDialog ponto={qrDe} onFechar={() => setQrDe(null)} />

@@ -23,18 +23,19 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
+import { tr, mark, localeAtual } from "@/i18n";
 export const Route = createFileRoute("/_authenticated/propostas")({
   ssr: false,
   component: Propostas,
 });
 
 const LABEL_STATUS: Record<string, string> = {
-  rascunho: "Rascunho",
-  enviada: "Enviada",
-  em_analise: "Em análise",
-  aprovada: "Aprovada",
-  recusada: "Recusada",
-  cancelada: "Cancelada",
+  rascunho: mark("Rascunho"),
+  enviada: mark("Enviada"),
+  em_analise: mark("Em análise"),
+  aprovada: mark("Aprovada"),
+  recusada: mark("Recusada"),
+  cancelada: mark("Cancelada"),
 };
 
 const COR_STATUS: Record<string, string> = {
@@ -48,7 +49,7 @@ const COR_STATUS: Record<string, string> = {
 
 function moeda(v: number | null | undefined) {
   if (v == null) return "—";
-  return Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  return Number(v).toLocaleString(localeAtual(), { style: "currency", currency: "BRL" });
 }
 
 function Propostas() {
@@ -87,26 +88,24 @@ function Propostas() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Propostas</h1>
-          <p className="text-sm text-muted-foreground">Fluxo de negociação: rascunho → enviada → aprovada/recusada</p>
+          <h1 className="text-2xl font-bold tracking-tight">{tr("Propostas")}</h1>
+          <p className="text-sm text-muted-foreground">{tr("Fluxo de negociação: rascunho → enviada → aprovada/recusada")}</p>
         </div>
         <Button size="sm" onClick={() => setNovaOpen(true)}>
-          <Plus className="mr-2 size-4" /> Nova proposta
-        </Button>
+          <Plus className="mr-2 size-4" /> {tr("Nova proposta")}</Button>
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <Button size="sm" variant={filtro === "todas" ? "default" : "outline"} onClick={() => setFiltro("todas")}>
-          Todas ({propostas?.length ?? 0})
+        <Button size="sm" variant={filtro === "todas" ? "default" : "outline"} onClick={() => setFiltro("todas")}>{tr("Todas ({n})", { n: propostas?.length ?? 0 })}
         </Button>
         {Object.keys(LABEL_STATUS).map((s) => (
           <Button key={s} size="sm" variant={filtro === s ? "default" : "outline"} onClick={() => setFiltro(s)}>
-            {LABEL_STATUS[s]} ({resumo[s] ?? 0})
+            {tr(LABEL_STATUS[s])} ({resumo[s] ?? 0})
           </Button>
         ))}
       </div>
 
-      {isLoading && <div className="text-sm text-muted-foreground">Carregando propostas…</div>}
+      {isLoading && <div className="text-sm text-muted-foreground">{tr("Carregando propostas…")}</div>}
 
       <div className="space-y-2">
         {lista.map((p: any) => (
@@ -115,77 +114,72 @@ function Propostas() {
               <div>
                 <div className="flex items-center gap-2">
                   <FileText className="size-4 text-muted-foreground" />
-                  <span className="font-semibold">{p.leads?.nome ?? "Lead removido"}</span>
-                  <Badge variant="outline" className={COR_STATUS[p.status]}>{LABEL_STATUS[p.status]}</Badge>
+                  <span className="font-semibold">{p.leads?.nome ?? tr("Lead removido")}</span>
+                  <Badge variant="outline" className={COR_STATUS[p.status]}>{tr(LABEL_STATUS[p.status])}</Badge>
                 </div>
                 <div className="mt-1 text-xs text-muted-foreground">
                   {moeda(p.valor_proposto)}
-                  {p.valor_entrada ? ` · entrada ${moeda(p.valor_entrada)}` : ""}
-                  {p.parcelas ? ` · ${p.parcelas}x` : ""}
-                  {p.unidades ? ` · Unidade ${p.unidades.numero} (${p.unidades.torre})` : ""}
+                  {p.valor_entrada ? tr(" · entrada {moeda}", { moeda: moeda(p.valor_entrada) }) : ""}
+                  {p.parcelas ? tr(" · {parcelas}x", { parcelas: p.parcelas }) : ""}
+                  {p.unidades ? tr(" · Unidade {numero} ({torre})", { numero: p.unidades.numero, torre: p.unidades.torre }) : ""}
                   {p.corretores?.nome ? ` · ${p.corretores.nome}` : ""}
                 </div>
                 {p.condicoes && <div className="mt-1 text-xs text-muted-foreground">{p.condicoes}</div>}
-                {p.motivo_recusa && <div className="mt-1 text-xs text-rose-600">Motivo: {p.motivo_recusa}</div>}
+                {p.motivo_recusa && <div className="mt-1 text-xs text-rose-600">{tr("Motivo: {motivo_recusa}", { motivo_recusa: p.motivo_recusa })}</div>}
               </div>
 
               <div className="flex flex-wrap gap-2">
                 {p.status === "rascunho" && (
                   <Button size="sm" variant="outline" onClick={async () => {
-                    try { await enviarFn({ data: { id: p.id } }); toast.success("Proposta enviada."); invalidar(); }
-                    catch (e: any) { toast.error(e.message ?? "Erro"); }
+                    try { await enviarFn({ data: { id: p.id } }); toast.success(tr("Proposta enviada.")); invalidar(); }
+                    catch (e: any) { toast.error(tr(e.message) ?? tr("Erro")); }
                   }}>
-                    <Send className="mr-1.5 size-3.5" /> Enviar
-                  </Button>
+                    <Send className="mr-1.5 size-3.5" /> {tr("Enviar")}</Button>
                 )}
                 {podeGerenciar && (p.status === "enviada" || p.status === "em_analise") && (
                   <>
                     <Button size="sm" onClick={async () => {
-                      try { await decidirFn({ data: { id: p.id, status: "aprovada" } }); toast.success("Proposta aprovada."); invalidar(); }
-                      catch (e: any) { toast.error(e.message ?? "Erro"); }
+                      try { await decidirFn({ data: { id: p.id, status: "aprovada" } }); toast.success(tr("Proposta aprovada.")); invalidar(); }
+                      catch (e: any) { toast.error(tr(e.message) ?? tr("Erro")); }
                     }}>
-                      <Check className="mr-1.5 size-3.5" /> Aprovar
-                    </Button>
+                      <Check className="mr-1.5 size-3.5" /> {tr("Aprovar")}</Button>
                     <Button size="sm" variant="outline" onClick={async () => {
-                      const motivo = window.prompt("Motivo da recusa (opcional):") ?? undefined;
-                      try { await decidirFn({ data: { id: p.id, status: "recusada", motivo_recusa: motivo || null } }); toast.success("Proposta recusada."); invalidar(); }
-                      catch (e: any) { toast.error(e.message ?? "Erro"); }
+                      const motivo = window.prompt(tr("Motivo da recusa (opcional):")) ?? undefined;
+                      try { await decidirFn({ data: { id: p.id, status: "recusada", motivo_recusa: motivo || null } }); toast.success(tr("Proposta recusada.")); invalidar(); }
+                      catch (e: any) { toast.error(tr(e.message) ?? tr("Erro")); }
                     }}>
-                      <X className="mr-1.5 size-3.5" /> Recusar
-                    </Button>
+                      <X className="mr-1.5 size-3.5" /> {tr("Recusar")}</Button>
                   </>
                 )}
                 {podeGerenciar && (
                   <Button size="sm" variant="ghost" onClick={async () => {
-                    if (!window.confirm("Excluir esta proposta?")) return;
+                    if (!window.confirm(tr("Excluir esta proposta?"))) return;
                     try { await excluirFn({ data: { id: p.id } }); invalidar(); }
-                    catch (e: any) { toast.error(e.message ?? "Erro"); }
-                  }}>
-                    Excluir
-                  </Button>
+                    catch (e: any) { toast.error(tr(e.message) ?? tr("Erro")); }
+                  }}>{tr("Excluir")}</Button>
                 )}
               </div>
             </div>
           </Card>
         ))}
         {!isLoading && lista.length === 0 && (
-          <Card className="p-6 text-center text-sm text-muted-foreground">Nenhuma proposta encontrada.</Card>
+          <Card className="p-6 text-center text-sm text-muted-foreground">{tr("Nenhuma proposta encontrada.")}</Card>
         )}
       </div>
 
       <Dialog open={novaOpen} onOpenChange={setNovaOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Nova proposta</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{tr("Nova proposta")}</DialogTitle></DialogHeader>
           <NovaPropostaForm
             leads={leads ?? []}
             onSubmit={async (dados) => {
               try {
                 await criarFn({ data: dados });
-                toast.success("Proposta criada como rascunho.");
+                toast.success(tr("Proposta criada como rascunho."));
                 setNovaOpen(false);
                 invalidar();
               } catch (e: any) {
-                toast.error(e.message ?? "Erro ao criar proposta");
+                toast.error(tr(e.message) ?? tr("Erro ao criar proposta"));
               }
             }}
           />
@@ -219,21 +213,21 @@ function NovaPropostaForm({ leads, onSubmit }: { leads: any[]; onSubmit: (d: any
   return (
     <div className="space-y-3">
       <div>
-        <Label>Lead</Label>
+        <Label>{tr("Lead")}</Label>
         <Select value={leadId} onValueChange={setLeadId}>
-          <SelectTrigger><SelectValue placeholder="Selecione o lead" /></SelectTrigger>
+          <SelectTrigger><SelectValue placeholder={tr("Selecione o lead")} /></SelectTrigger>
           <SelectContent>
             {leads.map((l: any) => (
-              <SelectItem key={l.id} value={l.id}>{l.nome} · {l.telefone ?? "sem telefone"}</SelectItem>
+              <SelectItem key={l.id} value={l.id}>{l.nome} · {l.telefone ?? tr("sem telefone")}</SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
 
       <div>
-        <Label>Empreendimento (opcional, pra vincular uma unidade)</Label>
+        <Label>{tr("Empreendimento (opcional, pra vincular uma unidade)")}</Label>
         <Select value={empId} onValueChange={(v) => { setEmpId(v); setUnidadeId(""); }}>
-          <SelectTrigger><SelectValue placeholder="Nenhum" /></SelectTrigger>
+          <SelectTrigger><SelectValue placeholder={tr("Nenhum")} /></SelectTrigger>
           <SelectContent>
             {(empreendimentos ?? []).map((e: any) => (
               <SelectItem key={e.id} value={e.id}>{e.nome}</SelectItem>
@@ -244,9 +238,9 @@ function NovaPropostaForm({ leads, onSubmit }: { leads: any[]; onSubmit: (d: any
 
       {empId && (
         <div>
-          <Label>Unidade disponível</Label>
+          <Label>{tr("Unidade disponível")}</Label>
           <Select value={unidadeId} onValueChange={setUnidadeId}>
-            <SelectTrigger><SelectValue placeholder="Nenhuma" /></SelectTrigger>
+            <SelectTrigger><SelectValue placeholder={tr("Nenhuma")} /></SelectTrigger>
             <SelectContent>
               {disponiveis.map((u: any) => (
                 <SelectItem key={u.id} value={u.id}>{u.torre} · {u.numero} {u.valor ? `· ${moeda(u.valor)}` : ""}</SelectItem>
@@ -257,13 +251,13 @@ function NovaPropostaForm({ leads, onSubmit }: { leads: any[]; onSubmit: (d: any
       )}
 
       <div className="grid grid-cols-3 gap-3">
-        <div><Label>Valor proposto (R$)</Label><Input type="number" value={valor} onChange={(e) => setValor(e.target.value ? Number(e.target.value) : "")} /></div>
-        <div><Label>Entrada (R$)</Label><Input type="number" value={entrada} onChange={(e) => setEntrada(e.target.value ? Number(e.target.value) : "")} /></div>
-        <div><Label>Parcelas</Label><Input type="number" value={parcelas} onChange={(e) => setParcelas(e.target.value ? Number(e.target.value) : "")} /></div>
+        <div><Label>{tr("Valor proposto (R$)")}</Label><Input type="number" value={valor} onChange={(e) => setValor(e.target.value ? Number(e.target.value) : "")} /></div>
+        <div><Label>{tr("Entrada (R$)")}</Label><Input type="number" value={entrada} onChange={(e) => setEntrada(e.target.value ? Number(e.target.value) : "")} /></div>
+        <div><Label>{tr("Parcelas")}</Label><Input type="number" value={parcelas} onChange={(e) => setParcelas(e.target.value ? Number(e.target.value) : "")} /></div>
       </div>
 
       <div>
-        <Label>Condições / observações</Label>
+        <Label>{tr("Condições / observações")}</Label>
         <Textarea value={condicoes} onChange={(e) => setCondicoes(e.target.value)} rows={3} />
       </div>
 
@@ -283,9 +277,7 @@ function NovaPropostaForm({ leads, onSubmit }: { leads: any[]; onSubmit: (d: any
             setEnviando(false);
           }}
         >
-          {enviando ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Plus className="mr-2 size-4" />}
-          Criar proposta
-        </Button>
+          {enviando ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Plus className="mr-2 size-4" />}{tr("Criar proposta")}</Button>
       </DialogFooter>
     </div>
   );

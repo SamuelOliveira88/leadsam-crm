@@ -8,12 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 
+import { tr } from "@/i18n";
 export const Route = createFileRoute("/set-password")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Definir senha — Alexandria Leds" },
-      { name: "description", content: "Ative sua conta Alexandria Leds definindo uma nova senha." },
+      { title: tr("Definir senha — Alexandria Leds") },
+      { name: "description", content: tr("Ative sua conta Alexandria Leds definindo uma nova senha.") },
     ],
   }),
   component: SetPasswordPage,
@@ -60,13 +61,13 @@ function SetPasswordPage() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (password.length < 6) { toast.error("A senha deve ter ao menos 6 caracteres."); return; }
-    if (password !== confirm) { toast.error("As senhas não conferem."); return; }
+    if (password.length < 6) { toast.error(tr("A senha deve ter ao menos 6 caracteres.")); return; }
+    if (password !== confirm) { toast.error(tr("As senhas não conferem.")); return; }
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
-    if (error) { toast.error(error.message); return; }
-    toast.success("Senha definida! Bem-vindo(a).");
+    if (error) { toast.error(tr(error.message)); return; }
+    toast.success(tr("Senha definida! Bem-vindo(a)."));
     navigate({ to: "/dashboard", replace: true });
   }
 
@@ -77,42 +78,38 @@ function SetPasswordPage() {
           <div className="grid size-9 place-items-center rounded-lg bg-primary text-primary-foreground">
             <Building2 className="size-4" />
           </div>
-          <span className="text-lg font-bold">Alexandria Leds</span>
+          <span className="text-lg font-bold">{tr("Alexandria Leds")}</span>
         </div>
 
         {status === "validando" && (
-          <p className="text-sm text-muted-foreground">Validando seu convite…</p>
+          <p className="text-sm text-muted-foreground">{tr("Validando seu convite…")}</p>
         )}
 
         {status === "invalido" && (
           <div className="space-y-3">
-            <h2 className="text-xl font-semibold">Link inválido ou expirado</h2>
-            <p className="text-sm text-muted-foreground">
-              Peça ao administrador para reenviar seu convite.
-            </p>
-            <Button variant="outline" onClick={() => navigate({ to: "/auth" })}>Ir para login</Button>
+            <h2 className="text-xl font-semibold">{tr("Link inválido ou expirado")}</h2>
+            <p className="text-sm text-muted-foreground">{tr("Peça ao administrador para reenviar seu convite.")}</p>
+            <Button variant="outline" onClick={() => navigate({ to: "/auth" })}>{tr("Ir para login")}</Button>
           </div>
         )}
 
         {status === "pronto" && (
           <>
-            <h2 className="text-2xl font-bold">Defina sua senha</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Escolha uma senha para acessar sua conta.
-            </p>
+            <h2 className="text-2xl font-bold">{tr("Defina sua senha")}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{tr("Escolha uma senha para acessar sua conta.")}</p>
             <form onSubmit={onSubmit} className="mt-6 space-y-4">
               <div>
-                <Label htmlFor="pwd">Nova senha</Label>
+                <Label htmlFor="pwd">{tr("Nova senha")}</Label>
                 <Input id="pwd" type="password" required minLength={6}
                   value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
               <div>
-                <Label htmlFor="pwd2">Confirmar senha</Label>
+                <Label htmlFor="pwd2">{tr("Confirmar senha")}</Label>
                 <Input id="pwd2" type="password" required minLength={6}
                   value={confirm} onChange={(e) => setConfirm(e.target.value)} />
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Salvando…" : "Salvar e entrar"}
+                {loading ? tr("Salvando…") : tr("Salvar e entrar")}
               </Button>
             </form>
           </>

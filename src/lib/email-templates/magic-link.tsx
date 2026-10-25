@@ -12,9 +12,12 @@ import {
   Text,
 } from '@react-email/components'
 
+import { LANG_HTML, TEXTOS_EMAIL, com, type IdiomaEmail } from './textos'
+
 interface MagicLinkEmailProps {
   siteName: string
   confirmationUrl: string
+  lang?: IdiomaEmail
 }
 
 const BRAND = 'Alexandria Leds'
@@ -22,30 +25,33 @@ const PRIMARY = '#1d5966'
 
 export const MagicLinkEmail = ({
   confirmationUrl,
-}: MagicLinkEmailProps) => (
-  <Html lang="pt-BR" dir="ltr">
+  lang = 'pt',
+}: MagicLinkEmailProps) => {
+  const t = TEXTOS_EMAIL[lang].magiclink
+  return (
+  <Html lang={LANG_HTML[lang]} dir="ltr">
     <Head />
-    <Preview>Seu link de acesso ao {BRAND}</Preview>
+    <Preview>{com(t.preview, BRAND)}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={header}>
           <Text style={brand}>{BRAND}</Text>
         </Section>
-        <Heading style={h1}>Link de acesso</Heading>
+        <Heading style={h1}>{t.titulo}</Heading>
         <Text style={text}>
-          Clique no botão abaixo para entrar no {BRAND}. Este link expira em
-          breve.
+          {com(t.texto, BRAND)}
         </Text>
         <Button style={button} href={confirmationUrl}>
-          Entrar agora
+          {t.botao}
         </Button>
         <Text style={footer}>
-          Se você não solicitou este link, pode ignorar este e-mail.
+          {t.rodape}
         </Text>
       </Container>
     </Body>
   </Html>
-)
+  )
+}
 
 export default MagicLinkEmail
 

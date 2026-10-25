@@ -8,12 +8,13 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-const DIAS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+const DIAS = [mark("Dom"), mark("Seg"), mark("Ter"), mark("Qua"), mark("Qui"), mark("Sex"), mark("Sáb")];
 
 import { RequireAdmin } from "@/components/RequireAdmin";
 
+import { tr, mark } from "@/i18n";
 export const Route = createFileRoute("/_authenticated/horarios")({
-  head: () => ({ meta: [{ title: "Horários — Alexandria Leds" }] }),
+  head: () => ({ meta: [{ title: tr("Horários — Alexandria Leds") }] }),
   component: () => <RequireAdmin><Horarios /></RequireAdmin>,
 });
 
@@ -43,12 +44,12 @@ function Horarios() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Horários de atendimento</h1>
-        <p className="text-sm text-muted-foreground">Fora desses horários, os leads são represados e liberados automaticamente</p>
+        <h1 className="text-2xl font-bold tracking-tight">{tr("Horários de atendimento")}</h1>
+        <p className="text-sm text-muted-foreground">{tr("Fora desses horários, os leads são represados e liberados automaticamente")}</p>
       </div>
 
       <Card className="p-4">
-        <label className="mb-2 block text-xs font-medium">Grupo</label>
+        <label className="mb-2 block text-xs font-medium">{tr("Grupo")}</label>
         <select className="w-full rounded-md border bg-background px-3 py-2 text-sm md:w-96" value={grupoId} onChange={(e) => setGrupoId(e.target.value)}>
           {(grupos ?? []).map((g) => <option key={g.id} value={g.id}>{g.nome}</option>)}
         </select>
@@ -60,15 +61,15 @@ function Horarios() {
             const h = horarioDia(i);
             return (
               <Card key={i} className="flex flex-wrap items-center gap-3 p-3">
-                <div className="w-12 font-semibold">{d}</div>
+                <div className="w-12 font-semibold">{tr(d)}</div>
                 <Input type="time" defaultValue={String(h.hora_inicio).slice(0, 5)} className="w-32"
                   onBlur={(e) => saveMut.mutate({ grupo_id: grupoId, dia_semana: i, hora_inicio: e.target.value + ":00", hora_fim: String(h.hora_fim).slice(0, 5) + ":00", ativo: h.ativo })} />
-                <span>até</span>
+                <span>{tr("até")}</span>
                 <Input type="time" defaultValue={String(h.hora_fim).slice(0, 5)} className="w-32"
                   onBlur={(e) => saveMut.mutate({ grupo_id: grupoId, dia_semana: i, hora_inicio: String(h.hora_inicio).slice(0, 5) + ":00", hora_fim: e.target.value + ":00", ativo: h.ativo })} />
                 <Button size="sm" variant={h.ativo ? "default" : "outline"}
                   onClick={() => saveMut.mutate({ grupo_id: grupoId, dia_semana: i, hora_inicio: String(h.hora_inicio).slice(0, 5) + ":00", hora_fim: String(h.hora_fim).slice(0, 5) + ":00", ativo: !h.ativo })}>
-                  {h.ativo ? "Ativo" : "Inativo"}
+                  {h.ativo ? tr("Ativo") : tr("Inativo")}
                 </Button>
               </Card>
             );
