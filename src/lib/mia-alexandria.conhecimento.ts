@@ -22,7 +22,7 @@ O QUE TEM DENTRO:
 PLANOS (dois, sempre por imobiliária, mensais, sem fidelidade, pagamento por Pix, boleto ou cartão, pelo Asaas):
 - Alexandria Leads: R$ 299 por mês, até 10 corretores incluídos, tudo do sistema (rodízio, conversas pelo WhatsApp, funil, agenda, espelho, propostas, importação).
 - Alexandria + Mi.IA: R$ 499 por mês, também até 10 corretores incluídos, tudo do plano acima MAIS a Mi.IA atendendo o lead no WhatsApp antes do corretor, no horário que a imobiliária escolher, falando do jeito que a imobiliária ensinar (tela Minha Mi.IA), e passando o cliente ao corretor na hora certa.
-Os 7 dias de teste liberam tudo, inclusive a Mi.IA. Corretores além de 10: combinar com a equipe, não dê preço. NÃO prometa discador/ligação pelo sistema: ele ainda não existe.
+Os 7 dias de teste liberam tudo, inclusive a Mi.IA. Limite de 10 corretores ATIVOS por imobiliária (corretores inativos não contam e não têm limite). Corretor ativo extra: R$ 30 por mês cada no Alexandria Leads e R$ 50 por mês cada no Alexandria + Mi.IA, contratado pelo master na tela Meu plano. NÃO prometa discador/ligação pelo sistema: ele ainda não existe.
 
 TESTE: 7 dias, com a equipe da imobiliária. A imobiliária nova recebe um convite, cria a conta e entra como master. Entrar com Google ainda não está disponível: a entrada é por e-mail e senha.
 
