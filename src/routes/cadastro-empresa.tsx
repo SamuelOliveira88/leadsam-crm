@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Building2, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,11 +29,24 @@ function CadastroPorCodigo() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [carregando, setCarregando] = useState(false);
+  // Já entrou (ex.: pelo Google): só falta o código e o nome da imobiliária.
+  const [logado, setLogado] = useState(false);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const u = data.user;
+      if (!u) return;
+      setLogado(true);
+      setEmail(u.email ?? "");
+      const n = (u.user_metadata?.full_name ?? u.user_metadata?.nome ?? "") as string;
+      if (n) setNome((x) => x || n);
+    });
+  }, []);
 
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
     setCarregando(true);
     try {
+      if (!logado) {
       // 1) cria a conta (ou entra, se ela já existe e ainda não pertence a nenhuma imobiliária)
       const { data: cad, error: eCad } = await supabase.auth.signUp({
         email: email.trim(),
@@ -52,6 +65,7 @@ function CadastroPorCodigo() {
           return;
         }
         temSessao = !!ent.session;
+      }
       }
       // 2) usa o código: o banco cria a imobiliária (teste de 7 dias) e deixa você como master
       const { error: eRpc } = await (supabase as any).rpc("aceitar_convite_imobiliaria", {
@@ -88,17 +102,25 @@ function CadastroPorCodigo() {
             <Input id="emp" value={empresa} onChange={(e) => setEmpresa(e.target.value)} maxLength={80} required /></div>
           <div className="space-y-1"><Label htmlFor="nom">Seu nome</Label>
             <Input id="nom" value={nome} onChange={(e) => setNome(e.target.value)} maxLength={60} required /></div>
-          <div className="space-y-1"><Label htmlFor="em">E-mail</Label>
-            <Input id="em" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required /></div>
-          <div className="space-y-1"><Label htmlFor="pw">Senha (mínimo 8)</Label>
-            <Input id="pw" type="password" value={senha} onChange={(e) => setSenha(e.target.value)} minLength={8} autoComplete="new-password" required /></div>
+          {logado ? (
+            <p className="rounded-md bg-muted/50 p-2 text-xs text-muted-foreground">Você entrou como <b>{email}</b>.</p>
+          ) : (
+            <>
+              <div className="space-y-1"><Label htmlFor="em">E-mail</Label>
+                <Input id="em" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required /></div>
+              <div className="space-y-1"><Label htmlFor="pw">Senha (mínimo 8)</Label>
+                <Input id="pw" type="password" value={senha} onChange={(e) => setSenha(e.target.value)} minLength={8} autoComplete="new-password" required /></div>
+            </>
+          )}
           <p className="text-xs text-muted-foreground">Ao criar a conta, você concorda com os <a href="/termos" target="_blank" className="underline">Termos de Uso</a> e a <a href="/privacidade" target="_blank" className="underline">Política de Privacidade</a>.</p>
           <Button type="submit" className="w-full" disabled={carregando}>
             {carregando ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}Criar minha imobiliária
           </Button>
         </form>
         <div className="text-center">
-          <Link to="/auth"><Button variant="ghost" size="sm">Já tenho conta — entrar</Button></Link>
+          {logado
+            ? <Button variant="ghost" size="sm" onClick={async () => { await supabase.auth.signOut(); window.location.href = "/auth"; }}>Entrar com outra conta</Button>
+            : <Link to="/auth"><Button variant="ghost" size="sm">Já tenho conta — entrar</Button></Link>}
         </div>
       </Card>
     </div>

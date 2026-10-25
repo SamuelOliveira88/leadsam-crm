@@ -14,6 +14,11 @@ export const Route = createFileRoute("/_authenticated")({
       } catch {}
       throw redirect({ to: "/auth" });
     }
+    // Quem entrou (ex.: pelo Google) e ainda não tem imobiliária vai para o cadastro.
+    const { data: perfil } = await supabase.from("perfis").select("role, empresa_id").eq("id", data.user.id).maybeSingle();
+    if (perfil && perfil.role === "pendente" && !perfil.empresa_id) {
+      throw redirect({ to: "/cadastro-empresa", search: { codigo: "" } });
+    }
     return { user: data.user };
   },
   component: LayoutComponent,
