@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Alexandria Leads: lead novo, corretor certo, na hora</title>
-<meta name="description" content="CRM para imobiliárias: recebe os leads, divide entre os corretores, conecta o WhatsApp da imobiliária e acompanha cada cliente até a venda. Teste por 7 dias.">
-<meta property="og:title" content="Alexandria Leads: lead novo, corretor certo, na hora">
-<meta property="og:description" content="Receba, divida e atenda os leads da sua imobiliária pelo WhatsApp. Teste por 7 dias.">
+<title data-i18n="t001">Alexandria Leads: lead novo, corretor certo, na hora</title>
+<meta name="description" data-i18n-attr="content:meta.desc" content="CRM para imobiliárias: recebe os leads, divide entre os corretores, conecta o WhatsApp da imobiliária e acompanha cada cliente até a venda. Teste por 7 dias.">
+<meta property="og:title" data-i18n-attr="content:t001" content="Alexandria Leads: lead novo, corretor certo, na hora">
+<meta property="og:description" data-i18n-attr="content:og.desc" content="Receba, divida e atenda os leads da sua imobiliária pelo WhatsApp. Teste por 7 dias.">
 <meta property="og:type" content="website">
 <meta name="theme-color" content="#0b3c49">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -130,160 +130,168 @@ footer a{color:#fff}
 .plano li::before{content:"✓ ";color:var(--menta-i);font-weight:700}
 .pag{margin-top:22px;color:var(--suave);font-size:.95rem}
 @media(max-width:820px){.planos{grid-template-columns:1fr}}
+
+.idiomas{display:inline-flex;gap:4px;margin-left:6px}
+.idiomas button{font:700 .8rem var(--texto);color:#fff;background:transparent;border:1px solid #ffffff66;border-radius:6px;padding:5px 8px;cursor:pointer;opacity:.8}
+.idiomas button[aria-pressed="true"]{background:#fff;color:var(--petroleo);opacity:1}
 </style>
 </head>
 <body>
 <header class="topo"><div class="wrap">
-  <a class="marca" href="#topo">Alexandria Leads</a>
-  <nav><a href="#como">Como funciona</a><a href="#recursos">O que tem</a><a href="#duvidas">Dúvidas</a><a class="entrar" href="/auth">Entrar</a></nav>
+  <a class="marca" href="#topo" data-i18n="t002">Alexandria Leads</a>
+  <nav><a href="#como" data-i18n="t003">Como funciona</a><a href="#recursos" data-i18n="t004">O que tem</a><a href="#duvidas" data-i18n="t005">Dúvidas</a><a class="entrar" href="/auth" data-i18n="t006">Entrar</a><span id="idiomas" class="idiomas"></span></nav>
 </div></header>
 
 <main id="topo">
 <div class="hero"><div class="wrap">
   <div>
-    <h1>Lead novo na mão do corretor certo, na hora.</h1>
-    <p class="lead">O Alexandria recebe os contatos da sua imobiliária, divide entre os corretores e deixa o atendimento no WhatsApp da própria imobiliária.</p>
+    <h1 data-i18n="t007">Lead novo na mão do corretor certo, na hora.</h1>
+    <p class="lead" data-i18n="t008">O Alexandria recebe os contatos da sua imobiliária, divide entre os corretores e deixa o atendimento no WhatsApp da própria imobiliária.</p>
     <div class="acoes">
-      <a class="btn" href="https://wa.me/5511920036576?text=Oi!%20Quero%20conhecer%20e%20testar%20o%20Alexandria%207%20dias%20gr%C3%A1tis%20(ALEXANDRIA-SITE)">Pedir teste de 7 dias</a>
-      <a class="btn sec" href="#como">Ver como funciona</a>
+      <a class="btn" href="https://wa.me/5511920036576?text=Oi!%20Quero%20conhecer%20e%20testar%20o%20Alexandria%207%20dias%20gr%C3%A1tis%20(ALEXANDRIA-SITE)" data-i18n="t009" data-wa>Pedir teste de 7 dias</a>
+      <a class="btn sec" href="#como" data-i18n="t010">Ver como funciona</a>
     </div>
-    <small>O teste é feito com a sua equipe, no seu WhatsApp.</small>
+    <small data-i18n="t011">O teste é feito com a sua equipe, no seu WhatsApp.</small>
   </div>
-  <div class="demo" aria-label="Exemplo de como o Alexandria divide os leads">
-    <h2>Exemplo: um lead chega e o Alexandria escolhe quem atende</h2>
+  <div class="demo" aria-label="Exemplo de como o Alexandria divide os leads" data-i18n-attr="aria-label:aria.demo">
+    <h2 data-i18n="t012">Exemplo: um lead chega e o Alexandria escolhe quem atende</h2>
     <div class="chega" id="chega"><b id="lead-nome">Maria Souza</b><span id="lead-info">Quer apartamento de 2 quartos</span></div>
-    <div class="seta">dividido em rodízio entre quem está online</div>
+    <div class="seta" data-i18n="t013">dividido em rodízio entre quem está online</div>
     <ul class="fila" id="fila">
-      <li class="vez"><span>Corretor 1</span><em>atendendo este lead</em></li>
-      <li><span>Corretor 2</span><em>próximo da vez</em></li>
-      <li><span>Corretor 3</span><em>online</em></li>
+      <li class="vez"><span data-i18n="t014">Corretor 1</span><em>atendendo este lead</em></li>
+      <li><span data-i18n="t015">Corretor 2</span><em>próximo da vez</em></li>
+      <li><span data-i18n="t016">Corretor 3</span><em>online</em></li>
     </ul>
-    <p class="nota">Dados de exemplo.</p>
+    <p class="nota" data-i18n="t017">Dados de exemplo.</p>
   </div>
 </div></div>
 
 <section><div class="wrap">
-  <h2>Onde o lead costuma se perder</h2>
+  <h2 data-i18n="t018">Onde o lead costuma se perder</h2>
   <div class="dores">
-    <div><h3>Chegou fora do horário</h3><p>O cliente escreve à noite e ninguém vê. No Alexandria o lead fica guardado e é liberado sozinho quando o atendimento volta.</p></div>
-    <div><h3>Ninguém sabe de quem é</h3><p>Dois corretores respondem o mesmo cliente, ou nenhum responde. Aqui cada lead tem um dono e cada corretor vê só os seus.</p></div>
-    <div><h3>O cliente some no meio</h3><p>Sem funil, ninguém sabe quem está em visita, em proposta ou parado. O funil mostra isso em uma tela.</p></div>
+    <div><h3 data-i18n="t019">Chegou fora do horário</h3><p data-i18n="t020">O cliente escreve à noite e ninguém vê. No Alexandria o lead fica guardado e é liberado sozinho quando o atendimento volta.</p></div>
+    <div><h3 data-i18n="t021">Ninguém sabe de quem é</h3><p data-i18n="t022">Dois corretores respondem o mesmo cliente, ou nenhum responde. Aqui cada lead tem um dono e cada corretor vê só os seus.</p></div>
+    <div><h3 data-i18n="t023">O cliente some no meio</h3><p data-i18n="t024">Sem funil, ninguém sabe quem está em visita, em proposta ou parado. O funil mostra isso em uma tela.</p></div>
   </div>
 </div></section>
 
 <section id="como" style="padding-top:0"><div class="wrap">
-  <h2>Como funciona no dia a dia</h2>
+  <h2 data-i18n="t025">Como funciona no dia a dia</h2>
   <ol class="passos">
-    <li><h3>O lead entra</h3><p>Por site, anúncio, planilha ou mensagem no WhatsApp da imobiliária.</p></li>
-    <li><h3>O Alexandria divide</h3><p>Respeita o horário de atendimento e manda para o corretor que está online, em rodízio.</p></li>
-    <li><h3>O corretor atende</h3><p>Conversa com o cliente pela tela de Conversas. Uma IA pode escrever a mensagem de abertura, e o corretor lê e envia.</p></li>
-    <li><h3>O funil acompanha</h3><p>Novo, em atendimento, visita agendada, proposta, vendido ou perdido. A visita vai para a agenda e o cliente recebe o lembrete.</p></li>
+    <li><h3 data-i18n="t026">O lead entra</h3><p data-i18n="t027">Por site, anúncio, planilha ou mensagem no WhatsApp da imobiliária.</p></li>
+    <li><h3 data-i18n="t028">O Alexandria divide</h3><p data-i18n="t029">Respeita o horário de atendimento e manda para o corretor que está online, em rodízio.</p></li>
+    <li><h3 data-i18n="t030">O corretor atende</h3><p data-i18n="t031">Conversa com o cliente pela tela de Conversas. Uma IA pode escrever a mensagem de abertura, e o corretor lê e envia.</p></li>
+    <li><h3 data-i18n="t032">O funil acompanha</h3><p data-i18n="t033">Novo, em atendimento, visita agendada, proposta, vendido ou perdido. A visita vai para a agenda e o cliente recebe o lembrete.</p></li>
   </ol>
 </div></section>
 
 <section class="faixa" id="recursos"><div class="wrap">
-  <h2>Tudo o que a imobiliária usa já está dentro</h2>
-  <p class="intro">Sem juntar cinco ferramentas. O que está aqui já funciona hoje.</p>
+  <h2 data-i18n="t034">Tudo o que a imobiliária usa já está dentro</h2>
+  <p class="intro" data-i18n="t035">Sem juntar cinco ferramentas. O que está aqui já funciona hoje.</p>
   <div class="grupos">
-    <div><h3>Leads e funil</h3><ul><li>Funil de vendas com seis etapas</li><li>Importação de planilha (CSV)</li><li>Histórico e notas em cada lead</li><li>Mensagem de abertura escrita por IA</li></ul></div>
-    <div><h3>Atendimento no WhatsApp</h3><ul><li>WhatsApp da imobiliária conectado por QR code</li><li>Conversas dentro do Alexandria</li><li>Cada corretor vê só as conversas dos seus leads</li><li>Aviso de lead novo no WhatsApp do corretor</li></ul></div>
-    <div><h3>Equipe</h3><ul><li>Rodízio entre corretores online</li><li>Horário de atendimento por grupo</li><li>Check-in de plantão com localização</li><li>Grupos e equipes dentro da mesma imobiliária</li></ul></div>
-    <div><h3>Gestão e vendas</h3><ul><li>Dashboard com leads por corretor</li><li>Agenda de visitas com lembrete</li><li>Espelho de vendas com unidades em tempo real</li><li>Propostas do rascunho à aprovação</li><li>Controle de acesso por horário e internet</li></ul></div>
+    <div><h3 data-i18n="t036">Leads e funil</h3><ul><li data-i18n="t037">Funil de vendas com seis etapas</li><li data-i18n="t038">Importação de planilha (CSV)</li><li data-i18n="t039">Histórico e notas em cada lead</li><li data-i18n="t040">Mensagem de abertura escrita por IA</li></ul></div>
+    <div><h3 data-i18n="t041">Atendimento no WhatsApp</h3><ul><li data-i18n="t042">WhatsApp da imobiliária conectado por QR code</li><li data-i18n="t043">Conversas dentro do Alexandria</li><li data-i18n="t044">Cada corretor vê só as conversas dos seus leads</li><li data-i18n="t045">Aviso de lead novo no WhatsApp do corretor</li></ul></div>
+    <div><h3 data-i18n="t046">Equipe</h3><ul><li data-i18n="t047">Rodízio entre corretores online</li><li data-i18n="t048">Horário de atendimento por grupo</li><li data-i18n="t049">Check-in de plantão com localização</li><li data-i18n="t050">Grupos e equipes dentro da mesma imobiliária</li></ul></div>
+    <div><h3 data-i18n="t051">Gestão e vendas</h3><ul><li data-i18n="t052">Dashboard com leads por corretor</li><li data-i18n="t053">Agenda de visitas com lembrete</li><li data-i18n="t054">Espelho de vendas com unidades em tempo real</li><li data-i18n="t055">Propostas do rascunho à aprovação</li><li data-i18n="t056">Controle de acesso por horário e internet</li></ul></div>
   </div>
 </div></section>
 
 <section><div class="wrap dois">
   <div>
-    <h2>O WhatsApp é da sua imobiliária</h2>
-    <p class="intro">Você conecta o número da imobiliária lendo um QR code, igual ao WhatsApp Web. As mensagens dos seus clientes ficam só com a sua equipe. Outra imobiliária no Alexandria nunca vê a sua conversa.</p>
+    <h2 data-i18n="t057">O WhatsApp é da sua imobiliária</h2>
+    <p class="intro" data-i18n="t058">Você conecta o número da imobiliária lendo um QR code, igual ao WhatsApp Web. As mensagens dos seus clientes ficam só com a sua equipe. Outra imobiliária no Alexandria nunca vê a sua conversa.</p>
   </div>
   <div class="celular" aria-hidden="true">
-    <b>WhatsApp da imobiliária</b>
+    <b data-i18n="t059">WhatsApp da imobiliária</b>
     <div class="qr"></div>
-    <span>Conectado</span>
+    <span data-i18n="t060">Conectado</span>
   </div>
 </div></section>
 
 <section id="planos"><div class="wrap">
-  <h2>Planos</h2>
-  <p class="intro">Comece com 7 dias grátis, com tudo liberado. Depois, escolha o plano da imobiliária inteira.</p>
+  <h2 data-i18n="t061">Planos</h2>
+  <p class="intro" data-i18n="t062">Comece com 7 dias grátis, com tudo liberado. Depois, escolha o plano da imobiliária inteira.</p>
   <div class="planos" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));max-width:820px;margin-left:auto;margin-right:auto">
-    <div class="plano"><h3>Alexandria Leads</h3><div class="preco">R$ 299 <small>por mês, por imobiliária</small></div>
-      <ul><li>Até 10 corretores ativos incluídos</li><li>Corretor ativo extra: + R$ 30 por mês cada</li><li>Distribuição de leads em rodízio, com horário de atendimento</li><li>Conversas pelo WhatsApp da sua imobiliária</li><li>Funil, planilha, agenda, espelho de vendas e propostas</li><li>Importação de leads e integração com portais</li></ul></div>
-    <div class="plano dest"><h3>Alexandria + Mi.IA</h3><div class="preco">R$ 499 <small>por mês, por imobiliária</small></div>
-      <ul><li>Até 10 corretores ativos incluídos</li><li>Corretor ativo extra: + R$ 50 por mês cada</li><li>Tudo do plano Alexandria</li><li>A Mi.IA atende o lead antes do corretor</li><li>Você escolhe o horário em que ela atende</li><li>Ela fala do jeito da sua imobiliária (você ensina em 8 perguntas)</li><li>Passa o cliente ao corretor na hora certa</li></ul></div>
+    <div class="plano"><h3 data-i18n="t002">Alexandria Leads</h3><div class="preco">R$ 299 <small data-i18n="t063">por mês, por imobiliária</small></div>
+      <ul><li data-i18n="t064">Até 10 corretores ativos incluídos</li><li data-i18n="t065">Corretor ativo extra: + R$ 30 por mês cada</li><li data-i18n="t066">Distribuição de leads em rodízio, com horário de atendimento</li><li data-i18n="t067">Conversas pelo WhatsApp da sua imobiliária</li><li data-i18n="t068">Funil, planilha, agenda, espelho de vendas e propostas</li><li data-i18n="t069">Importação de leads e integração com portais</li></ul></div>
+    <div class="plano dest"><h3 data-i18n="t070">Alexandria + Mi.IA</h3><div class="preco">R$ 499 <small data-i18n="t063">por mês, por imobiliária</small></div>
+      <ul><li data-i18n="t064">Até 10 corretores ativos incluídos</li><li data-i18n="t071">Corretor ativo extra: + R$ 50 por mês cada</li><li data-i18n="t072">Tudo do plano Alexandria</li><li data-i18n="t073">A Mi.IA atende o lead antes do corretor</li><li data-i18n="t074">Você escolhe o horário em que ela atende</li><li data-i18n="t075">Ela fala do jeito da sua imobiliária (você ensina em 8 perguntas)</li><li data-i18n="t076">Passa o cliente ao corretor na hora certa</li></ul></div>
   </div>
-  <p class="pag">Pagamento por Pix, boleto ou cartão, pelo Asaas. Sem fidelidade. </p>
+  <p class="pag" data-i18n="t077">Pagamento por Pix, boleto ou cartão, pelo Asaas. Sem fidelidade. </p>
 </div></section>
 
 <section class="teste"><div class="wrap">
-  <h2>Teste por 7 dias com a sua equipe</h2>
-  <p>Você conecta o WhatsApp, cadastra os corretores e vê os leads chegando. Para tirar dúvidas, saber valores e começar, fale com a Mi.IA no WhatsApp.</p>
-  <a class="btn" href="https://wa.me/5511920036576?text=Oi!%20Quero%20conhecer%20e%20testar%20o%20Alexandria%207%20dias%20gr%C3%A1tis%20(ALEXANDRIA-SITE)">Falar com a Mi.IA no WhatsApp</a>
+  <h2 data-i18n="t078">Teste por 7 dias com a sua equipe</h2>
+  <p data-i18n="t079">Você conecta o WhatsApp, cadastra os corretores e vê os leads chegando. Para tirar dúvidas, saber valores e começar, fale com a Mi.IA no WhatsApp.</p>
+  <a class="btn" href="https://wa.me/5511920036576?text=Oi!%20Quero%20conhecer%20e%20testar%20o%20Alexandria%207%20dias%20gr%C3%A1tis%20(ALEXANDRIA-SITE)" data-i18n="t080" data-wa>Falar com a Mi.IA no WhatsApp</a>
 </div></section>
 
 <section id="duvidas"><div class="wrap">
-  <h2>Dúvidas comuns</h2>
+  <h2 data-i18n="t081">Dúvidas comuns</h2>
   <div class="faq">
-    <details><summary>Preciso instalar algum programa?</summary><p>Não. O Alexandria funciona no navegador, no computador ou no celular.</p></details>
-    <details><summary>Quanto custa?</summary><p>Dois planos por imobiliária: Alexandria Leads por R$ 299 por mês (até 10 corretores) e Alexandria + Mi.IA por R$ 499 por mês (também até 10 corretores), com a Mi.IA atendendo o lead antes do corretor. Cada plano inclui até 10 corretores ativos; corretores inativos não contam e não têm limite. Precisa de mais ativos? Cada corretor ativo extra custa R$ 30 por mês no Alexandria Leads e R$ 50 por mês no Alexandria + Mi.IA. Os 7 dias de teste liberam tudo. Pagamento por Pix, boleto ou cartão, pelo Asaas, sem fidelidade.</p></details>
-    <details><summary>Qual WhatsApp eu uso?</summary><p>O da sua imobiliária. Você conecta lendo um QR code e pode desconectar quando quiser.</p></details>
-    <details><summary>O corretor vê todos os leads?</summary><p>Não. Cada corretor vê só os leads dele. Quem vê tudo é o master e o gerente.</p></details>
-    <details><summary>E se o lead chegar de madrugada?</summary><p>Depende do plano. No Alexandria Leads, ele fica guardado e é liberado para a equipe quando o horário de atendimento começa. No Alexandria + Mi.IA, a Mi.IA atende o cliente na hora, no horário que você escolher, e passa para o corretor quando a equipe volta.</p></details>
-    <details><summary>Posso levar minha lista de contatos?</summary><p>Sim. Você importa uma planilha CSV com nome, telefone e e-mail.</p></details>
+    <details><summary data-i18n="t082">Preciso instalar algum programa?</summary><p data-i18n="t083">Não. O Alexandria funciona no navegador, no computador ou no celular.</p></details>
+    <details><summary data-i18n="t084">Quanto custa?</summary><p data-i18n="t085">Dois planos por imobiliária: Alexandria Leads por R$ 299 por mês (até 10 corretores) e Alexandria + Mi.IA por R$ 499 por mês (também até 10 corretores), com a Mi.IA atendendo o lead antes do corretor. Cada plano inclui até 10 corretores ativos; corretores inativos não contam e não têm limite. Precisa de mais ativos? Cada corretor ativo extra custa R$ 30 por mês no Alexandria Leads e R$ 50 por mês no Alexandria + Mi.IA. Os 7 dias de teste liberam tudo. Pagamento por Pix, boleto ou cartão, pelo Asaas, sem fidelidade.</p></details>
+    <details><summary data-i18n="t086">Qual WhatsApp eu uso?</summary><p data-i18n="t087">O da sua imobiliária. Você conecta lendo um QR code e pode desconectar quando quiser.</p></details>
+    <details><summary data-i18n="t088">O corretor vê todos os leads?</summary><p data-i18n="t089">Não. Cada corretor vê só os leads dele. Quem vê tudo é o master e o gerente.</p></details>
+    <details><summary data-i18n="t090">E se o lead chegar de madrugada?</summary><p data-i18n="t091">Depende do plano. No Alexandria Leads, ele fica guardado e é liberado para a equipe quando o horário de atendimento começa. No Alexandria + Mi.IA, a Mi.IA atende o cliente na hora, no horário que você escolher, e passa para o corretor quando a equipe volta.</p></details>
+    <details><summary data-i18n="t092">Posso levar minha lista de contatos?</summary><p data-i18n="t093">Sim. Você importa uma planilha CSV com nome, telefone e e-mail.</p></details>
   </div>
 </div></section>
 </main>
 
 <footer><div class="wrap">
-  <span>Alexandria Leads</span>
-  <span><a href="/termos">Termos de Uso</a> &nbsp;·&nbsp; <a href="/privacidade">Privacidade</a> &nbsp;·&nbsp; <a href="/curso/">Curso do sistema</a> &nbsp;·&nbsp; <a href="/auth">Entrar</a></span>
+  <span data-i18n="t002">Alexandria Leads</span>
+  <span><a href="/termos" data-i18n="t094">Termos de Uso</a> &nbsp;·&nbsp; <a href="/privacidade" data-i18n="t095">Privacidade</a> &nbsp;·&nbsp; <a href="/curso/" data-i18n="t096">Curso do sistema</a> &nbsp;·&nbsp; <a href="/auth" data-i18n="t006">Entrar</a></span>
 </div></footer>
 
 <script>
 (function(){
-  var leads=[["Maria Souza","Quer apartamento de 2 quartos"],["João Lima","Pediu valores do empreendimento"],["Ana Prado","Quer agendar uma visita"]];
-  var fila=document.querySelectorAll("#fila li"), nome=document.getElementById("lead-nome"), info=document.getElementById("lead-info"), chega=document.getElementById("chega");
-  var rotulos=["atendendo este lead","próximo da vez","online"], i=0;
+  var PT_LEADS=[["Maria Souza","Quer apartamento de 2 quartos"],["João Lima","Pediu valores do empreendimento"],["Ana Prado","Quer agendar uma visita"]];
+  function T(k,fb){return window.I18N?I18N.t(k,fb):fb}
+  var fila=document.querySelectorAll("#fila li"), nome=document.getElementById("lead-nome"), info=document.getElementById("lead-info"), chega=document.getElementById("chega"), i=0;
+  function pinta(){
+    var ls=T("demo.leads",PT_LEADS), l=ls[i%ls.length]; nome.textContent=l[0]; info.textContent=l[1];
+    fila.forEach(function(li,k){
+      var ativo=(k===i%3);
+      li.classList.toggle("vez",ativo);
+      li.querySelector("em").textContent=ativo?T("demo.vez","atendendo este lead"):(k===(i+1)%3?T("demo.prox","próximo da vez"):T("demo.on","online"));
+    });
+  }
   function passo(){
     i++;
     chega.style.opacity=0;
-    setTimeout(function(){
-      var l=leads[i%leads.length]; nome.textContent=l[0]; info.textContent=l[1];
-      fila.forEach(function(li,k){
-        var ativo=(k===i%3);
-        li.classList.toggle("vez",ativo);
-        li.querySelector("em").textContent=ativo?"atendendo este lead":(k===(i+1)%3?"próximo da vez":"online");
-      });
-      chega.style.opacity=1;
-    },400);
+    setTimeout(function(){ pinta(); chega.style.opacity=1; },400);
   }
+  document.addEventListener("idioma",pinta);
   if(!window.matchMedia("(prefers-reduced-motion: reduce)").matches){ setInterval(passo,3200); }
 })();
 </script>
 
-<button id="mia-btn" type="button">💬 Tire suas dúvidas com a Mi.IA</button>
-<div id="mia-box" role="dialog" aria-label="Chat com a Mi.IA">
-<header><span>Mi.IA · Alexandria Leads</span><button type="button" id="mia-x" aria-label="Fechar">×</button></header>
+<button id="mia-btn" type="button" data-i18n="t097">💬 Tire suas dúvidas com a Mi.IA</button>
+<div id="mia-box" role="dialog" aria-label="Chat com a Mi.IA" data-i18n-attr="aria-label:aria.chat">
+<header><span data-i18n="t098">Mi.IA · Alexandria Leads</span><button type="button" id="mia-x" aria-label="Fechar" data-i18n-attr="aria-label:aria.fechar">×</button></header>
 <div id="mia-msgs"></div>
-<div id="mia-lead"><small>Quer testar 7 dias? Deixe seu contato que a equipe chama:</small>
-<input id="mia-nome" placeholder="Seu nome" maxlength="80"><input id="mia-tel" placeholder="Seu WhatsApp com DDD" inputmode="tel" maxlength="20">
-<button class="mb" type="button" id="mia-enviar">Quero testar</button>
-<a class="mb" id="mia-wa" href="https://wa.me/5511920036576?text=Oi!%20Quero%20conhecer%20e%20testar%20o%20Alexandria%207%20dias%20gr%C3%A1tis%20(ALEXANDRIA-SITE)" target="_blank" rel="noopener">Ou fale no WhatsApp</a></div>
-<form id="mia-form"><input id="mia-in" placeholder="Digite sua dúvida…" maxlength="500" autocomplete="off"><button class="mb">Enviar</button></form>
+<div id="mia-lead"><small data-i18n="t099">Quer testar 7 dias? Deixe seu contato que a equipe chama:</small>
+<input id="mia-nome" placeholder="Seu nome" data-i18n-attr="placeholder:ph.nome" maxlength="80"><input id="mia-tel" placeholder="Seu WhatsApp com DDD" data-i18n-attr="placeholder:ph.tel" inputmode="tel" maxlength="20">
+<button class="mb" type="button" id="mia-enviar" data-i18n="t100">Quero testar</button>
+<a class="mb" id="mia-wa" href="https://wa.me/5511920036576?text=Oi!%20Quero%20conhecer%20e%20testar%20o%20Alexandria%207%20dias%20gr%C3%A1tis%20(ALEXANDRIA-SITE)" target="_blank" rel="noopener" data-i18n="t101" data-wa>Ou fale no WhatsApp</a></div>
+<form id="mia-form"><input id="mia-in" placeholder="Digite sua dúvida…" data-i18n-attr="placeholder:ph.in" maxlength="500" autocomplete="off"><button class="mb" data-i18n="t102">Enviar</button></form>
 </div>
 <script>
 (function(){
+function T(k,fb){return window.I18N?I18N.t(k,fb):fb}
+function idioma(){return window.I18N?I18N.lang():"pt"}
 var box=document.getElementById('mia-box'),btn=document.getElementById('mia-btn'),msgs=document.getElementById('mia-msgs'),inp=document.getElementById('mia-in'),lead=document.getElementById('mia-lead');
 var hist=[],busy=false,n=0;
 function add(t,v){var d=document.createElement('div');d.className='mia-m '+(v?'v':'m');d.textContent=t;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;return d}
-function abrir(){box.classList.add('on');btn.style.display='none';if(!msgs.children.length)add('Oi! Eu sou a Mi.IA 👋 Posso tirar suas dúvidas sobre o Alexandria. O que você quer saber?',false);inp.focus()}
+function abrir(){box.classList.add('on');btn.style.display='none';if(!msgs.children.length)add(T('chat.oi','Oi! Eu sou a Mi.IA 👋 Posso tirar suas dúvidas sobre o Alexandria. O que você quer saber?'),false);inp.focus()}
 btn.onclick=abrir;document.getElementById('mia-x').onclick=function(){box.classList.remove('on');btn.style.display=''};
 document.getElementById('mia-form').onsubmit=function(e){e.preventDefault();var t=inp.value.trim();if(!t||busy)return;inp.value='';add(t,true);hist.push({papel:'visitante',texto:t});busy=true;var w=add('…',false);n++;
-fetch('/api/public/chat-mia',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({mensagens:hist})}).then(function(r){return r.json()}).then(function(j){var r=j.resposta||'Não consegui responder agora. Fale com a equipe pelo WhatsApp abaixo.';w.textContent=r;if(j.resposta)hist.push({papel:'mia',texto:r});if(n>=2||!j.resposta)lead.classList.add('on')}).catch(function(){w.textContent='Sem conexão agora. Tente de novo ou fale pelo WhatsApp.';lead.classList.add('on')}).then(function(){busy=false;msgs.scrollTop=msgs.scrollHeight})};
-document.getElementById('mia-enviar').onclick=function(){var nome=document.getElementById('mia-nome').value.trim(),tel=document.getElementById('mia-tel').value.trim();if(nome.length<2||tel.replace(/\D/g,'').length<10){add('Preencha nome e WhatsApp com DDD, por favor.',false);return}
-fetch('/api/public/chat-mia',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({acao:'lead',nome:nome,whatsapp:tel})}).then(function(r){return r.json()}).then(function(j){if(j.ok){lead.classList.remove('on');add(j.link?(j.enviado?'Pronto! Mandei seu convite no seu WhatsApp 🙌 Se preferir, é só abrir o link abaixo:':'Pronto! Seu convite de 7 dias grátis está abaixo 🙌'):'Pronto! A equipe vai te chamar no WhatsApp em breve 🙌',false);if(j.link){var a=document.createElement('a');a.href=j.link;a.target='_blank';a.rel='noopener';a.className='mb';a.style.margin='4px 12px';a.textContent='Criar minha conta e testar';msgs.appendChild(a);msgs.scrollTop=msgs.scrollHeight}}else add('Não consegui avisar a equipe agora. Use o botão "Ou fale no WhatsApp".',false)}).catch(function(){add('Sem conexão. Use o botão "Ou fale no WhatsApp".',false)})};
+fetch('/api/public/chat-mia',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({mensagens:hist,idioma:idioma()})}).then(function(r){return r.json()}).then(function(j){var r=j.resposta||T('chat.erro','Não consegui responder agora. Fale com a equipe pelo WhatsApp abaixo.');w.textContent=r;if(j.resposta)hist.push({papel:'mia',texto:r});if(n>=2||!j.resposta)lead.classList.add('on')}).catch(function(){w.textContent=T('chat.semcon','Sem conexão agora. Tente de novo ou fale pelo WhatsApp.');lead.classList.add('on')}).then(function(){busy=false;msgs.scrollTop=msgs.scrollHeight})};
+document.getElementById('mia-enviar').onclick=function(){var nome=document.getElementById('mia-nome').value.trim(),tel=document.getElementById('mia-tel').value.trim();if(nome.length<2||tel.replace(/\D/g,'').length<10){add(T('chat.preencha','Preencha nome e WhatsApp com DDD, por favor.'),false);return}
+fetch('/api/public/chat-mia',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({acao:'lead',nome:nome,whatsapp:tel,idioma:idioma()})}).then(function(r){return r.json()}).then(function(j){if(j.ok){lead.classList.remove('on');add(j.link?(j.enviado?T('chat.ok_wa','Pronto! Mandei seu convite no seu WhatsApp 🙌 Se preferir, é só abrir o link abaixo:'):T('chat.ok_link','Pronto! Seu convite de 7 dias grátis está abaixo 🙌')):T('chat.ok_equipe','Pronto! A equipe vai te chamar no WhatsApp em breve 🙌'),false);if(j.link){var a=document.createElement('a');a.href=j.link;a.target='_blank';a.rel='noopener';a.className='mb';a.style.margin='4px 12px';a.textContent=T('chat.criar','Criar minha conta e testar');msgs.appendChild(a);msgs.scrollTop=msgs.scrollHeight}}else add(T('chat.falha_lead','Não consegui avisar a equipe agora. Use o botão "Ou fale no WhatsApp".'),false)}).catch(function(){add(T('chat.semcon2','Sem conexão. Use o botão "Ou fale no WhatsApp".'),false)})};
 })();
 </script>
+<script src="/i18n.js" data-base="/vendas/i18n/"></script>
 </body>
 </html>

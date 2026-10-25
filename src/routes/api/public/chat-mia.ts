@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { MIA_ALEXANDRIA_PROMPT } from "@/lib/mia-alexandria.conhecimento";
+import { idiomaValido, mensagemConvite, regraIdioma, type Idioma } from "@/lib/idioma";
 
 // Chat da Mi.IA na página de vendas do Alexandria.
 //  POST { mensagens: [{ papel: "visitante"|"mia", texto }] }          -> { resposta }
@@ -29,11 +30,13 @@ const chatSchema = z.object({
     .array(z.object({ papel: z.enum(["visitante", "mia"]), texto: z.string().min(1).max(700) }))
     .min(1)
     .max(30),
+  idioma: z.string().optional(), // idioma da página (pt, en, es); só ajuda quando a mensagem não dá pista
 });
 const leadSchema = z.object({
   acao: z.literal("lead"),
   nome: z.string().trim().min(2).max(80),
   whatsapp: z.string().trim().min(10).max(20),
+  idioma: z.string().optional(),
 });
 
 export const Route = createFileRoute("/api/public/chat-mia")({
@@ -80,7 +83,7 @@ export const Route = createFileRoute("/api/public/chat-mia")({
             const primeiro = lead.data.nome.split(/\s+/)[0];
             const r = await sendWhatsAppNotification(
               digitos.length <= 11 ? "55" + digitos : digitos,
-              `Oi, ${primeiro}! Aqui é a Mi.IA do Alexandria Leads 👋\n\nSeu convite para testar *7 dias grátis*:\n${link}\n\nÉ só abrir, criar sua conta e dar o nome da sua imobiliária. O código do convite é *${codigo}* (vale por 7 dias). Qualquer dúvida, é só responder aqui.`,
+              mensagemConvite(idiomaValido(lead.data.idioma) ? lead.data.idioma : "pt", primeiro, link, codigo as string),
             );
             enviado = r.ok;
           }
@@ -95,6 +98,7 @@ export const Route = createFileRoute("/api/public/chat-mia")({
         const key = process.env.GEMINI_API_KEY;
         if (!key) return json({ error: "IA indisponível" }, 503);
 
+        const idiomaPagina: Idioma = idiomaValido(chat.data.idioma) ? chat.data.idioma : "pt";
         const historico = chat.data.mensagens.slice(-14).map((m) => ({
           role: m.papel === "visitante" ? "user" : "model",
           parts: [{ text: m.texto }],
@@ -107,7 +111,7 @@ export const Route = createFileRoute("/api/public/chat-mia")({
           method: "POST",
           headers: { "content-type": "application/json", "x-goog-api-key": key },
           body: JSON.stringify({
-            systemInstruction: { parts: [{ text: MIA_ALEXANDRIA_PROMPT }] },
+            systemInstruction: { parts: [{ text: MIA_ALEXANDRIA_PROMPT + "\n\n" + regraIdioma(idiomaPagina) }] },
             contents: historico,
             generationConfig: { maxOutputTokens: 400, temperature: 0.4 },
           }),

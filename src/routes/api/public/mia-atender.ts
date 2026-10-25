@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { montarPromptMia, MARCA_PASSAGEM } from "@/lib/mia-empresa";
+import { detectarIdioma, FRASE_PASSAGEM } from "@/lib/idioma";
 
 // A Mi.IA responde o lead novo do número mãe antes do corretor.
 // Chamado pelo banco (receber_mensagem_whatsapp) com { mensagem_id }. Sem segredo: só age sobre uma mensagem real,
@@ -9,7 +10,6 @@ const json = (b: unknown, s = 200) =>
   new Response(JSON.stringify(b), { status: s, headers: { "content-type": "application/json", "cache-control": "no-store" } });
 
 const MAX_RESPOSTAS_MIA = 6; // depois disso, passa para o corretor de qualquer jeito
-const FRASE_PASSAGEM = "Vou chamar um dos nossos corretores para continuar com você. Já já ele te responde por aqui 😊";
 
 export const Route = createFileRoute("/api/public/mia-atender")({
   server: {
@@ -84,9 +84,12 @@ export const Route = createFileRoute("/api/public/mia-atender")({
         if (!resposta) return passar("a IA não respondeu"); // nunca deixa o cliente sem resposta
 
         const querPassar = resposta.includes(MARCA_PASSAGEM) || jaRespondeu + 1 >= MAX_RESPOSTAS_MIA;
+        // A frase de passagem fixa sai no idioma em que o cliente está escrevendo.
+        const idiomaCliente = detectarIdioma(ordem.filter((m: any) => m.direcao === "entrada").slice(-3).map((m: any) => String(m.texto)).join(" "));
+        const frasePassagem = FRASE_PASSAGEM[idiomaCliente];
         let texto = resposta.split(MARCA_PASSAGEM).join("").trim();
-        if (!texto) texto = FRASE_PASSAGEM;
-        else if (querPassar && !resposta.includes(MARCA_PASSAGEM)) texto += "\n\n" + FRASE_PASSAGEM;
+        if (!texto) texto = frasePassagem;
+        else if (querPassar && !resposta.includes(MARCA_PASSAGEM)) texto += "\n\n" + frasePassagem;
 
         const { error } = await sb.rpc("mia_enviar", { p_lead: msg.lead_id, p_texto: texto });
         if (error) { console.error("[mia-atender] enviar", error.message); return passar("falha ao enviar"); }
