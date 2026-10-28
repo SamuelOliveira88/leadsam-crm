@@ -419,6 +419,7 @@ const en: Record<string, string> = {
   "Senha:": "Password:",
   "Copiar tudo": "Copy all",
   "Abrir WhatsApp": "Open WhatsApp",
+  "Ligar": "Call",
   "Organize corretores em equipes/imobiliárias": "Organize agents into teams/agencies",
   "Nome do novo grupo": "New group name",
   "Novo Grupo": "New Group",

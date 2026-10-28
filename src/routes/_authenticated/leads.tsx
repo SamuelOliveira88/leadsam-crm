@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Trash2, X, Search, Sparkles, MessageCircle, Eye, Download, ArrowRightLeft, Zap, RotateCcw, Plus, Pencil, LayoutList, Columns3 } from "lucide-react";
+import { Trash2, X, Search, Sparkles, MessageCircle, Phone, Eye, Download, ArrowRightLeft, Zap, RotateCcw, Plus, Pencil, LayoutList, Columns3 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { listarLeads, excluirLead, exportarLeads, transferirLead, transferirLeadParaOnline, descartarLead, criarLeadManual, atualizarLead } from "@/lib/leads.functions";
 import { listarCorretores } from "@/lib/corretores.functions";
@@ -21,6 +21,7 @@ import { LeadsKanban } from "@/components/LeadsKanban";
 import { LeadEtapaPanel } from "@/components/LeadEtapaPanel";
 import { COR_ETAPA, ehEtapaFunil, type EtapaFunil } from "@/lib/funil";
 import { cn } from "@/lib/utils";
+import { linkTel } from "@/lib/ligar";
 
 
 import { tr, mark, localeAtual } from "@/i18n";
@@ -191,6 +192,13 @@ function Leads() {
                 {l.cidade ? ` · ${l.cidade}` : ""}
               </div>
             </div>
+            {linkTel(l.telefone) && (
+              <Button size="icon" variant="ghost" asChild title={tr("Ligar")}>
+                <a href={linkTel(l.telefone)!} onClick={(e) => e.stopPropagation()} aria-label={tr("Ligar")}>
+                  <Phone className="size-4 text-emerald-600" />
+                </a>
+              </Button>
+            )}
             <Button
               size="icon"
               variant="ghost"
@@ -375,6 +383,13 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
               onClick={() => window.open(`https://wa.me/${lead.telefone.replace(/\D/g, "")}`, "_blank")}
             >
               <MessageCircle className="mr-2 size-4" /> {tr("Abrir WhatsApp")}</Button>
+          )}
+          {linkTel(lead.telefone) && (
+            <Button size="sm" variant="outline" asChild>
+              <a href={linkTel(lead.telefone)!}>
+                <Phone className="mr-2 size-4" /> {tr("Ligar")}
+              </a>
+            </Button>
           )}
           <Button
             size="sm"

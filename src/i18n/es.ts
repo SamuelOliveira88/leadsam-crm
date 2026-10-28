@@ -419,6 +419,7 @@ const es: Record<string, string> = {
   "Senha:": "Contraseña:",
   "Copiar tudo": "Copiar todo",
   "Abrir WhatsApp": "Abrir WhatsApp",
+  "Ligar": "Llamar",
   "Organize corretores em equipes/imobiliárias": "Organiza a los agentes en equipos/inmobiliarias",
   "Nome do novo grupo": "Nombre del nuevo grupo",
   "Novo Grupo": "Nuevo Grupo",

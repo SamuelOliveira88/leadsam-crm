@@ -420,6 +420,7 @@ const pt: Record<string, string> = {
   "Senha:": "Senha:",
   "Copiar tudo": "Copiar tudo",
   "Abrir WhatsApp": "Abrir WhatsApp",
+  "Ligar": "Ligar",
   "Organize corretores em equipes/imobiliárias": "Organize corretores em equipes/imobiliárias",
   "Nome do novo grupo": "Nome do novo grupo",
   "Novo Grupo": "Novo Grupo",
