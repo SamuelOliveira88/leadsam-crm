@@ -21,7 +21,7 @@ import { LeadsKanban } from "@/components/LeadsKanban";
 import { LeadEtapaPanel } from "@/components/LeadEtapaPanel";
 import { COR_ETAPA, ehEtapaFunil, type EtapaFunil } from "@/lib/funil";
 import { cn } from "@/lib/utils";
-import { linkTel } from "@/lib/ligar";
+import { linkTel, NOTA_LIGACAO_INICIADA, RESULTADOS_LIGACAO, notaResultadoLigacao } from "@/lib/ligar";
 
 
 import { tr, mark, localeAtual } from "@/i18n";
@@ -35,6 +35,7 @@ function Leads() {
   const fetchLeads = useServerFn(listarLeads);
   const del = useServerFn(excluirLead);
   const exportFn = useServerFn(exportarLeads);
+  const notaFn = useServerFn(criarNota);
   const { data, isLoading } = useQuery({ queryKey: ["leads"], queryFn: () => fetchLeads() });
   const delMut = useMutation({
     mutationFn: (id: string) => del({ data: { id } }),
@@ -194,7 +195,16 @@ function Leads() {
             </div>
             {linkTel(l.telefone) && (
               <Button size="icon" variant="ghost" asChild title={tr("Ligar")}>
-                <a href={linkTel(l.telefone)!} onClick={(e) => e.stopPropagation()} aria-label={tr("Ligar")}>
+                <a
+                  href={linkTel(l.telefone)!}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    notaFn({ data: { lead_id: l.id, texto: NOTA_LIGACAO_INICIADA } })
+                      .then(() => qc.invalidateQueries({ queryKey: ["notas", l.id] }))
+                      .catch(() => {});
+                  }}
+                  aria-label={tr("Ligar")}
+                >
                   <Phone className="size-4 text-emerald-600" />
                 </a>
               </Button>
@@ -254,6 +264,7 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
   const [gerando, setGerando] = useState(false);
   const [mostrarTransfer, setMostrarTransfer] = useState(false);
   const [novoCorretor, setNovoCorretor] = useState("");
+  const [ligou, setLigou] = useState(false);
 
   const { data: corretores } = useQuery({
     queryKey: ["corretores-transfer"],
@@ -326,6 +337,15 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
     onError: (e: any) => toast.error(tr(e.message) ?? tr("Erro ao salvar")),
   });
 
+  const ligacaoMut = useMutation({
+    mutationFn: (texto: string) => criarNotaFn({ data: { lead_id: lead.id, texto } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["notas", lead.id] });
+      qc.invalidateQueries({ queryKey: ["leads"] });
+    },
+    onError: (e: any) => toast.error(tr(e?.message) ?? tr("Erro ao salvar")),
+  });
+
   async function handleGerar() {
     setGerando(true);
     try {
@@ -371,6 +391,27 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
 
         <LeadEtapaPanel lead={lead} />
 
+        {ligou && (
+          <div className="mb-4 rounded-lg border bg-muted/40 p-3">
+            <div className="mb-2 text-xs font-semibold text-muted-foreground">{tr("Como foi a ligação?")}</div>
+            <div className="flex flex-wrap gap-2">
+              {RESULTADOS_LIGACAO.map((r) => (
+                <Button
+                  key={r}
+                  size="sm"
+                  variant="outline"
+                  disabled={ligacaoMut.isPending}
+                  onClick={() => {
+                    ligacaoMut.mutate(notaResultadoLigacao(r), { onSuccess: () => { toast.success(tr("Ligação registrada.")); setLigou(false); } });
+                  }}
+                >
+                  {tr(r)}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="mb-4 flex flex-wrap gap-2">
           <Button size="sm" onClick={handleGerar} disabled={gerando}>
             <Sparkles className="mr-2 size-4" />
@@ -386,7 +427,13 @@ function LeadDrawer({ lead, onClose }: { lead: any; onClose: () => void }) {
           )}
           {linkTel(lead.telefone) && (
             <Button size="sm" variant="outline" asChild>
-              <a href={linkTel(lead.telefone)!}>
+              <a
+                href={linkTel(lead.telefone)!}
+                onClick={() => {
+                  setLigou(true);
+                  ligacaoMut.mutate(NOTA_LIGACAO_INICIADA);
+                }}
+              >
                 <Phone className="mr-2 size-4" /> {tr("Ligar")}
               </a>
             </Button>

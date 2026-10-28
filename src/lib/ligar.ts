@@ -11,3 +11,13 @@ export function linkTel(telefone: string | null | undefined): string | null {
   if (d.length === 10 || d.length === 11) return `tel:+55${d}`;
   return null;
 }
+
+// Registro das ligações: cada ligação feita pelo Alexandria vira uma nota no lead (aparece no histórico
+// e reinicia o prazo de contato). O áudio NÃO é gravado: a ligação sai pelo discador do próprio celular.
+export const NOTA_LIGACAO_INICIADA = "📞 Ligação iniciada pelo Alexandria (celular do corretor)";
+
+export const RESULTADOS_LIGACAO = ["Atendeu", "Não atendeu", "Caixa postal", "Número errado", "Pediu para ligar depois"] as const;
+
+export function notaResultadoLigacao(resultado: string): string {
+  return `📞 Resultado da ligação: ${resultado}`;
+}
