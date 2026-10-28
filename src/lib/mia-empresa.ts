@@ -1,3 +1,4 @@
+import { regraIdioma } from "./idioma";
 // Mi.IA de cada imobiliária: as 8 perguntas ("Minha Mi.IA") e a montagem das instruções que a IA recebe.
 import { mark } from "@/i18n";
 
@@ -33,7 +34,8 @@ export function montarPromptMia(nomeEmpresa: string, r: RespostasMia, siteTexto?
     siteTexto && siteTexto.trim() ? `\nINFORMAÇÕES DO SITE DA IMOBILIÁRIA (use só como apoio):\n${siteTexto.trim().slice(0, 6000)}` : "",
     ``,
     `REGRAS FIXAS:`,
-    `- Responda em português do Brasil, mensagens curtas (no máximo 3 frases), como numa conversa de WhatsApp.`,
+    `- Mensagens curtas (no máximo 3 frases), como numa conversa de WhatsApp.`,
+    `- ${regraIdioma("pt")} Os textos acima (apresentação, tom, perguntas) estão em português: adapte-os ao idioma do cliente, sem traduzir ao pé da letra.`,
     `- Use SOMENTE o que está escrito acima. Se não souber, diga que um corretor vai confirmar. Nunca invente preço, prazo, desconto, aprovação de crédito ou condição.`,
     `- Nunca diga que é humana. Se perguntarem, diga que é a assistente virtual da imobiliária.`,
     `- Quando for hora de passar para o corretor (pela regra acima, ou se o cliente pedir uma pessoa), escreva uma despedida curta dizendo que um corretor vai continuar a conversa e termine a mensagem com a marca ${MARCA_PASSAGEM} (ela é removida antes de enviar).`,
