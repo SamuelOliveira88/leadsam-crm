@@ -2,7 +2,7 @@ import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Building2, LayoutDashboard, Users, UserCog, Upload, Clock, Layers, LogOut, Bell, Grid3x3, ShieldCheck, FileText, NotebookPen, Plug, MapPin, CalendarDays, MessageCircle, Smartphone, CreditCard, Bot, BookOpen } from "lucide-react";
+import { Building2, LayoutDashboard, Users, UserCog, Upload, Clock, Layers, LogOut, Bell, Grid3x3, ShieldCheck, FileText, NotebookPen, Plug, MapPin, CalendarDays, MessageCircle, Smartphone, CreditCard, Bot, BookOpen, Headphones } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { meuPerfil } from "@/lib/perfis.functions";
 import { heartbeatCorretor } from "@/lib/corretores.functions";
@@ -23,6 +23,7 @@ const NAV_CORRETOR = [
   { to: "/espelho", label: mark("Espelho"), icon: Grid3x3 },
   { to: "/propostas", label: mark("Propostas"), icon: FileText },
   { to: "/agenda", label: mark("Agenda"), icon: CalendarDays },
+  { to: "/discador", label: mark("Discador"), icon: Headphones },
   { to: "/notas", label: mark("Notas"), icon: NotebookPen },
   { to: "/checkin", label: mark("Check-in"), icon: MapPin },
 ] as const;
@@ -34,6 +35,7 @@ const NAV_ADMIN = [
   { to: "/espelho", label: mark("Espelho"), icon: Grid3x3 },
   { to: "/propostas", label: mark("Propostas"), icon: FileText },
   { to: "/agenda", label: mark("Agenda"), icon: CalendarDays },
+  { to: "/discador", label: mark("Discador"), icon: Headphones },
   { to: "/notas", label: mark("Notas"), icon: NotebookPen },
   { to: "/importar", label: mark("Importar"), icon: Upload },
   { to: "/corretores", label: mark("Corretores"), icon: UserCog },

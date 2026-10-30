@@ -17,8 +17,10 @@ import { Route as SetPasswordRouteImport } from './routes/set-password'
 import { Route as AuthenticatedAcessoRouteImport } from './routes/_authenticated/acesso'
 import { Route as AuthenticatedAgendaRouteImport } from './routes/_authenticated/agenda'
 import { Route as AuthenticatedCheckinRouteImport } from './routes/_authenticated/checkin'
+import { Route as AuthenticatedConversasRouteImport } from './routes/_authenticated/conversas'
 import { Route as AuthenticatedCorretoresRouteImport } from './routes/_authenticated/corretores'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedDiscadorRouteImport } from './routes/_authenticated/discador'
 import { Route as AuthenticatedEmpresasRouteImport } from './routes/_authenticated/empresas'
 import { Route as AuthenticatedEspelhoRouteImport } from './routes/_authenticated/espelho'
 import { Route as AuthenticatedGruposRouteImport } from './routes/_authenticated/grupos'
@@ -26,12 +28,27 @@ import { Route as AuthenticatedHorariosRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedImportarRouteImport } from './routes/_authenticated/importar'
 import { Route as AuthenticatedIntegracoesRouteImport } from './routes/_authenticated/integracoes'
 import { Route as AuthenticatedLeadsRouteImport } from './routes/_authenticated/leads'
+import { Route as AuthenticatedManualRouteImport } from './routes/_authenticated/manual'
+import { Route as AuthenticatedMeuPlanoRouteImport } from './routes/_authenticated/meu-plano'
+import { Route as AuthenticatedMinhaMiaRouteImport } from './routes/_authenticated/minha-mia'
 import { Route as AuthenticatedNotasRouteImport } from './routes/_authenticated/notas'
 import { Route as AuthenticatedNotificacoesRouteImport } from './routes/_authenticated/notificacoes'
 import { Route as AuthenticatedPropostasRouteImport } from './routes/_authenticated/propostas'
+import { Route as AuthenticatedWhatsappRouteImport } from './routes/_authenticated/whatsapp'
+import { Route as AuthenticatedPontoCodigoRouteImport } from './routes/_authenticated/ponto.$codigo'
 import { Route as ApiCorretoresConvidarRouteImport } from './routes/api/corretores/convidar'
+import { Route as ApiExtensaoConversasRouteImport } from './routes/api/extensao/conversas'
+import { Route as ApiExtensaoEnviarRouteImport } from './routes/api/extensao/enviar'
+import { Route as ApiExtensaoMensagensRouteImport } from './routes/api/extensao/mensagens'
+import { Route as ApiPublicAsaasWebhookRouteImport } from './routes/api/public/asaas-webhook'
+import { Route as ApiPublicChatMiaRouteImport } from './routes/api/public/chat-mia'
+import { Route as ApiPublicDiscadorPonteRouteImport } from './routes/api/public/discador-ponte'
 import { Route as ApiPublicEloWhatsappRouteImport } from './routes/api/public/elo-whatsapp'
+import { Route as ApiPublicLeadEmailRouteImport } from './routes/api/public/lead-email'
+import { Route as ApiPublicMiaAtenderRouteImport } from './routes/api/public/mia-atender'
+import { Route as ApiPublicMiaConhecimentoRouteImport } from './routes/api/public/mia-conhecimento'
 import { Route as ApiPublicReativacaoRouteImport } from './routes/api/public/reativacao'
+import { Route as ApiPublicTranscreverAudioRouteImport } from './routes/api/public/transcrever-audio'
 import { Route as ApiPublicWebhookRouteImport } from './routes/api/public/webhook'
 import { Route as ApiPublicAdminReenviarConvitesRouteImport } from './routes/api/public/admin/reenviar-convites'
 import { Route as ApiPublicHooksProcessarFilaRouteImport } from './routes/api/public/hooks/processar-fila'
@@ -77,6 +94,11 @@ const AuthenticatedCheckinRoute = AuthenticatedCheckinRouteImport.update({
   path: '/checkin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedConversasRoute = AuthenticatedConversasRouteImport.update({
+  id: '/conversas',
+  path: '/conversas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCorretoresRoute = AuthenticatedCorretoresRouteImport.update({
   id: '/corretores',
   path: '/corretores',
@@ -85,6 +107,11 @@ const AuthenticatedCorretoresRoute = AuthenticatedCorretoresRouteImport.update({
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDiscadorRoute = AuthenticatedDiscadorRouteImport.update({
+  id: '/discador',
+  path: '/discador',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedEmpresasRoute = AuthenticatedEmpresasRouteImport.update({
@@ -123,6 +150,21 @@ const AuthenticatedLeadsRoute = AuthenticatedLeadsRouteImport.update({
   path: '/leads',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedManualRoute = AuthenticatedManualRouteImport.update({
+  id: '/manual',
+  path: '/manual',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMeuPlanoRoute = AuthenticatedMeuPlanoRouteImport.update({
+  id: '/meu-plano',
+  path: '/meu-plano',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMinhaMiaRoute = AuthenticatedMinhaMiaRouteImport.update({
+  id: '/minha-mia',
+  path: '/minha-mia',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedNotasRoute = AuthenticatedNotasRouteImport.update({
   id: '/notas',
   path: '/notas',
@@ -139,9 +181,50 @@ const AuthenticatedPropostasRoute = AuthenticatedPropostasRouteImport.update({
   path: '/propostas',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedWhatsappRoute = AuthenticatedWhatsappRouteImport.update({
+  id: '/whatsapp',
+  path: '/whatsapp',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPontoCodigoRoute =
+  AuthenticatedPontoCodigoRouteImport.update({
+    id: '/ponto/$codigo',
+    path: '/ponto/$codigo',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiCorretoresConvidarRoute = ApiCorretoresConvidarRouteImport.update({
   id: '/api/corretores/convidar',
   path: '/api/corretores/convidar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiExtensaoConversasRoute = ApiExtensaoConversasRouteImport.update({
+  id: '/api/extensao/conversas',
+  path: '/api/extensao/conversas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiExtensaoEnviarRoute = ApiExtensaoEnviarRouteImport.update({
+  id: '/api/extensao/enviar',
+  path: '/api/extensao/enviar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiExtensaoMensagensRoute = ApiExtensaoMensagensRouteImport.update({
+  id: '/api/extensao/mensagens',
+  path: '/api/extensao/mensagens',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicAsaasWebhookRoute = ApiPublicAsaasWebhookRouteImport.update({
+  id: '/api/public/asaas-webhook',
+  path: '/api/public/asaas-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicChatMiaRoute = ApiPublicChatMiaRouteImport.update({
+  id: '/api/public/chat-mia',
+  path: '/api/public/chat-mia',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicDiscadorPonteRoute = ApiPublicDiscadorPonteRouteImport.update({
+  id: '/api/public/discador-ponte',
+  path: '/api/public/discador-ponte',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicEloWhatsappRoute = ApiPublicEloWhatsappRouteImport.update({
@@ -149,11 +232,33 @@ const ApiPublicEloWhatsappRoute = ApiPublicEloWhatsappRouteImport.update({
   path: '/api/public/elo-whatsapp',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicLeadEmailRoute = ApiPublicLeadEmailRouteImport.update({
+  id: '/api/public/lead-email',
+  path: '/api/public/lead-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicMiaAtenderRoute = ApiPublicMiaAtenderRouteImport.update({
+  id: '/api/public/mia-atender',
+  path: '/api/public/mia-atender',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicMiaConhecimentoRoute =
+  ApiPublicMiaConhecimentoRouteImport.update({
+    id: '/api/public/mia-conhecimento',
+    path: '/api/public/mia-conhecimento',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicReativacaoRoute = ApiPublicReativacaoRouteImport.update({
   id: '/api/public/reativacao',
   path: '/api/public/reativacao',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicTranscreverAudioRoute =
+  ApiPublicTranscreverAudioRouteImport.update({
+    id: '/api/public/transcrever-audio',
+    path: '/api/public/transcrever-audio',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhookRoute = ApiPublicWebhookRouteImport.update({
   id: '/api/public/webhook',
   path: '/api/public/webhook',
@@ -190,8 +295,10 @@ export interface FileRoutesByFullPath {
   '/acesso': typeof AuthenticatedAcessoRoute
   '/agenda': typeof AuthenticatedAgendaRoute
   '/checkin': typeof AuthenticatedCheckinRoute
+  '/conversas': typeof AuthenticatedConversasRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/discador': typeof AuthenticatedDiscadorRoute
   '/empresas': typeof AuthenticatedEmpresasRoute
   '/espelho': typeof AuthenticatedEspelhoRoute
   '/grupos': typeof AuthenticatedGruposRoute
@@ -199,12 +306,27 @@ export interface FileRoutesByFullPath {
   '/importar': typeof AuthenticatedImportarRoute
   '/integracoes': typeof AuthenticatedIntegracoesRoute
   '/leads': typeof AuthenticatedLeadsRoute
+  '/manual': typeof AuthenticatedManualRoute
+  '/meu-plano': typeof AuthenticatedMeuPlanoRoute
+  '/minha-mia': typeof AuthenticatedMinhaMiaRoute
   '/notas': typeof AuthenticatedNotasRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/propostas': typeof AuthenticatedPropostasRoute
+  '/whatsapp': typeof AuthenticatedWhatsappRoute
+  '/ponto/$codigo': typeof AuthenticatedPontoCodigoRoute
   '/api/corretores/convidar': typeof ApiCorretoresConvidarRoute
+  '/api/extensao/conversas': typeof ApiExtensaoConversasRoute
+  '/api/extensao/enviar': typeof ApiExtensaoEnviarRoute
+  '/api/extensao/mensagens': typeof ApiExtensaoMensagensRoute
+  '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
+  '/api/public/chat-mia': typeof ApiPublicChatMiaRoute
+  '/api/public/discador-ponte': typeof ApiPublicDiscadorPonteRoute
   '/api/public/elo-whatsapp': typeof ApiPublicEloWhatsappRoute
+  '/api/public/lead-email': typeof ApiPublicLeadEmailRoute
+  '/api/public/mia-atender': typeof ApiPublicMiaAtenderRoute
+  '/api/public/mia-conhecimento': typeof ApiPublicMiaConhecimentoRoute
   '/api/public/reativacao': typeof ApiPublicReativacaoRoute
+  '/api/public/transcrever-audio': typeof ApiPublicTranscreverAudioRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/api/public/admin/reenviar-convites': typeof ApiPublicAdminReenviarConvitesRoute
   '/api/public/hooks/processar-fila': typeof ApiPublicHooksProcessarFilaRoute
@@ -219,8 +341,10 @@ export interface FileRoutesByTo {
   '/acesso': typeof AuthenticatedAcessoRoute
   '/agenda': typeof AuthenticatedAgendaRoute
   '/checkin': typeof AuthenticatedCheckinRoute
+  '/conversas': typeof AuthenticatedConversasRoute
   '/corretores': typeof AuthenticatedCorretoresRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/discador': typeof AuthenticatedDiscadorRoute
   '/empresas': typeof AuthenticatedEmpresasRoute
   '/espelho': typeof AuthenticatedEspelhoRoute
   '/grupos': typeof AuthenticatedGruposRoute
@@ -228,12 +352,27 @@ export interface FileRoutesByTo {
   '/importar': typeof AuthenticatedImportarRoute
   '/integracoes': typeof AuthenticatedIntegracoesRoute
   '/leads': typeof AuthenticatedLeadsRoute
+  '/manual': typeof AuthenticatedManualRoute
+  '/meu-plano': typeof AuthenticatedMeuPlanoRoute
+  '/minha-mia': typeof AuthenticatedMinhaMiaRoute
   '/notas': typeof AuthenticatedNotasRoute
   '/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/propostas': typeof AuthenticatedPropostasRoute
+  '/whatsapp': typeof AuthenticatedWhatsappRoute
+  '/ponto/$codigo': typeof AuthenticatedPontoCodigoRoute
   '/api/corretores/convidar': typeof ApiCorretoresConvidarRoute
+  '/api/extensao/conversas': typeof ApiExtensaoConversasRoute
+  '/api/extensao/enviar': typeof ApiExtensaoEnviarRoute
+  '/api/extensao/mensagens': typeof ApiExtensaoMensagensRoute
+  '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
+  '/api/public/chat-mia': typeof ApiPublicChatMiaRoute
+  '/api/public/discador-ponte': typeof ApiPublicDiscadorPonteRoute
   '/api/public/elo-whatsapp': typeof ApiPublicEloWhatsappRoute
+  '/api/public/lead-email': typeof ApiPublicLeadEmailRoute
+  '/api/public/mia-atender': typeof ApiPublicMiaAtenderRoute
+  '/api/public/mia-conhecimento': typeof ApiPublicMiaConhecimentoRoute
   '/api/public/reativacao': typeof ApiPublicReativacaoRoute
+  '/api/public/transcrever-audio': typeof ApiPublicTranscreverAudioRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/api/public/admin/reenviar-convites': typeof ApiPublicAdminReenviarConvitesRoute
   '/api/public/hooks/processar-fila': typeof ApiPublicHooksProcessarFilaRoute
@@ -250,8 +389,10 @@ export interface FileRoutesById {
   '/_authenticated/acesso': typeof AuthenticatedAcessoRoute
   '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
   '/_authenticated/checkin': typeof AuthenticatedCheckinRoute
+  '/_authenticated/conversas': typeof AuthenticatedConversasRoute
   '/_authenticated/corretores': typeof AuthenticatedCorretoresRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/discador': typeof AuthenticatedDiscadorRoute
   '/_authenticated/empresas': typeof AuthenticatedEmpresasRoute
   '/_authenticated/espelho': typeof AuthenticatedEspelhoRoute
   '/_authenticated/grupos': typeof AuthenticatedGruposRoute
@@ -259,12 +400,27 @@ export interface FileRoutesById {
   '/_authenticated/importar': typeof AuthenticatedImportarRoute
   '/_authenticated/integracoes': typeof AuthenticatedIntegracoesRoute
   '/_authenticated/leads': typeof AuthenticatedLeadsRoute
+  '/_authenticated/manual': typeof AuthenticatedManualRoute
+  '/_authenticated/meu-plano': typeof AuthenticatedMeuPlanoRoute
+  '/_authenticated/minha-mia': typeof AuthenticatedMinhaMiaRoute
   '/_authenticated/notas': typeof AuthenticatedNotasRoute
   '/_authenticated/notificacoes': typeof AuthenticatedNotificacoesRoute
   '/_authenticated/propostas': typeof AuthenticatedPropostasRoute
+  '/_authenticated/whatsapp': typeof AuthenticatedWhatsappRoute
+  '/_authenticated/ponto/$codigo': typeof AuthenticatedPontoCodigoRoute
   '/api/corretores/convidar': typeof ApiCorretoresConvidarRoute
+  '/api/extensao/conversas': typeof ApiExtensaoConversasRoute
+  '/api/extensao/enviar': typeof ApiExtensaoEnviarRoute
+  '/api/extensao/mensagens': typeof ApiExtensaoMensagensRoute
+  '/api/public/asaas-webhook': typeof ApiPublicAsaasWebhookRoute
+  '/api/public/chat-mia': typeof ApiPublicChatMiaRoute
+  '/api/public/discador-ponte': typeof ApiPublicDiscadorPonteRoute
   '/api/public/elo-whatsapp': typeof ApiPublicEloWhatsappRoute
+  '/api/public/lead-email': typeof ApiPublicLeadEmailRoute
+  '/api/public/mia-atender': typeof ApiPublicMiaAtenderRoute
+  '/api/public/mia-conhecimento': typeof ApiPublicMiaConhecimentoRoute
   '/api/public/reativacao': typeof ApiPublicReativacaoRoute
+  '/api/public/transcrever-audio': typeof ApiPublicTranscreverAudioRoute
   '/api/public/webhook': typeof ApiPublicWebhookRoute
   '/api/public/admin/reenviar-convites': typeof ApiPublicAdminReenviarConvitesRoute
   '/api/public/hooks/processar-fila': typeof ApiPublicHooksProcessarFilaRoute
@@ -281,8 +437,10 @@ export interface FileRouteTypes {
     | '/acesso'
     | '/agenda'
     | '/checkin'
+    | '/conversas'
     | '/corretores'
     | '/dashboard'
+    | '/discador'
     | '/empresas'
     | '/espelho'
     | '/grupos'
@@ -290,12 +448,27 @@ export interface FileRouteTypes {
     | '/importar'
     | '/integracoes'
     | '/leads'
+    | '/manual'
+    | '/meu-plano'
+    | '/minha-mia'
     | '/notas'
     | '/notificacoes'
     | '/propostas'
+    | '/whatsapp'
+    | '/ponto/$codigo'
     | '/api/corretores/convidar'
+    | '/api/extensao/conversas'
+    | '/api/extensao/enviar'
+    | '/api/extensao/mensagens'
+    | '/api/public/asaas-webhook'
+    | '/api/public/chat-mia'
+    | '/api/public/discador-ponte'
     | '/api/public/elo-whatsapp'
+    | '/api/public/lead-email'
+    | '/api/public/mia-atender'
+    | '/api/public/mia-conhecimento'
     | '/api/public/reativacao'
+    | '/api/public/transcrever-audio'
     | '/api/public/webhook'
     | '/api/public/admin/reenviar-convites'
     | '/api/public/hooks/processar-fila'
@@ -310,8 +483,10 @@ export interface FileRouteTypes {
     | '/acesso'
     | '/agenda'
     | '/checkin'
+    | '/conversas'
     | '/corretores'
     | '/dashboard'
+    | '/discador'
     | '/empresas'
     | '/espelho'
     | '/grupos'
@@ -319,12 +494,27 @@ export interface FileRouteTypes {
     | '/importar'
     | '/integracoes'
     | '/leads'
+    | '/manual'
+    | '/meu-plano'
+    | '/minha-mia'
     | '/notas'
     | '/notificacoes'
     | '/propostas'
+    | '/whatsapp'
+    | '/ponto/$codigo'
     | '/api/corretores/convidar'
+    | '/api/extensao/conversas'
+    | '/api/extensao/enviar'
+    | '/api/extensao/mensagens'
+    | '/api/public/asaas-webhook'
+    | '/api/public/chat-mia'
+    | '/api/public/discador-ponte'
     | '/api/public/elo-whatsapp'
+    | '/api/public/lead-email'
+    | '/api/public/mia-atender'
+    | '/api/public/mia-conhecimento'
     | '/api/public/reativacao'
+    | '/api/public/transcrever-audio'
     | '/api/public/webhook'
     | '/api/public/admin/reenviar-convites'
     | '/api/public/hooks/processar-fila'
@@ -340,8 +530,10 @@ export interface FileRouteTypes {
     | '/_authenticated/acesso'
     | '/_authenticated/agenda'
     | '/_authenticated/checkin'
+    | '/_authenticated/conversas'
     | '/_authenticated/corretores'
     | '/_authenticated/dashboard'
+    | '/_authenticated/discador'
     | '/_authenticated/empresas'
     | '/_authenticated/espelho'
     | '/_authenticated/grupos'
@@ -349,12 +541,27 @@ export interface FileRouteTypes {
     | '/_authenticated/importar'
     | '/_authenticated/integracoes'
     | '/_authenticated/leads'
+    | '/_authenticated/manual'
+    | '/_authenticated/meu-plano'
+    | '/_authenticated/minha-mia'
     | '/_authenticated/notas'
     | '/_authenticated/notificacoes'
     | '/_authenticated/propostas'
+    | '/_authenticated/whatsapp'
+    | '/_authenticated/ponto/$codigo'
     | '/api/corretores/convidar'
+    | '/api/extensao/conversas'
+    | '/api/extensao/enviar'
+    | '/api/extensao/mensagens'
+    | '/api/public/asaas-webhook'
+    | '/api/public/chat-mia'
+    | '/api/public/discador-ponte'
     | '/api/public/elo-whatsapp'
+    | '/api/public/lead-email'
+    | '/api/public/mia-atender'
+    | '/api/public/mia-conhecimento'
     | '/api/public/reativacao'
+    | '/api/public/transcrever-audio'
     | '/api/public/webhook'
     | '/api/public/admin/reenviar-convites'
     | '/api/public/hooks/processar-fila'
@@ -369,8 +576,18 @@ export interface RootRouteChildren {
   CadastroEmpresaRoute: typeof CadastroEmpresaRoute
   SetPasswordRoute: typeof SetPasswordRoute
   ApiCorretoresConvidarRoute: typeof ApiCorretoresConvidarRoute
+  ApiExtensaoConversasRoute: typeof ApiExtensaoConversasRoute
+  ApiExtensaoEnviarRoute: typeof ApiExtensaoEnviarRoute
+  ApiExtensaoMensagensRoute: typeof ApiExtensaoMensagensRoute
+  ApiPublicAsaasWebhookRoute: typeof ApiPublicAsaasWebhookRoute
+  ApiPublicChatMiaRoute: typeof ApiPublicChatMiaRoute
+  ApiPublicDiscadorPonteRoute: typeof ApiPublicDiscadorPonteRoute
   ApiPublicEloWhatsappRoute: typeof ApiPublicEloWhatsappRoute
+  ApiPublicLeadEmailRoute: typeof ApiPublicLeadEmailRoute
+  ApiPublicMiaAtenderRoute: typeof ApiPublicMiaAtenderRoute
+  ApiPublicMiaConhecimentoRoute: typeof ApiPublicMiaConhecimentoRoute
   ApiPublicReativacaoRoute: typeof ApiPublicReativacaoRoute
+  ApiPublicTranscreverAudioRoute: typeof ApiPublicTranscreverAudioRoute
   ApiPublicWebhookRoute: typeof ApiPublicWebhookRoute
   ApiPublicAdminReenviarConvitesRoute: typeof ApiPublicAdminReenviarConvitesRoute
   ApiPublicHooksProcessarFilaRoute: typeof ApiPublicHooksProcessarFilaRoute
@@ -436,6 +653,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCheckinRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/conversas': {
+      id: '/_authenticated/conversas'
+      path: '/conversas'
+      fullPath: '/conversas'
+      preLoaderRoute: typeof AuthenticatedConversasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/corretores': {
       id: '/_authenticated/corretores'
       path: '/corretores'
@@ -448,6 +672,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/discador': {
+      id: '/_authenticated/discador'
+      path: '/discador'
+      fullPath: '/discador'
+      preLoaderRoute: typeof AuthenticatedDiscadorRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/empresas': {
@@ -499,6 +730,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLeadsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/manual': {
+      id: '/_authenticated/manual'
+      path: '/manual'
+      fullPath: '/manual'
+      preLoaderRoute: typeof AuthenticatedManualRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/meu-plano': {
+      id: '/_authenticated/meu-plano'
+      path: '/meu-plano'
+      fullPath: '/meu-plano'
+      preLoaderRoute: typeof AuthenticatedMeuPlanoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/minha-mia': {
+      id: '/_authenticated/minha-mia'
+      path: '/minha-mia'
+      fullPath: '/minha-mia'
+      preLoaderRoute: typeof AuthenticatedMinhaMiaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/notas': {
       id: '/_authenticated/notas'
       path: '/notas'
@@ -520,11 +772,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPropostasRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/whatsapp': {
+      id: '/_authenticated/whatsapp'
+      path: '/whatsapp'
+      fullPath: '/whatsapp'
+      preLoaderRoute: typeof AuthenticatedWhatsappRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ponto/$codigo': {
+      id: '/_authenticated/ponto/$codigo'
+      path: '/ponto/$codigo'
+      fullPath: '/ponto/$codigo'
+      preLoaderRoute: typeof AuthenticatedPontoCodigoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/corretores/convidar': {
       id: '/api/corretores/convidar'
       path: '/api/corretores/convidar'
       fullPath: '/api/corretores/convidar'
       preLoaderRoute: typeof ApiCorretoresConvidarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/extensao/conversas': {
+      id: '/api/extensao/conversas'
+      path: '/api/extensao/conversas'
+      fullPath: '/api/extensao/conversas'
+      preLoaderRoute: typeof ApiExtensaoConversasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/extensao/enviar': {
+      id: '/api/extensao/enviar'
+      path: '/api/extensao/enviar'
+      fullPath: '/api/extensao/enviar'
+      preLoaderRoute: typeof ApiExtensaoEnviarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/extensao/mensagens': {
+      id: '/api/extensao/mensagens'
+      path: '/api/extensao/mensagens'
+      fullPath: '/api/extensao/mensagens'
+      preLoaderRoute: typeof ApiExtensaoMensagensRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/asaas-webhook': {
+      id: '/api/public/asaas-webhook'
+      path: '/api/public/asaas-webhook'
+      fullPath: '/api/public/asaas-webhook'
+      preLoaderRoute: typeof ApiPublicAsaasWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/chat-mia': {
+      id: '/api/public/chat-mia'
+      path: '/api/public/chat-mia'
+      fullPath: '/api/public/chat-mia'
+      preLoaderRoute: typeof ApiPublicChatMiaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/discador-ponte': {
+      id: '/api/public/discador-ponte'
+      path: '/api/public/discador-ponte'
+      fullPath: '/api/public/discador-ponte'
+      preLoaderRoute: typeof ApiPublicDiscadorPonteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/elo-whatsapp': {
@@ -534,11 +842,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicEloWhatsappRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/lead-email': {
+      id: '/api/public/lead-email'
+      path: '/api/public/lead-email'
+      fullPath: '/api/public/lead-email'
+      preLoaderRoute: typeof ApiPublicLeadEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/mia-atender': {
+      id: '/api/public/mia-atender'
+      path: '/api/public/mia-atender'
+      fullPath: '/api/public/mia-atender'
+      preLoaderRoute: typeof ApiPublicMiaAtenderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/mia-conhecimento': {
+      id: '/api/public/mia-conhecimento'
+      path: '/api/public/mia-conhecimento'
+      fullPath: '/api/public/mia-conhecimento'
+      preLoaderRoute: typeof ApiPublicMiaConhecimentoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/reativacao': {
       id: '/api/public/reativacao'
       path: '/api/public/reativacao'
       fullPath: '/api/public/reativacao'
       preLoaderRoute: typeof ApiPublicReativacaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/transcrever-audio': {
+      id: '/api/public/transcrever-audio'
+      path: '/api/public/transcrever-audio'
+      fullPath: '/api/public/transcrever-audio'
+      preLoaderRoute: typeof ApiPublicTranscreverAudioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/webhook': {
@@ -583,8 +919,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAcessoRoute: typeof AuthenticatedAcessoRoute
   AuthenticatedAgendaRoute: typeof AuthenticatedAgendaRoute
   AuthenticatedCheckinRoute: typeof AuthenticatedCheckinRoute
+  AuthenticatedConversasRoute: typeof AuthenticatedConversasRoute
   AuthenticatedCorretoresRoute: typeof AuthenticatedCorretoresRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDiscadorRoute: typeof AuthenticatedDiscadorRoute
   AuthenticatedEmpresasRoute: typeof AuthenticatedEmpresasRoute
   AuthenticatedEspelhoRoute: typeof AuthenticatedEspelhoRoute
   AuthenticatedGruposRoute: typeof AuthenticatedGruposRoute
@@ -592,17 +930,24 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedImportarRoute: typeof AuthenticatedImportarRoute
   AuthenticatedIntegracoesRoute: typeof AuthenticatedIntegracoesRoute
   AuthenticatedLeadsRoute: typeof AuthenticatedLeadsRoute
+  AuthenticatedManualRoute: typeof AuthenticatedManualRoute
+  AuthenticatedMeuPlanoRoute: typeof AuthenticatedMeuPlanoRoute
+  AuthenticatedMinhaMiaRoute: typeof AuthenticatedMinhaMiaRoute
   AuthenticatedNotasRoute: typeof AuthenticatedNotasRoute
   AuthenticatedNotificacoesRoute: typeof AuthenticatedNotificacoesRoute
   AuthenticatedPropostasRoute: typeof AuthenticatedPropostasRoute
+  AuthenticatedWhatsappRoute: typeof AuthenticatedWhatsappRoute
+  AuthenticatedPontoCodigoRoute: typeof AuthenticatedPontoCodigoRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAcessoRoute: AuthenticatedAcessoRoute,
   AuthenticatedAgendaRoute: AuthenticatedAgendaRoute,
   AuthenticatedCheckinRoute: AuthenticatedCheckinRoute,
+  AuthenticatedConversasRoute: AuthenticatedConversasRoute,
   AuthenticatedCorretoresRoute: AuthenticatedCorretoresRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDiscadorRoute: AuthenticatedDiscadorRoute,
   AuthenticatedEmpresasRoute: AuthenticatedEmpresasRoute,
   AuthenticatedEspelhoRoute: AuthenticatedEspelhoRoute,
   AuthenticatedGruposRoute: AuthenticatedGruposRoute,
@@ -610,9 +955,14 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedImportarRoute: AuthenticatedImportarRoute,
   AuthenticatedIntegracoesRoute: AuthenticatedIntegracoesRoute,
   AuthenticatedLeadsRoute: AuthenticatedLeadsRoute,
+  AuthenticatedManualRoute: AuthenticatedManualRoute,
+  AuthenticatedMeuPlanoRoute: AuthenticatedMeuPlanoRoute,
+  AuthenticatedMinhaMiaRoute: AuthenticatedMinhaMiaRoute,
   AuthenticatedNotasRoute: AuthenticatedNotasRoute,
   AuthenticatedNotificacoesRoute: AuthenticatedNotificacoesRoute,
   AuthenticatedPropostasRoute: AuthenticatedPropostasRoute,
+  AuthenticatedWhatsappRoute: AuthenticatedWhatsappRoute,
+  AuthenticatedPontoCodigoRoute: AuthenticatedPontoCodigoRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -625,8 +975,18 @@ const rootRouteChildren: RootRouteChildren = {
   CadastroEmpresaRoute: CadastroEmpresaRoute,
   SetPasswordRoute: SetPasswordRoute,
   ApiCorretoresConvidarRoute: ApiCorretoresConvidarRoute,
+  ApiExtensaoConversasRoute: ApiExtensaoConversasRoute,
+  ApiExtensaoEnviarRoute: ApiExtensaoEnviarRoute,
+  ApiExtensaoMensagensRoute: ApiExtensaoMensagensRoute,
+  ApiPublicAsaasWebhookRoute: ApiPublicAsaasWebhookRoute,
+  ApiPublicChatMiaRoute: ApiPublicChatMiaRoute,
+  ApiPublicDiscadorPonteRoute: ApiPublicDiscadorPonteRoute,
   ApiPublicEloWhatsappRoute: ApiPublicEloWhatsappRoute,
+  ApiPublicLeadEmailRoute: ApiPublicLeadEmailRoute,
+  ApiPublicMiaAtenderRoute: ApiPublicMiaAtenderRoute,
+  ApiPublicMiaConhecimentoRoute: ApiPublicMiaConhecimentoRoute,
   ApiPublicReativacaoRoute: ApiPublicReativacaoRoute,
+  ApiPublicTranscreverAudioRoute: ApiPublicTranscreverAudioRoute,
   ApiPublicWebhookRoute: ApiPublicWebhookRoute,
   ApiPublicAdminReenviarConvitesRoute: ApiPublicAdminReenviarConvitesRoute,
   ApiPublicHooksProcessarFilaRoute: ApiPublicHooksProcessarFilaRoute,
