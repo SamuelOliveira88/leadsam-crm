@@ -37,7 +37,7 @@ export const Route = createFileRoute("/api/public/asaas-webhook")({
             try {
               const { sendWhatsAppNotification } = await import("@/lib/evolution.server");
               const { data: emp } = await (sa as any).from("empresas").select("nome").eq("id", empresaId).maybeSingle();
-              await sendWhatsAppNotification("5511932368278",
+              await sendWhatsAppNotification(process.env.ASAAS_NOTIFY_WHATSAPP || "5511932368278",
                 `👥 *Corretores extras no Alexandria*\nImobiliária: ${emp?.nome ?? empresaId}\nExtras: ${extras} (valem enquanto o pagamento estiver em dia)\nValor: R$ ${Number(pg.value ?? 0).toFixed(2).replace(".", ",")}/mês\nSe ela já tinha extras antes, cancele a assinatura antiga no Asaas.`);
             } catch { /* aviso é só conforto */ }
           }
@@ -57,7 +57,7 @@ export const Route = createFileRoute("/api/public/asaas-webhook")({
           try {
             const { sendWhatsAppNotification } = await import("@/lib/evolution.server");
             const { data: emp } = await (supabaseAdmin as any).from("empresas").select("nome").eq("id", empresaId).maybeSingle();
-            await sendWhatsAppNotification("5511932368278",
+            await sendWhatsAppNotification(process.env.ASAAS_NOTIFY_WHATSAPP || "5511932368278",
               `💰 *Pagamento confirmado no Alexandria*\nImobiliária: ${emp?.nome ?? empresaId}\nPlano: ${plano === "alexandria_ia" ? "Alexandria + Mi.IA" : "Alexandria"} (mensal)\nValor: R$ ${Number(pg.value ?? 0).toFixed(2).replace(".", ",")}`);
           } catch { /* aviso é só conforto */ }
         }

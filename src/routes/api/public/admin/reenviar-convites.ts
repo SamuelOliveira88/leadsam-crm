@@ -19,7 +19,7 @@ export const Route = createFileRoute("/api/public/admin/reenviar-convites")({
         const body = await request.json().catch(() => ({} as any));
         const grupo_id: string | undefined = body.grupo_id;
         const empresa_id: string | undefined = body.empresa_id;
-        const redirect_to: string = body.redirect_to || "https://alexandria-leds.lovable.app/set-password";
+        const redirect_to: string = body.redirect_to || `${(process.env.SITE_URL || "https://www.alexandrialeads.app").replace(/\/+$/, "")}/set-password`;
         const apenas_pendentes: boolean = !!body.apenas_pendentes;
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

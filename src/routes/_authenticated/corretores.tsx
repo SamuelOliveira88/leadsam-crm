@@ -210,9 +210,8 @@ function Corretores() {
           {form.role === "corretor" && (
             <>
               <label className="flex items-center gap-2 text-xs">
-                <input type="checkbox" checked={form.recebe_via_web} onChange={(e) => setForm({ ...form, recebe_via_web: e.target.checked })} />{tr("Recebe via Web")}</label>
-              <label className="flex items-center gap-2 text-xs">
-                <input type="checkbox" checked={form.recebe_via_whatsapp} onChange={(e) => setForm({ ...form, recebe_via_whatsapp: e.target.checked })} />{tr("Recebe via WhatsApp")}</label>
+                <input type="checkbox" checked={form.recebe_via_whatsapp} onChange={(e) => setForm({ ...form, recebe_via_whatsapp: e.target.checked })} />{tr("Recebe leads direto (rodízio e aviso no WhatsApp)")}</label>
+              <span className="text-xs text-muted-foreground">{tr("Desmarcado: só vê na tela os leads que forem passados para ele.")}</span>
             </>
           )}
           {isMaster && (

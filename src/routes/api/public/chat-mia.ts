@@ -11,7 +11,7 @@ import { idiomaValido, mensagemConvite, regraIdioma, type Idioma } from "@/lib/i
 const cab = { "content-type": "application/json", "cache-control": "no-store" };
 const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: s, headers: cab });
 
-const DONO_WHATSAPP = "5511932368278";
+const DONO_WHATSAPP = process.env.DONO_WHATSAPP || "5511932368278";
 
 // Limite simples em memória (por instância do servidor). Basta para frear abuso comum.
 const usos = new Map<string, number[]>();

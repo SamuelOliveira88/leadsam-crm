@@ -125,7 +125,7 @@ export const cadastrarEmpresa = createServerFn({ method: "POST" })
     });
 
     // Envia convite por e-mail — o usuário define a própria senha em /set-password
-    const redirectTo = `${process.env.SITE_URL ?? "https://alexandria-leds.lovable.app"}/set-password`;
+    const redirectTo = `${(process.env.SITE_URL || "https://www.alexandrialeads.app").replace(/\/+$/, "")}/set-password`;
     const { error: iErr } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, {
       redirectTo,
       data: { role: "master", empresa_id: empresa.id, nome: data.nome_usuario },
