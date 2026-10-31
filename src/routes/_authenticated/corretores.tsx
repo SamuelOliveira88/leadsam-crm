@@ -210,9 +210,8 @@ function Corretores() {
           {form.role === "corretor" && (
             <>
               <label className="flex items-center gap-2 text-xs">
-                <input type="checkbox" checked={form.recebe_via_web} onChange={(e) => setForm({ ...form, recebe_via_web: e.target.checked })} />{tr("Recebe via Web")}</label>
-              <label className="flex items-center gap-2 text-xs">
-                <input type="checkbox" checked={form.recebe_via_whatsapp} onChange={(e) => setForm({ ...form, recebe_via_whatsapp: e.target.checked })} />{tr("Recebe via WhatsApp")}</label>
+                <input type="checkbox" checked={form.recebe_via_whatsapp} onChange={(e) => setForm({ ...form, recebe_via_whatsapp: e.target.checked })} />{tr("Recebe leads direto (rodízio e aviso no WhatsApp)")}</label>
+              <span className="text-xs text-muted-foreground">{tr("Desmarcado: só vê na tela os leads que forem passados para ele.")}</span>
             </>
           )}
           {isMaster && (
@@ -294,12 +293,12 @@ function Corretores() {
 
 function CredenciaisModal({ creds, onClose }: { creds: { nome: string; email: string; senha: string }; onClose: () => void }) {
   const copiar = async () => {
-    const txt = tr("Acesso Alexandria Leds\nSite: https://alexandria-leds.lovable.app/auth\nE-mail: {email}\nSenha: {senha}", { email: creds.email, senha: creds.senha });
+    const txt = tr("Acesso Alexandria Leds\nSite: https://www.alexandrialeads.app/auth\nE-mail: {email}\nSenha: {senha}", { email: creds.email, senha: creds.senha });
     try { await navigator.clipboard.writeText(txt); toast.success(tr("Copiado! Cole no WhatsApp.")); }
     catch { toast.error(tr("Não foi possível copiar")); }
   };
   const wa = `https://wa.me/?text=${encodeURIComponent(
-    tr("Olá {nome}, aqui está seu acesso ao Alexandria Leds:\n\n🔗 https://alexandria-leds.lovable.app/auth\n📧 {email}\n🔑 {senha}\n\nAo entrar, você pode trocar a senha em \"Perfil\".", { nome: creds.nome, email: creds.email, senha: creds.senha })
+    tr("Olá {nome}, aqui está seu acesso ao Alexandria Leds:\n\n🔗 https://www.alexandrialeads.app/auth\n📧 {email}\n🔑 {senha}\n\nAo entrar, você pode trocar a senha em \"Perfil\".", { nome: creds.nome, email: creds.email, senha: creds.senha })
   )}`;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
