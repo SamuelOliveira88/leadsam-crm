@@ -293,12 +293,12 @@ function Corretores() {
 
 function CredenciaisModal({ creds, onClose }: { creds: { nome: string; email: string; senha: string }; onClose: () => void }) {
   const copiar = async () => {
-    const txt = tr("Acesso Alexandria Leds\nSite: https://alexandria-leds.lovable.app/auth\nE-mail: {email}\nSenha: {senha}", { email: creds.email, senha: creds.senha });
+    const txt = tr("Acesso Alexandria Leds\nSite: https://www.alexandrialeads.app/auth\nE-mail: {email}\nSenha: {senha}", { email: creds.email, senha: creds.senha });
     try { await navigator.clipboard.writeText(txt); toast.success(tr("Copiado! Cole no WhatsApp.")); }
     catch { toast.error(tr("Não foi possível copiar")); }
   };
   const wa = `https://wa.me/?text=${encodeURIComponent(
-    tr("Olá {nome}, aqui está seu acesso ao Alexandria Leds:\n\n🔗 https://alexandria-leds.lovable.app/auth\n📧 {email}\n🔑 {senha}\n\nAo entrar, você pode trocar a senha em \"Perfil\".", { nome: creds.nome, email: creds.email, senha: creds.senha })
+    tr("Olá {nome}, aqui está seu acesso ao Alexandria Leds:\n\n🔗 https://www.alexandrialeads.app/auth\n📧 {email}\n🔑 {senha}\n\nAo entrar, você pode trocar a senha em \"Perfil\".", { nome: creds.nome, email: creds.email, senha: creds.senha })
   )}`;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
