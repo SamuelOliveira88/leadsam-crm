@@ -292,6 +292,17 @@ document.getElementById('mia-enviar').onclick=function(){var nome=document.getEl
 fetch('/api/public/chat-mia',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({acao:'lead',nome:nome,whatsapp:tel,idioma:idioma()})}).then(function(r){return r.json()}).then(function(j){if(j.ok){lead.classList.remove('on');add(j.link?(j.enviado?T('chat.ok_wa','Pronto! Mandei seu convite no seu WhatsApp 🙌 Se preferir, é só abrir o link abaixo:'):T('chat.ok_link','Pronto! Seu convite de 7 dias grátis está abaixo 🙌')):T('chat.ok_equipe','Pronto! A equipe vai te chamar no WhatsApp em breve 🙌'),false);if(j.link){var a=document.createElement('a');a.href=j.link;a.target='_blank';a.rel='noopener';a.className='mb';a.style.margin='4px 12px';a.textContent=T('chat.criar','Criar minha conta e testar');msgs.appendChild(a);msgs.scrollTop=msgs.scrollHeight}}else add(T('chat.falha_lead','Não consegui avisar a equipe agora. Use o botão "Ou fale no WhatsApp".'),false)}).catch(function(){add(T('chat.semcon2','Sem conexão. Use o botão "Ou fale no WhatsApp".'),false)})};
 })();
 </script>
+<script>
+(function(){
+var U="https://yiufxfckyqjrmkkiibfl.supabase.co/rest/v1/rpc/registrar_evento_vendas",K="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpdWZ4ZmNreXFqcm1ra2lpYmZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzNDIzMjUsImV4cCI6MjEwNzkxODMyNX0.Nv8kHqpgVmniGJxUmny58Itwxxf_ABI6lUhxzyclbas";
+function ev(t,r){try{fetch(U,{method:"POST",keepalive:true,headers:{"content-type":"application/json",apikey:K,authorization:"Bearer "+K},body:JSON.stringify({p_tipo:t,p_ref:r||null})}).catch(function(){})}catch(e){}}
+try{if(!sessionStorage.getItem("v_visita")){sessionStorage.setItem("v_visita","1");ev("visita",document.referrer?new URL(document.referrer).hostname:"direto")}}catch(e){ev("visita")}
+document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("a,button");if(!a)return;
+if(a.hasAttribute("data-wa"))ev("clique_whatsapp",a.id||"botao");
+else if(a.getAttribute("href")==="/auth")ev("clique_entrar");
+else if(a.id==="mia-btn")ev("chat_mia")},true);
+})();
+</script>
 <script src="/i18n.js" data-base="/vendas/i18n/"></script>
 </body>
 </html>
