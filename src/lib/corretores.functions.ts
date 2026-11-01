@@ -274,25 +274,8 @@ export const cadastrarCorretorComSenha = createServerFn({ method: "POST" })
     const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
     const existente = list?.users?.find((u) => (u.email ?? "").toLowerCase() === email);
     if (existente) {
-      const { data: perfilExistente } = await supabaseAdmin
-        .from("perfis").select("empresa_id").eq("id", existente.id).maybeSingle();
-      if (!perfilAtual?.super_admin && perfilExistente?.empresa_id && perfilExistente.empresa_id !== perfilAtual?.empresa_id) {
-        throw new Error("Este e-mail já pertence a um usuário de outra empresa. Use outro endereço.");
-      }
-      userId = existente.id;
-      const { error: uErr } = await supabaseAdmin.auth.admin.updateUserById(userId, {
-        password: senha,
-        email_confirm: true,
-        user_metadata: {
-          ...(existente.user_metadata ?? {}),
-          invited_by_admin: true,
-          nome: data.nome,
-          role: data.role,
-          grupo_id: data.grupo_id ?? null,
-          empresa_id: perfilAtual?.empresa_id ?? null,
-        },
-      });
-      if (uErr) throw new Error(uErr.message);
+      // Nunca troca a senha nem os dados de quem já tem conta (evita tomada de conta).
+      throw new Error("Este e-mail já tem cadastro. Use \"Redefinir senha\" ou outro e-mail.");
     } else {
 
       const { data: created, error: cErr } = await supabaseAdmin.auth.admin.createUser({
