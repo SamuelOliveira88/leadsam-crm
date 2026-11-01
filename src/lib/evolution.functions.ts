@@ -33,11 +33,16 @@ export const notificarCorretorDoLead = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: lead, error } = await context.supabase
       .from("leads")
-      .select("id, nome, telefone, email, fonte, corretor_id, corretores(nome, telefone)")
+      .select("id, nome, email, fonte, corretor_id, corretores(nome, telefone)")
       .eq("id", data.lead_id)
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!lead) throw new Error("Lead não encontrado");
+    {
+      // A2: telefone do lead só pela função do banco
+      const { telefoneDoLead } = await import("@/lib/telefone-lead");
+      (lead as any).telefone = await telefoneDoLead(context.supabase, (lead as any).id);
+    }
     const corretorTel = (lead as any).corretores?.telefone;
     if (!corretorTel) throw new Error("Corretor sem telefone cadastrado");
 

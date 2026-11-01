@@ -29,7 +29,15 @@ export const Route = createFileRoute("/_authenticated/integracoes")({
   component: IntegracoesPage,
 });
 
-type TokenLinha = { id: string; nome: string; ativo: boolean; created_at: string };
+type UsoToken = "lead" | "email" | "reativacao" | "elo";
+type TokenLinha = { id: string; nome: string; uso?: UsoToken; ativo: boolean; created_at: string };
+const USOS: Array<{ v: UsoToken; rotulo: string }> = [
+  { v: "lead", rotulo: "Formulário / landing page (só cria lead)" },
+  { v: "email", rotulo: "Aviso de portal por e-mail (só cria lead)" },
+  { v: "reativacao", rotulo: "Reativação pelo n8n (lê a base; nunca em site)" },
+  { v: "elo", rotulo: "Elo com a Sara/Jarbas" },
+];
+const rotuloUso = (u?: string) => USOS.find((x) => x.v === (u ?? "lead"))?.rotulo ?? u ?? "";
 
 function IntegracoesPage() {
   const perfilFn = useServerFn(meuPerfil);
@@ -66,13 +74,14 @@ function Tokens() {
   const { data: tokens, isLoading } = useQuery({ queryKey: ["webhook_tokens"], queryFn: () => listFn() });
 
   const [nome, setNome] = useState("");
+  const [uso, setUso] = useState<UsoToken>("lead");
   // O token em texto puro só existe aqui, em memória, logo após a criação.
   const [novoToken, setNovoToken] = useState<{ nome: string; token: string } | null>(null);
   const [copiado, setCopiado] = useState(false);
   const [desativar, setDesativar] = useState<TokenLinha | null>(null);
 
   const criar = useMutation({
-    mutationFn: () => criarFn({ data: { nome } }),
+    mutationFn: () => criarFn({ data: { nome, uso } }),
     onSuccess: (r) => {
       setNovoToken({ nome: r.nome, token: r.token });
       setCopiado(false);
@@ -119,6 +128,17 @@ function Tokens() {
             <Label htmlFor="nome-token">{tr("Nome (para você saber de onde vem)")}</Label>
             <Input id="nome-token" value={nome} maxLength={60} onChange={(e) => setNome(e.target.value)} placeholder={tr("Ex.: Landing page Vista Plaza")} />
           </div>
+          <div className="sm:w-72">
+            <Label htmlFor="uso-token">{tr("Para que serve")}</Label>
+            <select
+              id="uso-token"
+              className="h-9 w-full rounded-md border bg-background px-2 text-sm"
+              value={uso}
+              onChange={(e) => setUso(e.target.value as UsoToken)}
+            >
+              {USOS.map((u) => <option key={u.v} value={u.v}>{tr(u.rotulo)}</option>)}
+            </select>
+          </div>
           <Button type="submit" disabled={criar.isPending || nome.trim().length < 2}>
             {criar.isPending ? tr("Gerando…") : tr("Gerar token")}
           </Button>
@@ -158,6 +178,7 @@ function Tokens() {
               <li key={t.id} className="flex items-center gap-3 px-5 py-3">
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium">{t.nome}</div>
+                  <div className="text-xs text-muted-foreground">{tr(rotuloUso(t.uso))}</div>
                   <div className="text-xs text-muted-foreground">{tr("Criado em")} {new Date(t.created_at).toLocaleDateString(localeAtual(), { timeZone: "America/Sao_Paulo" })}
                   </div>
                 </div>

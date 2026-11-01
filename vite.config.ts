@@ -15,6 +15,9 @@ const serverEnv = loadEnv(process.env.NODE_ENV ?? "development", process.cwd(), 
 Object.assign(process.env, serverEnv);
 
 export default defineConfig({
+  // Build fixado para a Vercel (antes o padrão era Cloudflare e só virava Vercel se a variável VERCEL existisse).
+  // Dentro do Lovable o próprio Lovable ainda escolhe o alvo dele.
+  nitro: { preset: "vercel" },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this

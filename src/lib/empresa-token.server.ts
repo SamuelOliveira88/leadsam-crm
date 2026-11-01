@@ -32,32 +32,59 @@ export async function gerarTokenWebhook(): Promise<{ token: string; hash: string
   return { token, hash: await sha256Hex(token) };
 }
 
-/** legado: lista de [env, origem, empresa] mantida enquanto os tokens antigos existirem. */
-async function legados(db: any): Promise<Array<{ token?: string; origem: string; empresa_id: string }>> {
-  const { data: lavile } = await db.from("empresas").select("id").eq("nome", EMPRESA_EQUIPE_LAVILE_NOME).maybeSingle();
-  const lav = lavile?.id as string | undefined;
-  const lista = [
-    { token: process.env.WEBHOOK_LEAD_TOKEN_SAMUELIMOB, origem: "samuelimob", empresa_id: EMPRESA_SAMUEL_IMOB },
-    { token: process.env.REATIVACAO_API_KEY, origem: "reativacao", empresa_id: EMPRESA_SAMUEL_IMOB },
-  ];
-  if (lav) {
-    lista.push(
-      { token: process.env.WEBHOOK_LEAD_TOKEN, origem: "webhook", empresa_id: lav },
-      { token: process.env.WEBHOOK_LEAD_TOKEN_LP, origem: "landing", empresa_id: lav },
-      { token: process.env.WEBHOOK_LEAD_TOKEN_NOTIF, origem: "notificacoes", empresa_id: lav },
-    );
+/**
+ * Escopo do token (coluna webhook_tokens.uso). Cada rota aceita só os usos dela:
+ *  - "lead"       -> /api/public/webhook (formulário, landing page, Facebook, Google Ads): só CRIA lead
+ *  - "email"      -> /api/public/lead-email (e o /webhook que ele chama por dentro): só CRIA lead
+ *  - "reativacao" -> /api/public/reativacao: LÊ e atualiza a base fria. Nunca em navegador.
+ *  - "elo"        -> /api/public/elo-whatsapp
+ * Um token de landing page (uso "lead") NÃO abre /api/public/reativacao.
+ */
+export type UsoToken = "lead" | "email" | "reativacao" | "elo";
+export const USOS_TOKEN: UsoToken[] = ["lead", "email", "reativacao", "elo"];
+
+/** legado: lista de [env, origem, uso, empresa] mantida enquanto os tokens antigos existirem. */
+async function legados(db: any): Promise<Array<{ token?: string; origem: string; uso: UsoToken; empresa_id: string }>> {
+  const lista: Array<{ token?: string; origem: string; uso: UsoToken; empresa_id: string }> = [];
+  const samuel = process.env.EMPRESA_LEGADO_SAMUELIMOB_ID || EMPRESA_SAMUEL_IMOB;
+  lista.push(
+    { token: process.env.WEBHOOK_LEAD_TOKEN_SAMUELIMOB, origem: "samuelimob", uso: "lead", empresa_id: samuel },
+    { token: process.env.REATIVACAO_API_KEY, origem: "reativacao", uso: "reativacao", empresa_id: samuel },
+  );
+  const temLegadoLavile = !!(process.env.WEBHOOK_LEAD_TOKEN || process.env.WEBHOOK_LEAD_TOKEN_LP || process.env.WEBHOOK_LEAD_TOKEN_NOTIF);
+  if (temLegadoLavile) {
+    const { data: lavile } = await db.from("empresas").select("id").eq("nome", EMPRESA_EQUIPE_LAVILE_NOME).maybeSingle();
+    const lav = lavile?.id as string | undefined;
+    if (lav) {
+      lista.push(
+        { token: process.env.WEBHOOK_LEAD_TOKEN, origem: "webhook", uso: "lead", empresa_id: lav },
+        { token: process.env.WEBHOOK_LEAD_TOKEN_LP, origem: "landing", uso: "lead", empresa_id: lav },
+        { token: process.env.WEBHOOK_LEAD_TOKEN_NOTIF, origem: "notificacoes", uso: "lead", empresa_id: lav },
+      );
+    }
   }
   return lista;
 }
 
-export async function resolverEmpresaPorToken(db: any, token: string | null | undefined, usos: string[] | null = null): Promise<TokenEmpresa | null> {
-  if (!token) return null;
+/**
+ * Resolve a empresa dona do token, mas SÓ se o token tiver um dos usos pedidos.
+ * `usos` é obrigatório: não existe mais "token que vale para qualquer rota".
+ */
+export async function resolverEmpresaPorToken(db: any, token: string | null | undefined, usos: UsoToken[]): Promise<TokenEmpresa | null> {
+  if (!token || !usos?.length) return null;
   const hash = await sha256Hex(token);
-  const { data } = await db.from("webhook_tokens").select("empresa_id, nome").eq("token_hash", hash).eq("ativo", true).maybeSingle();
-  // Token da tabela (o da landing page, que é público) só vale para entrada de leads, nunca para rotas como reativação.
-  if (data?.empresa_id && (!usos || usos.includes("webhook"))) return { empresa_id: data.empresa_id, origem: "webhook" };
+  const { data } = await db
+    .from("webhook_tokens")
+    .select("empresa_id, nome, uso")
+    .eq("token_hash", hash)
+    .eq("ativo", true)
+    .maybeSingle();
+  if (data?.empresa_id) {
+    const uso = (data.uso ?? "lead") as UsoToken;
+    return usos.includes(uso) ? { empresa_id: data.empresa_id, origem: "webhook" } : null;
+  }
   for (const l of await legados(db)) {
-    if (l.token && iguaisSeguro(l.token, token) && (!usos || usos.includes(l.origem))) return { empresa_id: l.empresa_id, origem: l.origem };
+    if (l.token && iguaisSeguro(l.token, token) && usos.includes(l.uso)) return { empresa_id: l.empresa_id, origem: l.origem };
   }
   return null;
 }

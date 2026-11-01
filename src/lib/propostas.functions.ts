@@ -14,11 +14,17 @@ export const listarPropostas = createServerFn({ method: "GET" })
         id, lead_id, unidade_id, corretor_id, valor_proposto, valor_entrada, parcelas,
         condicoes, status, motivo_recusa, observacoes, created_at, atualizado_em,
         status_credito, credito_observacoes, credito_analisado_em,
-        leads(nome, telefone, fonte), unidades(numero, torre), corretores(nome)
+        leads(nome, fonte), unidades(numero, torre), corretores(nome)
       `)
       .order("created_at", { ascending: false })
       .limit(500);
     if (error) throw new Error(error.message);
+    {
+      // A2: telefone do lead só pela função do banco
+      const { telefonesDosLeads } = await import("@/lib/telefone-lead");
+      const tels = await telefonesDosLeads(context.supabase, ((data ?? []) as any[]).map((r) => r.lead_id));
+      for (const r of (data ?? []) as any[]) if (r.leads) r.leads.telefone = tels.get(r.lead_id) ?? null;
+    }
     return ((data ?? []) as any[]).map((r) => (oculta && ehNumeroMae(r.leads, blind) ? { ...r, leads: leadSemTelefone(r.leads) } : r));
   });
 

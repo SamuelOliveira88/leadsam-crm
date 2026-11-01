@@ -5,13 +5,11 @@ import { z } from "zod";
 //  GET  ?desde=ISO&limite=200  -> mudanças de etapa feitas no CRM (para a Sara/Jarbas copiar)
 //  POST { mudancas: [{ telefone, etapa }] } -> aplica etapas vindas do WhatsApp
 // Server a server: sem CORS. Token só no cabeçalho x-webhook-token, e só vale o token
-// chamado "elo-whatsapp" (criado pelo master da empresa). A empresa vem SEMPRE do token.
+// com uso "elo" (criado pelo master da empresa). A empresa vem SEMPRE do token.
 
 const cabecalhos = { "content-type": "application/json", "cache-control": "no-store" };
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: cabecalhos });
-
-const NOME_DO_TOKEN = "elo-whatsapp";
 
 async function admin() {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -19,17 +17,10 @@ async function admin() {
 }
 
 async function empresaDoToken(db: any, request: Request): Promise<string | null> {
-  const { tokenDoCabecalho, sha256Hex } = await import("@/lib/empresa-token.server");
-  const token = tokenDoCabecalho(request);
-  if (!token) return null;
-  const { data } = await db
-    .from("webhook_tokens")
-    .select("empresa_id")
-    .eq("token_hash", await sha256Hex(token))
-    .eq("nome", NOME_DO_TOKEN)
-    .eq("ativo", true)
-    .maybeSingle();
-  return data?.empresa_id ?? null;
+  const { tokenDoCabecalho, resolverEmpresaPorToken } = await import("@/lib/empresa-token.server");
+  // Escopo "elo" (o 02-correcoes.sql marcou assim os tokens chamados "elo-whatsapp").
+  const r = await resolverEmpresaPorToken(db, tokenDoCabecalho(request), ["elo"]);
+  return r?.empresa_id ?? null;
 }
 
 const postSchema = z.object({

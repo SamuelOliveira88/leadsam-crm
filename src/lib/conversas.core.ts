@@ -1,4 +1,5 @@
 import { nomeSemNumero } from "@/lib/telefone-oculto";
+import { comTelefone } from "@/lib/telefone-lead";
 
 // ============ CONVERSAS DO NÚMERO MÃE ============
 // Tudo roda com o cliente do próprio usuário: quem decide o que cada um vê é o banco (RLS),
@@ -57,9 +58,11 @@ export async function listarConversasCore(sb: any, userId: string): Promise<Conv
     }
     const ids = [...porLead.keys()];
 
-    const { data: leads, error: e2 } = await sb
-      .from("leads").select("id, nome, telefone, corretor_id").in("id", ids);
+    const { data: leadsSemTel, error: e2 } = await sb
+      .from("leads").select("id, nome, corretor_id").in("id", ids);
     if (e2) throw new Error(e2.message);
+    // Telefone só pelo banco (A2), e só para quem pode ver.
+    const leads = verTel ? await comTelefone(sb, (leadsSemTel ?? []) as any[]) : ((leadsSemTel ?? []) as any[]).map((l) => ({ ...l, telefone: null }));
     const corIds = [...new Set(((leads ?? []) as any[]).map((l) => l.corretor_id).filter(Boolean))];
     const nomes = new Map<string, string>();
     if (corIds.length) {
@@ -68,12 +71,13 @@ export async function listarConversasCore(sb: any, userId: string): Promise<Conv
     }
 
     // Leads de lista (planilha) que ainda não têm conversa: o corretor pode mandar a primeira mensagem.
-    const { data: novos } = await sb
+    const { data: novosSemTel } = await sb
       .from("leads")
-      .select("id, nome, telefone, corretor_id, created_at")
+      .select("id, nome, corretor_id, created_at")
       .eq("fonte", "planilha_samuelimob")
       .order("created_at", { ascending: false })
       .limit(300);
+    const novos = verTel ? await comTelefone(sb, (novosSemTel ?? []) as any[]) : ((novosSemTel ?? []) as any[]).map((l) => ({ ...l, telefone: null }));
     const novosSemConversa = ((novos ?? []) as any[]).filter((l) => !porLead.has(l.id));
     const corIdsNovos = [...new Set(novosSemConversa.map((l) => l.corretor_id).filter((i) => i && !nomes.has(i)))];
     if (corIdsNovos.length) {

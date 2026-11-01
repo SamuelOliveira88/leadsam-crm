@@ -21,6 +21,12 @@ export const Route = createFileRoute("/api/public/lead-email")({
       POST: async ({ request }) => {
         const token = request.headers.get("x-webhook-token") ?? "";
         if (!token) return json({ error: "unauthorized" }, 401);
+        {
+          // Escopo: token de e-mail (ou de lead). Token de reativação/elo é recusado aqui.
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const { resolverEmpresaPorToken } = await import("@/lib/empresa-token.server");
+          if (!(await resolverEmpresaPorToken(supabaseAdmin, token, ["email", "lead"]))) return json({ error: "unauthorized" }, 401);
+        }
         const corpo = schema.safeParse(await request.json().catch(() => null));
         if (!corpo.success) return json({ error: "corpo inválido" }, 400);
 

@@ -112,7 +112,7 @@ function Corretores() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["corretores"] }),
   });
 
-  const [credenciais, setCredenciais] = useState<{ nome: string; email: string; senha: string } | null>(null);
+  const [credenciais, setCredenciais] = useState<{ nome: string; email: string; link: string } | null>(null);
 
   const cadastroSenhaMut = useMutation({
     mutationFn: () => cadastrarSenhaFn({ data: {
@@ -122,7 +122,7 @@ function Corretores() {
       role: form.role,
     } }),
     onSuccess: (r: any) => {
-      setCredenciais({ nome: form.nome, email: r.email, senha: r.senha });
+      setCredenciais({ nome: form.nome, email: r.email, link: r.link });
       resetForm();
       qc.invalidateQueries({ queryKey: ["corretores"] });
     },
@@ -131,7 +131,7 @@ function Corretores() {
 
   const redefinirSenhaMut = useMutation({
     mutationFn: (c: any) => redefinirSenhaFn({ data: { corretor_id: c.id } }),
-    onSuccess: (r: any) => setCredenciais({ nome: r.nome, email: r.email ?? "", senha: r.senha }),
+    onSuccess: (r: any) => setCredenciais({ nome: r.nome, email: r.email ?? "", link: r.link }),
     onError: (e: any) => toast.error(tr(e?.message) || tr("Falha ao redefinir senha")),
   });
 
@@ -199,7 +199,7 @@ function Corretores() {
               disabled={!form.nome || !form.email || (form.role === "gerente" && !form.grupo_id) || cadastroSenhaMut.isPending}
               onClick={() => cadastroSenhaMut.mutate()}
             >
-              <KeyRound className="mr-2 size-4" /> {cadastroSenhaMut.isPending ? tr("Criando…") : tr("Cadastrar com senha (sem e-mail)")}
+              <KeyRound className="mr-2 size-4" /> {cadastroSenhaMut.isPending ? tr("Criando…") : tr("Cadastrar e gerar link de acesso (sem e-mail)")}
             </Button>
           </div>
         ) : (
@@ -291,26 +291,25 @@ function Corretores() {
   );
 }
 
-function CredenciaisModal({ creds, onClose }: { creds: { nome: string; email: string; senha: string }; onClose: () => void }) {
+// Mostra um LINK de uso único para a pessoa definir a própria senha. A senha nunca passa pelo admin.
+function CredenciaisModal({ creds, onClose }: { creds: { nome: string; email: string; link: string }; onClose: () => void }) {
+  const texto = tr("Olá {nome}, aqui está seu acesso ao Alexandria Leds.\n\n📧 Seu login: {email}\n🔗 Crie sua senha neste link (vale uma vez):\n{link}", { nome: creds.nome, email: creds.email, link: creds.link });
   const copiar = async () => {
-    const txt = tr("Acesso Alexandria Leds\nSite: https://www.alexandrialeads.app/auth\nE-mail: {email}\nSenha: {senha}", { email: creds.email, senha: creds.senha });
-    try { await navigator.clipboard.writeText(txt); toast.success(tr("Copiado! Cole no WhatsApp.")); }
+    try { await navigator.clipboard.writeText(texto); toast.success(tr("Copiado! Cole no WhatsApp.")); }
     catch { toast.error(tr("Não foi possível copiar")); }
   };
-  const wa = `https://wa.me/?text=${encodeURIComponent(
-    tr("Olá {nome}, aqui está seu acesso ao Alexandria Leds:\n\n🔗 https://www.alexandrialeads.app/auth\n📧 {email}\n🔑 {senha}\n\nAo entrar, você pode trocar a senha em \"Perfil\".", { nome: creds.nome, email: creds.email, senha: creds.senha })
-  )}`;
+  const wa = `https://wa.me/?text=${encodeURIComponent(texto)}`;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
       <Card className="w-full max-w-md p-5" onClick={(e) => e.stopPropagation()}>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">{tr("Credenciais de {nome}", { nome: creds.nome })}</h2>
+          <h2 className="text-lg font-semibold">{tr("Acesso de {nome}", { nome: creds.nome })}</h2>
           <Button variant="ghost" size="icon" onClick={onClose}><X className="size-4" /></Button>
         </div>
-        <p className="mb-3 text-xs text-muted-foreground">{tr("Copie e envie por WhatsApp. A senha só aparece agora — depois é preciso redefinir.")}</p>
+        <p className="mb-3 text-xs text-muted-foreground">{tr("Envie por WhatsApp. O link serve uma única vez e a pessoa cria a própria senha. Se expirar, use \"Definir senha\" de novo.")}</p>
         <div className="space-y-2 rounded-md border bg-muted/40 p-3 font-mono text-sm">
           <div><span className="text-muted-foreground">{tr("E-mail:")}</span> {creds.email}</div>
-          <div><span className="text-muted-foreground">{tr("Senha:")}</span> <strong>{creds.senha}</strong></div>
+          <div className="break-all"><span className="text-muted-foreground">{tr("Link:")}</span> {creds.link}</div>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           <Button onClick={copiar}><Copy className="mr-2 size-4" /> {tr("Copiar tudo")}</Button>

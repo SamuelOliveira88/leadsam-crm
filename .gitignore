@@ -30,3 +30,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Segredos e configuração local (nunca vão para o Git; use as variáveis da Vercel)
+.env
+.env.*
+!.env.example
+.vercel
