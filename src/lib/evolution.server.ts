@@ -148,12 +148,19 @@ export async function notificarCorretorPorLead(
 ): Promise<{ ok: boolean; error?: string; motivo?: MotivoFalha }> {
   const { data: lead, error } = await supabaseClient
     .from("leads")
-    .select("id, nome, telefone, email, fonte, corretor_id, grupo_id")
+    .select("id, nome, email, fonte, corretor_id, grupo_id")
     .eq("id", leadId)
     .maybeSingle();
 
   if (error) return { ok: false, error: error.message, motivo: "tentar_de_novo" };
   if (!lead) return { ok: false, error: "Lead não encontrado", motivo: "definitivo" };
+  // A2: telefone só pela função do banco (service_role recebe; usuário só se puder ver).
+  try {
+    const { telefoneDoLead } = await import("@/lib/telefone-lead");
+    (lead as any).telefone = await telefoneDoLead(supabaseClient, lead.id);
+  } catch (e: any) {
+    return { ok: false, error: e?.message ?? "erro lendo telefone", motivo: "tentar_de_novo" };
+  }
   if (!lead.corretor_id) return { ok: false, error: "Lead sem corretor", motivo: "definitivo" };
 
   if (await notificacoesPausadas(supabaseClient)) {
@@ -217,11 +224,15 @@ export async function notificarCorretorLeadRepetido(
 ): Promise<{ ok: boolean; error?: string }> {
   const { data: lead, error } = await supabaseClient
     .from("leads")
-    .select("id, nome, telefone, fonte, corretor_id, grupo_id")
+    .select("id, nome, fonte, corretor_id, grupo_id")
     .eq("id", leadId)
     .maybeSingle();
   if (error) return { ok: false, error: error.message };
   if (!lead) return { ok: false, error: "Lead não encontrado" };
+  {
+    const { telefoneDoLead } = await import("@/lib/telefone-lead");
+    (lead as any).telefone = await telefoneDoLead(supabaseClient, lead.id).catch(() => null);
+  }
   if (!lead.corretor_id) return { ok: false, error: "Lead sem corretor" };
 
   if (await notificacoesPausadas(supabaseClient)) return { ok: false, error: "Notificações pausadas" };

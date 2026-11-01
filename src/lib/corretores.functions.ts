@@ -212,24 +212,40 @@ export const reenviarConvitesGrupo = createServerFn({ method: "POST" })
     return { ok: true, enviados, falhas };
   });
 
-function gerarSenhaForte(): string {
-  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
-  const lower = "abcdefghijkmnpqrstuvwxyz";
-  const nums  = "23456789";
-  const sym   = "@#$%&*!?";
-  const all = upper + lower + nums + sym;
-  const rand = (s: string) => s[Math.floor(Math.random() * s.length)];
-  let out = rand(upper) + rand(lower) + rand(nums) + rand(sym);
-  for (let i = 0; i < 8; i++) out += rand(all);
-  return out.split("").sort(() => Math.random() - 0.5).join("");
+// Senha interna aleatória (crypto). Nunca é devolvida a ninguém: o corretor define a dele pelo link.
+function gerarSenhaInterna(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  return "Ax9!" + Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-// Cadastra corretor direto (sem e-mail): cria/atualiza o usuário no Auth com a senha
-// definida pelo admin. Retorna a senha em texto claro para o admin repassar por WhatsApp.
+function siteUrl(): string {
+  return (process.env.SITE_URL || "https://www.alexandrialeads.app").replace(/\/+$/, "");
+}
+
+/** Link de uso único para a própria pessoa definir a senha (recovery do Supabase). */
+async function gerarLinkDefinirSenha(supabaseAdmin: any, email: string): Promise<string> {
+  const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+    type: "recovery",
+    email,
+    options: { redirectTo: `${siteUrl()}/set-password` },
+  });
+  const link = (data as any)?.properties?.action_link as string | undefined;
+  if (error || !link) throw new Error(error?.message || "Não foi possível gerar o link de acesso.");
+  return link;
+}
+
+const ERRO_JA_TEM_CONTA =
+  "Este e-mail já tem conta no Alexandria. Por segurança, não é possível trocar a senha de uma conta que já existe. Use outro e-mail ou peça para a pessoa usar \"Esqueci a senha\".";
+
+// Cadastra corretor direto (sem depender do e-mail de convite).
+// Segurança (C3, revisão 01/11):
+//  * só cria usuário NOVO: se o e-mail já existe no Auth, recusa (nunca troca a senha de ninguém);
+//  * não devolve senha: devolve um link de uso único para o corretor definir a própria senha;
+//  * grupo sempre da empresa de quem cadastra (só super admin atravessa empresas).
 export const cadastrarCorretorComSenha = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
-    nome: z.string().min(1),
+    nome: z.string().trim().min(1).max(120),
     email: z.string().email(),
     telefone: z.string().optional().nullable(),
     grupo_id: z.string().uuid().nullable().optional(),
@@ -237,7 +253,6 @@ export const cadastrarCorretorComSenha = createServerFn({ method: "POST" })
     recebe_via_web: z.boolean().default(true),
     recebe_via_whatsapp: z.boolean().default(true),
     role: z.enum(["corretor", "gerente"]).default("corretor"),
-    senha: z.string().min(8).optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: perfilAtual } = await context.supabase
@@ -245,7 +260,8 @@ export const cadastrarCorretorComSenha = createServerFn({ method: "POST" })
     if (!(perfilAtual?.super_admin || perfilAtual?.role === "master")) {
       throw new Error("Apenas o administrador pode cadastrar corretores.");
     }
-    const acessoTotal = !!(perfilAtual?.super_admin || (perfilAtual as any)?.acesso_total);
+    const superAdmin = !!perfilAtual?.super_admin;
+    const acessoTotal = !!(superAdmin || (perfilAtual as any)?.acesso_total);
     if (!acessoTotal) {
       if (!perfilAtual?.grupo_id) throw new Error("Seu usuário não está vinculado a um grupo.");
       if (data.grupo_id !== perfilAtual.grupo_id) {
@@ -253,99 +269,92 @@ export const cadastrarCorretorComSenha = createServerFn({ method: "POST" })
       }
     }
 
-
-    const email = data.email.trim().toLowerCase();
-    const senha = data.senha ?? gerarSenhaForte();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    await supabaseAdmin.from("convites_admin").insert({
+    // Empresa: a de quem cadastra. O grupo tem que ser dela (M2). Só o super admin escolhe outra.
+    let empresaId: string | null = perfilAtual?.empresa_id ?? null;
+    if (data.grupo_id) {
+      const { data: grupo } = await supabaseAdmin.from("grupos").select("empresa_id").eq("id", data.grupo_id).maybeSingle();
+      if (!grupo) throw new Error("Grupo selecionado não foi encontrado.");
+      if (!superAdmin && grupo.empresa_id !== empresaId) {
+        throw new Error("Você só pode cadastrar corretores em grupos da sua empresa.");
+      }
+      empresaId = empresaId ?? grupo.empresa_id;
+      if (superAdmin && empresaId !== grupo.empresa_id) empresaId = grupo.empresa_id;
+    }
+    if (!empresaId) throw new Error("Sua empresa não foi identificada.");
+
+    const email = data.email.trim().toLowerCase();
+
+    // O convite vai antes para o gatilho handle_new_user já criar o perfil com papel/empresa/grupo.
+    const { data: convite } = await supabaseAdmin.from("convites_admin").insert({
       email,
       role: data.role,
-      empresa_id: perfilAtual?.empresa_id ?? null,
+      empresa_id: empresaId,
       grupo_id: data.grupo_id ?? null,
       nome: data.nome,
       criado_por: context.userId,
+    }).select("id").maybeSingle();
+
+    const { data: created, error: cErr } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: gerarSenhaInterna(),   // ninguém conhece esta senha; a pessoa define a dela pelo link
+      email_confirm: true,
+      user_metadata: {
+        invited_by_admin: true,
+        nome: data.nome,
+        role: data.role,
+        grupo_id: data.grupo_id ?? null,
+        empresa_id: empresaId,
+      },
     });
-
-
-
-    let userId: string | null = null;
-    // Busca por email no Auth e só permite reutilizar se pertencer à mesma empresa do admin.
-    const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
-    const existente = list?.users?.find((u) => (u.email ?? "").toLowerCase() === email);
-    if (existente) {
-      // Nunca troca a senha nem os dados de quem já tem conta (evita tomada de conta).
-      throw new Error("Este e-mail já tem cadastro. Use \"Redefinir senha\" ou outro e-mail.");
-    } else {
-
-      const { data: created, error: cErr } = await supabaseAdmin.auth.admin.createUser({
-        email,
-        password: senha,
-        email_confirm: true,
-        user_metadata: {
-          invited_by_admin: true,
-          nome: data.nome,
-          role: data.role,
-          grupo_id: data.grupo_id ?? null,
-          empresa_id: perfilAtual?.empresa_id ?? null,
-        },
-      });
-      if (cErr || !created?.user) throw new Error(cErr?.message || "Falha ao criar usuário");
-      userId = created.user.id;
+    if (cErr || !created?.user) {
+      // não deixa convite aberto para um e-mail que já existe
+      if (convite?.id) await supabaseAdmin.from("convites_admin").update({ usado_em: new Date().toISOString() }).eq("id", convite.id);
+      const msg = (cErr as any)?.code === "email_exists" || /already|registered|exists/i.test(cErr?.message ?? "")
+        ? ERRO_JA_TEM_CONTA
+        : cErr?.message || "Falha ao criar usuário";
+      throw new Error(msg);
     }
+    const userId = created.user.id;
 
-
+    // Usuário recém-criado (não existia): pode gravar o perfil com segurança.
     await supabaseAdmin.from("perfis").upsert({
       id: userId,
       nome: data.nome,
       role: data.role,
       grupo_id: data.grupo_id ?? null,
-      empresa_id: perfilAtual?.empresa_id ?? null,
+      empresa_id: empresaId,
     }, { onConflict: "id" });
 
     let corretorId: string | null = null;
     if (data.role === "corretor") {
-      const { data: existeCorr } = await supabaseAdmin
-        .from("corretores").select("id").eq("user_id", userId).maybeSingle();
-      if (existeCorr?.id) {
-        corretorId = existeCorr.id;
-        await supabaseAdmin.from("corretores").update({
-          nome: data.nome,
-          telefone: data.telefone ?? null,
-          grupo_id: data.grupo_id ?? null,
-          empresa_id: perfilAtual?.empresa_id ?? null,
-          canal_notificacao: data.canal_notificacao,
-          recebe_via_web: data.recebe_via_web,
-          recebe_via_whatsapp: data.recebe_via_whatsapp,
-          ativo: true,
-        }).eq("id", existeCorr.id);
-      } else {
-        const { data: novo, error: nErr } = await supabaseAdmin.from("corretores").insert({
-          user_id: userId,
-          nome: data.nome,
-          telefone: data.telefone ?? null,
-          grupo_id: data.grupo_id ?? null,
-          empresa_id: perfilAtual?.empresa_id ?? null,
-          ativo: true,
-          canal_notificacao: data.canal_notificacao,
-          recebe_via_web: data.recebe_via_web,
-          recebe_via_whatsapp: data.recebe_via_whatsapp,
-        }).select("id").single();
-        if (nErr) throw new Error(nErr.message);
-        corretorId = novo.id;
-      }
+      const { data: novo, error: nErr } = await supabaseAdmin.from("corretores").insert({
+        user_id: userId,
+        nome: data.nome,
+        telefone: data.telefone ?? null,
+        grupo_id: data.grupo_id ?? null,
+        empresa_id: empresaId,
+        ativo: true,
+        canal_notificacao: data.canal_notificacao,
+        recebe_via_web: data.recebe_via_web,
+        recebe_via_whatsapp: data.recebe_via_whatsapp,
+      }).select("id").single();
+      if (nErr) throw new Error(nErr.message);
+      corretorId = novo.id;
       await supabaseAdmin.from("perfis").update({ corretor_id: corretorId }).eq("id", userId);
     }
 
-    return { ok: true, email, senha, user_id: userId, corretor_id: corretorId };
+    const link = await gerarLinkDefinirSenha(supabaseAdmin, email);
+    return { ok: true, email, nome: data.nome, link, user_id: userId, corretor_id: corretorId };
   });
 
-// Redefine a senha de um corretor já existente (para o admin repassar por WhatsApp)
+// Novo link para o corretor definir a senha (o admin repassa por WhatsApp). Não define nem devolve senha.
+// Só para corretor/gerente da MESMA empresa; nunca para master, acesso total ou super admin.
 export const redefinirSenhaCorretor = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({
     corretor_id: z.string().uuid(),
-    senha: z.string().min(8).optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: perfilAtual } = await context.supabase
@@ -353,27 +362,32 @@ export const redefinirSenhaCorretor = createServerFn({ method: "POST" })
     if (!(perfilAtual?.super_admin || perfilAtual?.role === "master")) {
       throw new Error("Apenas o administrador pode redefinir senhas.");
     }
-    const acessoTotal = !!(perfilAtual?.super_admin || (perfilAtual as any)?.acesso_total);
+    const superAdmin = !!perfilAtual?.super_admin;
+    const acessoTotal = !!(superAdmin || (perfilAtual as any)?.acesso_total);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: corr } = await supabaseAdmin
       .from("corretores").select("id, user_id, nome, empresa_id, grupo_id").eq("id", data.corretor_id).maybeSingle();
     if (!corr?.user_id) throw new Error("Corretor sem usuário vinculado. Use 'Cadastrar com senha'.");
-    if (!acessoTotal && corr.empresa_id !== perfilAtual?.empresa_id) {
+    // acesso total vale dentro da própria empresa; atravessar empresas só o super admin
+    if (!superAdmin && corr.empresa_id !== perfilAtual?.empresa_id) {
       throw new Error("Acesso negado: este corretor pertence a outra empresa.");
     }
     if (!acessoTotal && corr.grupo_id !== perfilAtual?.grupo_id) {
       throw new Error("Você só pode redefinir senhas de corretores do seu grupo.");
     }
-
-
-    const senha = data.senha ?? gerarSenhaForte();
+    const { data: alvo } = await supabaseAdmin
+      .from("perfis").select("role, super_admin, acesso_total, empresa_id").eq("id", corr.user_id).maybeSingle();
+    if (!alvo || alvo.super_admin || alvo.acesso_total || !["corretor", "gerente"].includes(alvo.role)) {
+      throw new Error("Esta conta não pode ter a senha redefinida por aqui.");
+    }
+    if (!superAdmin && alvo.empresa_id !== perfilAtual?.empresa_id) {
+      throw new Error("Acesso negado: este usuário pertence a outra empresa.");
+    }
     const { data: u } = await supabaseAdmin.auth.admin.getUserById(corr.user_id);
-    const { error } = await supabaseAdmin.auth.admin.updateUserById(corr.user_id, {
-      password: senha,
-      email_confirm: true,
-    });
-    if (error) throw new Error(error.message);
-    return { ok: true, email: u?.user?.email ?? null, nome: corr.nome, senha };
+    const email = u?.user?.email;
+    if (!email) throw new Error("Usuário sem e-mail cadastrado.");
+    const link = await gerarLinkDefinirSenha(supabaseAdmin, email);
+    return { ok: true, email, nome: corr.nome, link };
   });
 
 

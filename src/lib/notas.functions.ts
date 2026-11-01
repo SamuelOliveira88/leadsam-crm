@@ -55,10 +55,15 @@ export const gerarMensagemAbertura = createServerFn({ method: "POST" })
 
     const { data: lead } = await context.supabase
       .from("leads")
-      .select("nome, telefone, email, fonte")
+      .select("id, nome, email, fonte")
       .eq("id", data.lead_id)
       .maybeSingle();
     if (!lead) throw new Error("Lead não encontrado");
+    {
+      // A2: telefone do lead só pela função do banco (já vem nulo quando o corretor não pode ver)
+      const { telefoneDoLead } = await import("@/lib/telefone-lead");
+      (lead as any).telefone = await telefoneDoLead(context.supabase, (lead as any).id);
+    }
     const ocultarTel = (await souCorretorPuro(context.supabase, context.userId)) && ehNumeroMae(lead as any, await listaEstaBlindada(context.supabase));
 
     const prompt = `Você é um corretor de imóveis brasileiro. Escreva uma mensagem CURTA (máx 4 linhas) e amigável para iniciar conversa no WhatsApp com o lead abaixo. Use o primeiro nome, seja natural e termine com uma pergunta aberta.\n\nLead: ${lead.nome}\nInteresse: ${data.interesse ?? "imóvel"}\n\nResponda APENAS com o texto da mensagem, sem aspas ou introduções.`;
@@ -77,5 +82,5 @@ export const gerarMensagemAbertura = createServerFn({ method: "POST" })
     }
     const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
     const mensagem = json.choices?.[0]?.message?.content?.trim() ?? "";
-    return { mensagem, telefone: ocultarTel ? "" : lead.telefone ?? "" };
+    return { mensagem, telefone: ocultarTel ? "" : (lead as any).telefone ?? "" };
   });

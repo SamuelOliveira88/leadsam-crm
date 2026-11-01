@@ -1498,6 +1498,7 @@ export type Database = {
           id: string
           nome: string
           token_hash: string
+          uso: string
         }
         Insert: {
           ativo?: boolean
@@ -1506,6 +1507,7 @@ export type Database = {
           id?: string
           nome: string
           token_hash: string
+          uso?: string
         }
         Update: {
           ativo?: boolean
@@ -1514,6 +1516,7 @@ export type Database = {
           id?: string
           nome?: string
           token_hash?: string
+          uso?: string
         }
         Relationships: [
           {
@@ -1548,6 +1551,15 @@ export type Database = {
       }
     }
     Functions: {
+      telefone_do_lead: { Args: { p_lead: string }; Returns: string }
+      telefones_dos_leads: {
+        Args: { p_ids: string[] }
+        Returns: { lead_id: string; telefone: string }[]
+      }
+      consumir_limite: {
+        Args: { p_chave: string; p_max: number; p_janela_segundos: number }
+        Returns: boolean
+      }
       agendar_compromisso: {
         Args: {
           p_corretor_id?: string

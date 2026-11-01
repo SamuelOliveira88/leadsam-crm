@@ -1,4 +1,4 @@
-// Endpoint interno protegido por WEBHOOK_LEAD_TOKEN para reenviar links
+// Endpoint interno protegido por ADMIN_TOKEN (segredo só dele) para reenviar links
 // de definição de senha (recovery) para todos os perfis (corretor/gerente)
 // de um grupo. Usado apenas por administradores via curl.
 import { createFileRoute } from "@tanstack/react-router";
@@ -7,9 +7,11 @@ export const Route = createFileRoute("/api/public/admin/reenviar-convites")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const { iguaisSeguro } = await import("@/lib/empresa-token.server");
         const token = request.headers.get("x-admin-token") || "";
-        const expected = process.env.WEBHOOK_LEAD_TOKEN || "";
-        if (!token || token !== expected) {
+        const expected = process.env.ADMIN_TOKEN || "";
+        // Antes usava o mesmo WEBHOOK_LEAD_TOKEN dos leads; agora é um segredo próprio. Sem ADMIN_TOKEN, a rota fica fechada.
+        if (!token || expected.length < 24 || !iguaisSeguro(token, expected)) {
           return new Response(JSON.stringify({ error: "unauthorized" }), {
             status: 401,
             headers: { "Content-Type": "application/json" },
@@ -19,7 +21,10 @@ export const Route = createFileRoute("/api/public/admin/reenviar-convites")({
         const body = await request.json().catch(() => ({} as any));
         const grupo_id: string | undefined = body.grupo_id;
         const empresa_id: string | undefined = body.empresa_id;
-        const redirect_to: string = body.redirect_to || `${(process.env.SITE_URL || "https://www.alexandrialeads.app").replace(/\/+$/, "")}/set-password`;
+        const site = (process.env.SITE_URL || "https://www.alexandrialeads.app").replace(/\/+$/, "");
+        // redirect_to só dentro do próprio site (antes aceitava qualquer endereço)
+        const redirect_to: string =
+          typeof body.redirect_to === "string" && body.redirect_to.startsWith(site + "/") ? body.redirect_to : `${site}/set-password`;
         const apenas_pendentes: boolean = !!body.apenas_pendentes;
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

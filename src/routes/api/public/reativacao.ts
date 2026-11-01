@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
+// Servidor a servidor (n8n): sem CORS. Navegador nenhum deve chamar esta rota.
+// Só aceita token com uso "reativacao" (token de landing page/formulário recebe 401).
 const cors = {
   "Content-Type": "application/json",
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "content-type, x-api-key, x-webhook-token, authorization",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Cache-Control": "no-store",
 };
 
 const json = (body: unknown, status = 200) =>
@@ -40,7 +40,7 @@ const patchSchema = z.object({
 export const Route = createFileRoute("/api/public/reativacao")({
   server: {
     handlers: {
-      OPTIONS: async () => new Response(null, { status: 204, headers: cors }),
+      OPTIONS: async () => new Response(null, { status: 405, headers: cors }),
 
       GET: async ({ request }) => {
         const url = new URL(request.url);

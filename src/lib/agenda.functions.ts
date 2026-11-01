@@ -29,13 +29,19 @@ export const listarCompromissos = createServerFn({ method: "GET" })
     const blind = oculta ? await listaEstaBlindada(context.supabase) : true;
     const { data: rows, error } = await context.supabase
       .from("compromissos")
-      .select("id, lead_id, corretor_id, empreendimento, data_hora, tipo, status, observacoes, leads(nome, telefone, fonte), corretores(nome)")
+      .select("id, lead_id, corretor_id, empreendimento, data_hora, tipo, status, observacoes, leads(nome, fonte), corretores(nome)")
       .eq("empresa_id", empresaId)
       .gte("data_hora", data.de)
       .lt("data_hora", data.ate)
       .order("data_hora", { ascending: true })
       .limit(500);
     if (error) throw new Error(error.message);
+    {
+      // A2: telefone do lead só pela função do banco
+      const { telefonesDosLeads } = await import("@/lib/telefone-lead");
+      const tels = await telefonesDosLeads(context.supabase, ((rows ?? []) as any[]).map((r) => r.lead_id));
+      for (const r of (rows ?? []) as any[]) if (r.leads) r.leads.telefone = tels.get(r.lead_id) ?? null;
+    }
     return ((rows ?? []) as any[]).map((r) => ({
       id: r.id as string,
       lead_id: (r.lead_id as string | null) ?? null,

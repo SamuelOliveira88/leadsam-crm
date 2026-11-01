@@ -24,7 +24,7 @@ export const listarTokens = createServerFn({ method: "GET" })
     const empresaId = await exigirMasterDaEmpresa(context);
     const { data, error } = await context.supabase
       .from("webhook_tokens")
-      .select("id, nome, ativo, created_at")
+      .select("id, nome, uso, ativo, created_at")
       .eq("empresa_id", empresaId)
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
@@ -33,6 +33,9 @@ export const listarTokens = createServerFn({ method: "GET" })
 
 const CriarTokenInput = z.object({
   nome: z.string().trim().min(2, "Dê um nome com pelo menos 2 letras").max(60, "Nome muito longo"),
+  // Escopo do token: "lead" (formulário/landing page, só cria lead), "email" (aviso de portal por e-mail),
+  // "reativacao" (n8n lê a base fria; nunca use em navegador) e "elo" (Sara/Jarbas).
+  uso: z.enum(["lead", "email", "reativacao", "elo"]).default("lead"),
 });
 
 export const criarToken = createServerFn({ method: "POST" })
@@ -45,8 +48,8 @@ export const criarToken = createServerFn({ method: "POST" })
 
     const { data: row, error } = await context.supabase
       .from("webhook_tokens")
-      .insert({ empresa_id: empresaId, nome: data.nome, token_hash: hash })
-      .select("id, nome, ativo, created_at")
+      .insert({ empresa_id: empresaId, nome: data.nome, token_hash: hash, uso: data.uso })
+      .select("id, nome, uso, ativo, created_at")
       .single();
     if (error) throw new Error(error.message);
 
@@ -66,7 +69,7 @@ export const definirTokenAtivo = createServerFn({ method: "POST" })
       .update({ ativo: data.ativo })
       .eq("id", data.id)
       .eq("empresa_id", empresaId)
-      .select("id, nome, ativo, created_at")
+      .select("id, nome, uso, ativo, created_at")
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!row) throw new Error("Token não encontrado.");

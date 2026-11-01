@@ -123,10 +123,12 @@ export const Route = createFileRoute("/api/corretores/convidar")({
             .maybeSingle();
           if (grupoError) return json({ message: grupoError.message }, 500);
           if (!grupo) return json({ message: "Grupo selecionado não foi encontrado." }, 400);
-          if (empresaId && grupo.empresa_id !== empresaId && !acessoTotal) {
+          // M2: o grupo tem que ser da empresa de quem convida. "Acesso total" vale só dentro da
+          // própria empresa; atravessar empresas é só para o super admin.
+          if (!perfil?.super_admin && grupo.empresa_id !== empresaId) {
             return json({ message: "Você só pode convidar corretores para grupos da sua empresa." }, 403);
           }
-          empresaId = empresaId ?? grupo.empresa_id;
+          empresaId = perfil?.super_admin ? grupo.empresa_id : empresaId;
         }
 
 

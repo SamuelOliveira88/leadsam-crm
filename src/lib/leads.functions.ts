@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { ehNumeroMae, leadSemTelefone, perfilEhCorretor, souCorretorPuro, listaEstaBlindada } from "@/lib/telefone-oculto";
+import { comTelefone } from "@/lib/telefone-lead";
 
 export const listarLeads = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -18,7 +19,7 @@ export const listarLeads = createServerFn({ method: "GET" })
     for (let inicio = 0; inicio < 20000; inicio += PAG) {
       let q = context.supabase
         .from("leads")
-        .select("id, nome, telefone, email, status, grupo_id, corretor_id, etapa_funil, motivo_perda, valor_negociacao, fonte, cidade, observacoes, visualizado_em, created_at, corretores(nome), grupos(nome)");
+        .select("id, nome, email, status, grupo_id, corretor_id, etapa_funil, motivo_perda, valor_negociacao, fonte, cidade, observacoes, visualizado_em, created_at, corretores(nome), grupos(nome)");
       if (apenasMeus) q = q.eq("corretor_id", p.corretor_id);
       const { data, error } = await q
         .order("created_at", { ascending: false })
@@ -28,10 +29,12 @@ export const listarLeads = createServerFn({ method: "GET" })
       todos.push(...(data ?? []));
       if (!data || data.length < PAG) break;
     }
+    // O telefone vem do banco (telefones_dos_leads), que já esconde o do lead blindado para o corretor.
+    const comTel = await comTelefone(context.supabase, todos);
     // Corretor não vê o telefone de quem chegou pelo número mãe (atende pela tela Conversas).
-    if (!perfilEhCorretor(p)) return todos;
+    if (!perfilEhCorretor(p)) return comTel;
     const blind = await listaEstaBlindada(context.supabase);
-    return todos.map((l) => (ehNumeroMae(l, blind) ? leadSemTelefone(l) : l));
+    return comTel.map((l) => (ehNumeroMae(l, blind) ? leadSemTelefone(l) : l));
   });
 
 export const dashboardStats = createServerFn({ method: "GET" })
@@ -237,7 +240,7 @@ export const exportarLeads = createServerFn({ method: "GET" })
       const { data, error } = await context.supabase
         .from("leads")
         .select(`
-          nome, telefone, email, status, etapa_funil, fonte, canal, cidade,
+          id, nome, email, status, etapa_funil, fonte, canal, cidade,
           motivo_perda, observacoes, ultima_atividade, data_atividade,
           valor_negociacao, codigo_imovel, campanha, corretor_origem_nome,
           created_at, corretores(nome), grupos(nome)
@@ -248,9 +251,11 @@ export const exportarLeads = createServerFn({ method: "GET" })
       todos.push(...(data ?? []));
       if (!data || data.length < PAGINA) break;
     }
-    if (!oculta) return todos;
+    // Telefone pelo banco (A2); o id só serve para isso e sai da planilha.
+    const comTel = (await comTelefone(context.supabase, todos)).map(({ id: _id, ...resto }) => resto);
+    if (!oculta) return comTel;
     const blind = await listaEstaBlindada(context.supabase);
-    return todos.map((l) => (ehNumeroMae(l, blind) ? leadSemTelefone(l) : l));
+    return comTel.map((l) => (ehNumeroMae(l, blind) ? leadSemTelefone(l) : l));
   });
 
 
