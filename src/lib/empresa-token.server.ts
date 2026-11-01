@@ -54,7 +54,8 @@ export async function resolverEmpresaPorToken(db: any, token: string | null | un
   if (!token) return null;
   const hash = await sha256Hex(token);
   const { data } = await db.from("webhook_tokens").select("empresa_id, nome").eq("token_hash", hash).eq("ativo", true).maybeSingle();
-  if (data?.empresa_id) return { empresa_id: data.empresa_id, origem: "webhook" };
+  // Token da tabela (o da landing page, que é público) só vale para entrada de leads, nunca para rotas como reativação.
+  if (data?.empresa_id && (!usos || usos.includes("webhook"))) return { empresa_id: data.empresa_id, origem: "webhook" };
   for (const l of await legados(db)) {
     if (l.token && iguaisSeguro(l.token, token) && (!usos || usos.includes(l.origem))) return { empresa_id: l.empresa_id, origem: l.origem };
   }
