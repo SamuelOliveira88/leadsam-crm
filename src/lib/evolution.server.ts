@@ -97,6 +97,32 @@ export async function sendWhatsAppNotification(
   return sendWhatsAppText(numero, mensagem, process.env.EVOLUTION_INSTANCE_NOTIF);
 }
 
+/**
+ * Avisos para corretores (lead novo, cliente de volta, lembrete de visita, convite) saem pelo
+ * WhatsApp da PRÓPRIA imobiliária, se ela já conectou o número (conexoes_whatsapp = conectado).
+ * Sem número conectado, cai no número do Alexandria (como era antes), para o aviso não se perder.
+ * Avisos do próprio Alexandria (pagamento, monitor) continuam usando sendWhatsAppNotification.
+ */
+export async function instanciaDaEmpresa(empresaId?: string | null): Promise<string | undefined> {
+  if (!empresaId) return undefined;
+  try {
+    const { data } = await (supabaseAdmin as any)
+      .from("conexoes_whatsapp").select("instancia, status").eq("empresa_id", empresaId).maybeSingle();
+    return data?.status === "conectado" && data.instancia ? (data.instancia as string) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export async function sendWhatsAppNotificationEmpresa(
+  empresaId: string | null | undefined,
+  numero: string,
+  mensagem: string,
+): Promise<{ ok: boolean; error?: string; permanente?: boolean }> {
+  const instancia = await instanciaDaEmpresa(empresaId);
+  return sendWhatsAppText(numero, mensagem, instancia ?? process.env.EVOLUTION_INSTANCE_NOTIF);
+}
+
 export function mensagemNovoLead(lead: { nome: string; telefone?: string | null; email?: string | null; fonte?: string | null }) {
   const linhas = [
     "🔔 *Novo lead recebido — Alexandria Leds*",
@@ -148,7 +174,7 @@ export async function notificarCorretorPorLead(
 ): Promise<{ ok: boolean; error?: string; motivo?: MotivoFalha }> {
   const { data: lead, error } = await supabaseClient
     .from("leads")
-    .select("id, nome, email, fonte, corretor_id, grupo_id")
+    .select("id, nome, email, fonte, corretor_id, grupo_id, empresa_id")
     .eq("id", leadId)
     .maybeSingle();
 
@@ -186,7 +212,7 @@ export async function notificarCorretorPorLead(
   if (corretorError) return { ok: false, error: corretorError.message, motivo: "tentar_de_novo" };
   if (!corretor?.telefone) return { ok: false, error: "Corretor sem telefone cadastrado", motivo: "definitivo" };
 
-  const result = await sendWhatsAppNotification(corretor.telefone, mensagemNovoLead(lead));
+  const result = await sendWhatsAppNotificationEmpresa((lead as any).empresa_id, corretor.telefone, mensagemNovoLead(lead));
   if (!result.ok) return { ok: false, error: result.error, motivo: result.permanente ? "definitivo" : "tentar_de_novo" };
 
   await supabaseClient
@@ -224,7 +250,7 @@ export async function notificarCorretorLeadRepetido(
 ): Promise<{ ok: boolean; error?: string }> {
   const { data: lead, error } = await supabaseClient
     .from("leads")
-    .select("id, nome, fonte, corretor_id, grupo_id")
+    .select("id, nome, fonte, corretor_id, grupo_id, empresa_id")
     .eq("id", leadId)
     .maybeSingle();
   if (error) return { ok: false, error: error.message };
@@ -250,7 +276,7 @@ export async function notificarCorretorLeadRepetido(
   if (corretorError) return { ok: false, error: corretorError.message };
   if (!corretor?.telefone) return { ok: false, error: "Corretor sem telefone cadastrado" };
 
-  return sendWhatsAppNotification(corretor.telefone, mensagemLeadRepetido(lead, mensagem));
+  return sendWhatsAppNotificationEmpresa((lead as any).empresa_id, corretor.telefone, mensagemLeadRepetido(lead, mensagem));
 }
 
 export async function processarNotificacoesWhatsAppPendentes(
@@ -407,7 +433,7 @@ export async function processarLembretesDeCompromisso(
     } else {
       const { data: corretor } = await supabaseClient
         .from("corretores")
-        .select("telefone")
+        .select("telefone, empresa_id")
         .eq("id", comp.corretor_id)
         .maybeSingle();
       if (!corretor?.telefone) {
@@ -415,7 +441,8 @@ export async function processarLembretesDeCompromisso(
         erro = "Corretor sem telefone cadastrado";
       } else {
         const { mensagemLembrete } = await import("@/lib/agenda");
-        const r = await sendWhatsAppNotification(
+        const r = await sendWhatsAppNotificationEmpresa(
+          (corretor as any).empresa_id,
           corretor.telefone,
           mensagemLembrete({
             tipo: comp.tipo,

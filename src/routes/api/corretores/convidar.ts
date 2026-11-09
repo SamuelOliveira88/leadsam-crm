@@ -203,8 +203,9 @@ export const Route = createFileRoute("/api/corretores/convidar")({
             });
             const url = link?.properties?.action_link;
             if (url) {
-              const { sendWhatsAppNotification } = await import("@/lib/evolution.server");
-              await sendWhatsAppNotification(
+              const { sendWhatsAppNotificationEmpresa } = await import("@/lib/evolution.server");
+              await sendWhatsAppNotificationEmpresa(
+                perfil?.empresa_id,
                 data.telefone,
                 `👋 Olá, ${data.nome}! Você foi cadastrado(a) no *Alexandria Leds*.\n\nToque no link para criar sua senha e entrar:\n${url}\n\nO link vale por pouco tempo. Se expirar, peça um novo ao administrador.`,
               );
