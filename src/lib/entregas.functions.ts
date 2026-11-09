@@ -112,9 +112,10 @@ export const enviarAvisoTeste = createServerFn({ method: "POST" })
     z.object({ telefone: z.string().transform((v) => v.replace(/\D/g, "")).pipe(z.string().min(10, "Telefone inválido").max(13, "Telefone inválido")) }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    await exigirGestor(context);
-    const { sendWhatsAppNotification } = await import("@/lib/evolution.server");
-    const r = await sendWhatsAppNotification(
+    const empresaId = await exigirGestor(context);
+    const { sendWhatsAppNotificationEmpresa } = await import("@/lib/evolution.server");
+    const r = await sendWhatsAppNotificationEmpresa(
+      empresaId,
       data.telefone,
       "✅ *Teste de aviso — Alexandria Leds*\nSe você recebeu esta mensagem, os avisos de lead novo vão chegar neste número.",
     );
